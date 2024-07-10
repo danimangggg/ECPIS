@@ -70,11 +70,11 @@ function Navbar() {
         </li>
 
         <li className="nav__item dropdown">   
-          <span onClick={toggleDropdown}>Clients Profile</span>
+          <span onClick={toggleDropdown}>Organization Profile</span>
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
-                <Link to="/facility-profile">Facility</Link>
+                <Link to="/facility-profile">Organization</Link>
               </li>
               <li className="dropdown__item">
                 <Link to="/viewWoreda">Woreda</Link>
