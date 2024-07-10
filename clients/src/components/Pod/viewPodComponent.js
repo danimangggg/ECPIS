@@ -140,7 +140,7 @@ const api_url = process.env.REACT_APP_API_URL;
          onRowClick: (rowData, rowMeta) => {
             const fname = JSON.stringify(rowData[11], null, 2);
             const id = JSON.stringify(rowData[0], null, 2);
-            navigate({pathname: '/detailPage'}, {state:{ docname: fname, identity: id }});     
+            navigate({pathname: '/detailPodPage'}, {state:{ docname: fname, identity: id }});     
           },
           selectableRows: false,
           responsive: 'standard'

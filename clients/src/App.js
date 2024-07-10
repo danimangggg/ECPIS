@@ -16,6 +16,8 @@ import updateCredit from './pages/Creadit/UpdateCreaditPage';
 import loading from './pages/stylePage/loadingPage';
 import ViewPod from './pages/Pod/viewPodPage';
 import addPod from './pages/Pod/addPodPage';
+import DetailPodPage from './pages/Detail/DetailPodPage';
+import updatePod from './pages/Pod/updatePodPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -43,6 +45,8 @@ const App = () => {
         <Route path = '/loading' Component={loading} />
         <Route path = '/viewPod' Component={ViewPod} />
         <Route path = '/add-pod' Component={addPod} />
+        <Route path = '/detailPodPage' Component={DetailPodPage} />
+        <Route path = '/updatePod' Component={updatePod} />
         
       </Routes>
      </Router>

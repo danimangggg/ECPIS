@@ -1,19 +1,24 @@
 
 
 const db = require("../../models");
-const Creadit = db.creadit;
+const Pod = db.pod;
 
-const updateFiles = async (req, res) => {
+const updatePod = async (req, res) => {
  
-    const result = await Creadit.update(
+    const result = await Pod.update(
       {
-      fiscalYear: req.body.fiscalYear,
-      region: req.body.region,
-      zone_Subcity: req.body.zone_Subcity,
-      woreda: req.body.woreda,
-      facilityName: req.body.facilityName,
-      facilityDeligate: req.body.facilityDeligate,
-      creaditAmount: req.body.creaditAmount,
+        region: req.body.region,
+        zone_Subcity: req.body.zone_Subcity,
+        woreda: req.body.woreda,
+        facilityName: req.body.facilityName,
+        dn_no: req.body.dnNo,
+        order_no: req.body.orderNo,
+        manual_dno: req.body.manualDelveryNo,
+        pod_no: req.body.podNo,
+        registered_by: req.body.registeredBy,
+        received_by: req.body.receivedBy,
+        //date: req.body.date,
+        //image: req.file.filename
       
       },
       {
@@ -30,5 +35,5 @@ const updateFiles = async (req, res) => {
         }
 
 module.exports = {
-  updateFiles,
+  updatePod,
 };

@@ -33,7 +33,7 @@ const AddCreadit = () => {
       .then(
         (res)=> {
           alert(res.data.message);
-          setRegion("");
+          window.location.reload();
         }
 
       )
