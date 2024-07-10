@@ -40,12 +40,24 @@ const UpdateComponent = () => {
     if(facilityName != ""){
     formdata.append('facilityName', facilityName);
     }
+    if(dnNo !== ""){
     formdata.append('dnNo', dnNo);
-    formdata.append('podNo', podNo);
-    formdata.append('orderNo', orderNo);
-    formdata.append('manualDeliveryNo', manualDeliveryNo);
-    formdata.append('registeredBy', registeredBy);
-    formdata.append('receivedBy', receivedBy);
+    }
+    if(podNo !== ""){
+      formdata.append('podNo', podNo);
+    }
+    if(orderNo !== ""){
+      formdata.append('orderNo', orderNo);
+    }
+    if(manualDeliveryNo !== ""){
+      formdata.append('manualDeliveryNo', manualDeliveryNo);
+    }
+    if(receivedBy !== ""){
+      formdata.append('registeredBy', registeredBy);
+    }
+    if(receivedBy !== ""){
+      formdata.append('receivedBy', receivedBy);
+    }
    
      await axios.put(`${api_url}/api/updatePod/${id}`, formdata) 
       .then(
@@ -227,7 +239,6 @@ const UpdateComponent = () => {
                 placeholder={pod.dn_no}
                 className="form-input"
                 onChange={(e)=> setdnNo(e.target.value)}
-                required
                  />
         </div>
 
@@ -240,7 +251,6 @@ const UpdateComponent = () => {
             name="name"
             className="form-input"
             onChange={(e)=> setorderNo(e.target.value)}
-            required
           />
         </div>
 
@@ -253,7 +263,6 @@ const UpdateComponent = () => {
                 placeholder={pod.manual_dno}
                 className="form-input"
                 onChange={(e)=> setmanualDeliveryNo(e.target.value)}
-                required
                  />
         </div>
 
@@ -266,7 +275,6 @@ const UpdateComponent = () => {
             name="name"
             className="form-input"
             onChange={(e)=> setpodNo(e.target.value)}
-            required
           />
         </div>
 
@@ -279,7 +287,6 @@ const UpdateComponent = () => {
                 placeholder={pod.registered_by}
                 className="form-input"
                 onChange={(e)=> setregisteredBy(e.target.value)}
-                required
                  />
         </div>
 
@@ -292,7 +299,6 @@ const UpdateComponent = () => {
             name="name"
             className="form-input"
             onChange={(e)=> setreceivedBy(e.target.value)}
-            required
           />
         </div>
         

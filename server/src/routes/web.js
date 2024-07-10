@@ -15,9 +15,13 @@ const showFacility = require('../controllers/FacilityProfile-Controller/Facility
 const deleteContract = require('../controllers/CreaditController/DeleteCreditController')
 const findOne = require('../controllers/CreaditController/fineOne')
 const updateContract = require('../controllers/CreaditController/UpdateCredit')
+
 const AddPod = require('../controllers/PodController/addPod')
 const ViewPod = require('../controllers/PodController/viewPod')
 const findOnePod = require('../controllers/PodController/fineOne')
+const updatePod = require('../controllers/PodController/UpdatePod')
+const deletePod = require('../controllers/PodController/DeletePodController')
+
 const upload = require("../middleware/upload");
 
 
@@ -42,6 +46,8 @@ let routes =  (app) => {
   router.post("/api/addPod", upload.single('file'), AddPod.addPod);
   router.get('/api/viewPod',ViewPod.retrivePods)
   router.get('/api/findPod/:id', findOnePod.findPod);
+  router.put('/api/updatePod/:id', upload.none(), updatePod.updatePod);
+  router.delete('/api/deletePod/:id', deletePod.deletePod);
 
   return app.use("/", router);
 };

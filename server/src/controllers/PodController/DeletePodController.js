@@ -1,10 +1,10 @@
 
 const db = require("../../models");
-const Creadit = db.creadit;
+const Pod = db.pod;
 
-const deleteFiles = async (req, res) => {
+const deletePod = async (req, res) => {
  
-    const result = await Creadit.destroy({
+    const result = await Pod.destroy({
       where:{
         id:  req.params.id
       }
@@ -17,5 +17,5 @@ const deleteFiles = async (req, res) => {
         }
 
 module.exports = {
-  deleteFiles,
+  deletePod
 };
