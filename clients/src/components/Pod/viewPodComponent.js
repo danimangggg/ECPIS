@@ -138,7 +138,7 @@ const api_url = process.env.REACT_APP_API_URL;
     const options = {
          filterType: 'checkbox',
          onRowClick: (rowData, rowMeta) => {
-            const fname = JSON.stringify(rowData[8], null, 2);
+            const fname = JSON.stringify(rowData[11], null, 2);
             const id = JSON.stringify(rowData[0], null, 2);
             navigate({pathname: '/detailPage'}, {state:{ docname: fname, identity: id }});     
           },
