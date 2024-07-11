@@ -18,6 +18,14 @@ const api_url = process.env.REACT_APP_API_URL;
          display:false
         }
        },
+      {
+        name: "date",
+        label: "Date",
+        options: {
+         filter: false,
+         sort: true,
+        }
+       },
         {
          name: "region",
          label: "Region",
@@ -138,7 +146,7 @@ const api_url = process.env.REACT_APP_API_URL;
     const options = {
          filterType: 'checkbox',
          onRowClick: (rowData, rowMeta) => {
-            const fname = JSON.stringify(rowData[11], null, 2);
+            const fname = JSON.stringify(rowData[12], null, 2);
             const id = JSON.stringify(rowData[0], null, 2);
             navigate({pathname: '/detailPodPage'}, {state:{ docname: fname, identity: id }});     
           },

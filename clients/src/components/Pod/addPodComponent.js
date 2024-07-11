@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import './AddPodComponent.css';
 import axios from 'axios'
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const AddPod = () => {
+  
   const api_url = process.env.REACT_APP_API_URL;
   const [file, setFile] = useState()
-  const [fiscalYear, setfiscalYear]= useState('')
+  const [date, setDate] = useState(new Date());
   const [region, setRegion]= useState('')
   const [zone_Subcity, setZone_Subcity]= useState('')
   const [woreda, setWoreda]= useState('')
@@ -22,11 +25,15 @@ const AddPod = () => {
   const [infoFacility , setInfoFacility] = useState([])
 
 
-  const submitUploaded = async(e) =>{       
+  const submitUploaded = async(e) =>{     
     e.preventDefault();   
+    const day = date.getDate();
+    const month = date.getMonth()+1;
+    const year = date.getFullYear();
+    const newDate = `${year}-${month}-${day}`
     const formdata = new FormData();
     formdata.append('file', file);
-    formdata.append('fiscalYear', fiscalYear);
+    formdata.append('date', newDate);
     formdata.append('region', region);
     formdata.append('zone_Subcity', zone_Subcity);
     formdata.append('woreda', woreda);
@@ -111,88 +118,96 @@ const AddPod = () => {
   return (
     <div className="form-container">
       <form className="form" onSubmit={submitUploaded}>
+
          <h2 className="form-title">Add Pod</h2>
 
+         <div className='form-group'>
+          <label htmlFor="name" className="form-label">
+            Date
+            <br/><br/>
+           <DatePicker selected={date} onChange={(date) => setDate(date)} className='form-input'/>
+           </label>
+         </div>
       
-    <div className='form-group'>
-     <label>
-       Region
-       <br/><br/>
-       <select value={region} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
-        
-       <option>Select Region</option>
-       {
-        infoRegion.map((data)=>{
-          return(
-          <option value={data.region_name}>{data.region_name}</option>
-               )})
-       }
-       </select>
+        <div className='form-group'>
+          <label htmlFor="name" className="form-label">
+            Region
+            <br/><br/>
+            <select value={region} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
+              
+            <option>Select Region</option>
+            {
+              infoRegion.map((data)=>{
+                return(
+                <option value={data.region_name}>{data.region_name}</option>
+                    )})
+            }
+            </select>
 
-     </label>
-   </div>
+          </label>
+        </div>
 
-   <div className='form-group'>
-     <label>
-       Zone/Subcity       
-       <br/><br/>
+        <div className='form-group'>
+          <label htmlFor="name" className="form-label">
+            Zone/Subcity       
+            <br/><br/>
 
-       <select value={zone_Subcity} onChange={(e)=> setZone_Subcity(e.target.value)} className='form-input'>
-         <option>select Zone/Subcity</option>
-        {
-        infoZone.map((data)=>{
-        if(data.region_name === region){
-          return(
-          <option value={data.zone_name}> {data.zone_name} </option>
-               )
-          }
-         })
-         }
+            <select value={zone_Subcity} onChange={(e)=> setZone_Subcity(e.target.value)} className='form-input'>
+              <option>select Zone/Subcity</option>
+              {
+              infoZone.map((data)=>{
+              if(data.region_name === region){
+                return(
+                <option value={data.zone_name}> {data.zone_name} </option>
+                    )
+                }
+              })
+              }
 
-     </select>
-     </label>
+          </select>
+          </label>
 
-   </div>
+        </div>
 
-   <div className='form-group'>
-     <label>
-       Woreda   
-       <br/><br/>
+        <div className='form-group'>
+          <label htmlFor="name" className="form-label">
+            Woreda   
+            <br/><br/>
 
-       <select value={woreda} onChange={(e)=> setWoreda(e.target.value)} className='form-input'>
-         <option>Select Woreda</option>
-         {
-        infoWoreda.map((data)=>{
-        if(data.zone_name === zone_Subcity){
-          return(
-          <option value={data.woreda_name}> {data.woreda_name} </option>
-               )
-          }
-         })
-         }
-       </select>
+            <select value={woreda} onChange={(e)=> setWoreda(e.target.value)} className='form-input'>
+              <option>Select Woreda</option>
+              {
+              infoWoreda.map((data)=>{
+              if(data.zone_name === zone_Subcity){
+                return(
+                <option value={data.woreda_name}> {data.woreda_name} </option>
+                    )
+                }
+              })
+              }
+            </select>
 
-     </label>
-   </div>
+          </label>
+        </div>
 
-   <div className='form-group'>
-     <label>
-       Facility Name   
-       <br/><br/>
-       <select value={facilityName} onChange={(e)=> setFacilityName(e.target.value)} className='form-input'>
-         <option>select Facility</option>
-         {
-        infoFacility.map((data)=>{
-        if(data.woreda_name === woreda){
-          return(
-          <option value={data.facility_name}> {data.facility_name} </option>
-               )
-          }
-         })
-         }
-       </select>
-     </label>
-   </div>
+        <div className='form-group'>
+          <label htmlFor="name" className="form-label">
+            Facility Name   
+            <br/><br/>
+            <select value={facilityName} onChange={(e)=> setFacilityName(e.target.value)} className='form-input'>
+              <option>select Facility</option>
+              {
+              infoFacility.map((data)=>{
+              if(data.woreda_name === woreda){
+                return(
+                <option value={data.facility_name}> {data.facility_name} </option>
+                    )
+                }
+              })
+              }
+            </select>
+          </label>
+        </div>
 
         <div className="form-group">
               <label htmlFor="name" className="form-label">DN Number</label>

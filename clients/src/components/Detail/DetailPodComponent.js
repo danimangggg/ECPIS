@@ -13,7 +13,7 @@ const PdfViewer = ({ pdf }) => {
     const id = (fileName.state.identity);
     const docName = (nameStri.replace(/['"]+/g, ''));
 
-    const deleteCPodFunction = ()=>{
+    const deletePodFunction = ()=>{
       try{
       const res = axios.delete(`${api_url}/api/deletePod/${id}`);
       setResponse(res.data);
@@ -37,7 +37,7 @@ const PdfViewer = ({ pdf }) => {
         </span>
       </Link>
       <span >
-        <FaTrash onClick={deleteCPodFunction} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
+        <FaTrash onClick={deletePodFunction} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
         </span>
       <span >
         <FaEdit onClick={editPod} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>

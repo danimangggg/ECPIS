@@ -9,6 +9,30 @@ const [info , setData] = useState([])
     const columns = [
        
         {
+            name: "facility_name",
+            label: "organization Name",
+            options: {
+             filter: true,
+             sort: false,
+            }
+           },
+           {
+            name: "woreda_name",
+            label: "Woreda",
+            options: {
+             filter: true,
+             sort: false,
+            }
+           },
+           {
+            name: "zone_name",
+            label: "Zone/subcity",
+            options: {
+             filter: true,
+             sort: false,
+            }
+           },
+        {
          name: "region_name",
          label: "Region",
          options: {
@@ -16,33 +40,10 @@ const [info , setData] = useState([])
           sort: false,
          }
         },
-        {
-         name: "zone_name",
-         label: "Zone/subcity",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "woreda_name",
-         label: "Woreda",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "facility_name",
-         label: "Facility",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
+       
         {
             name: "facility_type",
-            label: "Facility Type",
+            label: "Organization Type",
             options: {
              filter: true,
              sort: false,
@@ -89,7 +90,7 @@ const [info , setData] = useState([])
         <div style={{display: 'table', tableLayout:'fixed'}}>     
             <ThemeProvider theme={getMuiTheme}>
             <MUIDataTable
-            title={"Facility list"}
+            title={"Organization list"}
             data={info}
             columns={columns}
             options={options}

@@ -13,7 +13,7 @@ const updatePod = async (req, res) => {
         facilityName: req.body.facilityName,
         dn_no: req.body.dnNo,
         order_no: req.body.orderNo,
-        manual_dno: req.body.manualDelveryNo,
+        manual_dno: req.body.manualDeliveryNo,
         pod_no: req.body.podNo,
         registered_by: req.body.registeredBy,
         received_by: req.body.receivedBy,
