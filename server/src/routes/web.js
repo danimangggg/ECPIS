@@ -22,6 +22,12 @@ const findOnePod = require('../controllers/PodController/fineOne')
 const updatePod = require('../controllers/PodController/UpdatePod')
 const deletePod = require('../controllers/PodController/DeletePodController')
 
+
+const AddPodReceiver = require('../controllers/PodController/PodHandler/addReceiver')
+const ViewPodReceiver = require('../controllers/PodController/PodHandler/showReceiver')
+const AddPodRegisterer = require('../controllers/PodController/PodHandler/addRegisterer')
+const ViewPodRegisterer = require('../controllers/PodController/PodHandler/showRegisterer')
+
 const upload = require("../middleware/upload");
 
 
@@ -48,6 +54,12 @@ let routes =  (app) => {
   router.get('/api/findPod/:id', findOnePod.findPod);
   router.put('/api/updatePod/:id', upload.none(), updatePod.updatePod);
   router.delete('/api/deletePod/:id', deletePod.deletePod);
+
+
+  router.post("/api/addReceivedBy", upload.none(), AddPodReceiver.addReceiver);
+  router.get('/api/receivedBy', ViewPodReceiver.retriveReceiver);
+  router.post("/api/addRegisteredBy", upload.none(), AddPodRegisterer.addRegisterer);
+  router.get('/api/registeredBy', ViewPodRegisterer.retriveRegisterer);
 
   return app.use("/", router);
 };

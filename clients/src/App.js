@@ -18,6 +18,8 @@ import ViewPod from './pages/Pod/viewPodPage';
 import addPod from './pages/Pod/addPodPage';
 import DetailPodPage from './pages/Detail/DetailPodPage';
 import updatePod from './pages/Pod/updatePodPage';
+import AddPodReceiver from './pages/Pod/PodHandler/addReceiver';
+import addPodRegisterer from './pages/Pod/PodHandler/addRegisterer';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -47,6 +49,8 @@ const App = () => {
         <Route path = '/add-pod' Component={addPod} />
         <Route path = '/detailPodPage' Component={DetailPodPage} />
         <Route path = '/updatePod' Component={updatePod} />
+        <Route path = '/add-receiver' Component={AddPodReceiver} />
+        <Route path = '/add-registrant' Component={addPodRegisterer} />
         
       </Routes>
      </Router>

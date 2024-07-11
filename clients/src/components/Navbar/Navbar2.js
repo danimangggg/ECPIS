@@ -64,7 +64,12 @@ function Navbar() {
               <li className="dropdown__item">
                 <Link to="/add-Pod">Add POD</Link>
               </li>
-              
+              <li className="dropdown__item">
+                <Link to="/add-receiver">add Receiver</Link>
+              </li>
+              <li className="dropdown__item">
+                <Link to="/add-registrant">Add Registrant</Link>
+              </li>
             </ul>
           )}
         </li>

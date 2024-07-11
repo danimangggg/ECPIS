@@ -25,5 +25,7 @@ db.zone = require("./FacilityProfile-Model/zone_subcityModel.js")(sequelize, Seq
 db.woreda = require("./FacilityProfile-Model/woredaModel.js")(sequelize, Sequelize);
 db.facility = require("./FacilityProfile-Model/facilityModel.js")(sequelize, Sequelize);
 db.pod = require("./pod.model.js")(sequelize, Sequelize);
+db.registerer = require("./podHandler/registerer.js")(sequelize, Sequelize);
+db.receiver = require("./podHandler/receiver.js")(sequelize, Sequelize);
 
 module.exports = db;
