@@ -25,7 +25,8 @@ const UpdateComponent = () => {
     const [infoFacility , setInfoFacility] = useState([])
     const [pod , setpod] = useState([])
 
- const submitUploaded = async () =>{      
+ const submitUploaded = async (e) =>{      
+    e.preventDefault();    
     const formdata = new FormData();
     
     if(region != ""){
@@ -49,8 +50,8 @@ const UpdateComponent = () => {
    
      await axios.put(`${api_url}/api/updatePod/${id}`, formdata) 
       .then(
-        navigate('/viewPod'),
-        window.location.reload()
+        //navigate('/viewPod'),
+        //window.location.reload()
         )
       .catch(err=> console.log(err));
     }
