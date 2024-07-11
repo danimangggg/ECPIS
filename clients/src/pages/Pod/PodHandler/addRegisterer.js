@@ -4,9 +4,9 @@ import { FaBackward} from 'react-icons/fa'
 const RegistererPage = () => {
   return (
     <div>
-       <Link to="/viewRegisterer" >
+       <Link to="/viewregistrant" >
       <span >
-        <FaBackward className='icon' size="30"/>
+        <FaBackward className='icon' size="30" style={{marginTop: "60px"}}/>
         </span>
       </Link>
 

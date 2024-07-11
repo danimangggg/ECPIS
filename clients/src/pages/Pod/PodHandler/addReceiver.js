@@ -5,9 +5,9 @@ import { FaBackward} from 'react-icons/fa'
 const ReceiverPage = () => {
   return (
     <div>
-       <Link to="/viewRegisterer" >
+       <Link to="/viewreceiver" >
       <span >
-        <FaBackward className='icon' size="30"/>
+        <FaBackward className='icon' size="30" style={{marginTop: "60px"}}/>
         </span>
       </Link>
 

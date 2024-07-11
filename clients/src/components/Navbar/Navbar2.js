@@ -70,6 +70,12 @@ function Navbar() {
               <li className="dropdown__item">
                 <Link to="/add-registrant">Add Registrant</Link>
               </li>
+              <li className="dropdown__item">
+                <Link to="/viewreceiver">View Receiver</Link>
+              </li>
+              <li className="dropdown__item">
+                <Link to="/viewregistrant">View Registrant</Link>
+              </li>
             </ul>
           )}
         </li>
