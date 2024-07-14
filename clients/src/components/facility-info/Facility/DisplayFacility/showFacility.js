@@ -12,8 +12,9 @@ const [info , setData] = useState([])
             name: "facility_name",
             label: "organization Name",
             options: {
-             filter: true,
-             sort: false,
+             filter: false,
+             sort: true,
+             
             }
            },
            {

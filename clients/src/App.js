@@ -22,17 +22,20 @@ import AddPodReceiver from './pages/Pod/PodHandler/addReceiver';
 import addPodRegisterer from './pages/Pod/PodHandler/addRegisterer';
 import ViewPodReceiver from './pages/Pod/PodHandler/viewReceiver';
 import ViewPodRegisterer from './pages/Pod/PodHandler/viewRegisterer';
+import SignIn from './pages/UserAccountPages/SignInPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
+     
   return (
    <>
      <Router>
-     <Navbar2/>
+
+      <Navbar2/>
 
       <Routes>
-
         <Route path = '/' Component={viewContract} />
+        <Route path = '/signIn' Component={SignIn} />
         <Route path = '/add-facility' exact Component={AddFacility}/>
         <Route path = '/addContract' Component={addContract} />
         <Route path = '/viewContract' Component={viewContract} />
@@ -55,6 +58,7 @@ const App = () => {
         <Route path = '/add-registrant' Component={addPodRegisterer} />
         <Route path = '/viewreceiver' Component={ViewPodReceiver} />
         <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
+       
         
       </Routes>
      </Router>
@@ -72,6 +76,8 @@ const App = () => {
     </footer>
    </>
   );
+      
 };
+
 
 export default App;

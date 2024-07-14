@@ -28,6 +28,8 @@ const ViewPodReceiver = require('../controllers/PodController/PodHandler/showRec
 const AddPodRegisterer = require('../controllers/PodController/PodHandler/addRegisterer')
 const ViewPodRegisterer = require('../controllers/PodController/PodHandler/showRegisterer')
 
+const SignIn = require('../controllers/UserAccountController/signIn')
+
 const upload = require("../middleware/upload");
 
 
@@ -60,6 +62,8 @@ let routes =  (app) => {
   router.get('/api/receivedBy', ViewPodReceiver.retriveReceiver);
   router.post("/api/addRegisteredBy", upload.none(), AddPodRegisterer.addRegisterer);
   router.get('/api/registeredBy', ViewPodRegisterer.retriveRegisterer);
+
+  router.post('/api/signIn', SignIn.sign);
 
   return app.use("/", router);
 };

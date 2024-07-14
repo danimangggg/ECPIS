@@ -27,7 +27,7 @@ function Navbar() {
   return (
     <nav className="nav">
       <img src='Epss-logo.png' width={100} alt="Logo" />
-      <h2 className="nav__brand">EPSS-1 CMIS</h2>
+      <h2 className="nav__brand">EPSS-1 CPMT</h2>
       <ul className={active}>
         {SidebarData.map((item, index) => (
           <li key={index} className={item.cName}>
@@ -48,13 +48,11 @@ function Navbar() {
               <li className="dropdown__item">
                 <Link to="/addContract">Add Contract</Link>
               </li>
-              
             </ul>
           )}
         </li>
 
         <li className="nav__item dropdown">
-          
           <span onClick={toggleDropdown}>POD</span>
           {dropdown && (
             <ul className="dropdown__menu">
@@ -81,7 +79,7 @@ function Navbar() {
         </li>
 
         <li className="nav__item dropdown">   
-          <span onClick={toggleDropdown}>Organization Profile</span>
+          <span onClick={toggleDropdown}>Organization</span>
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
@@ -105,7 +103,7 @@ function Navbar() {
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
-                <Link>Change password</Link>
+                <Link to = '/signIn'>Change password</Link>
               </li>
               <li className="dropdown__item">
                 <Link to = '/loading'>Log out</Link>

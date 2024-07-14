@@ -7,6 +7,7 @@ function Dashbord(){
 return (
     <div className="dashboard">
         <br className="dash"/>
+       
        <Dashboard/>
     </div>
 )   

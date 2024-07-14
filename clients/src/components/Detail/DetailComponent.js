@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import axios from 'axios'
 import { FaEdit,  FaTrash, FaBackward } from 'react-icons/fa'
+import Swal from 'sweetalert2'
+import 'bootstrap/dist/css/bootstrap.css';
+import './DetailComponent.css'
 
 const PdfViewer = ({ pdf }) => {
     const navigate = useNavigate();
@@ -13,12 +16,49 @@ const PdfViewer = ({ pdf }) => {
     const id = (fileName.state.identity);
     const docName = (nameStri.replace(/['"]+/g, ''));
 
+    const confirmDeleteAlert = ()=>{
+      const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-success",
+          cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: true
+      });
+      swalWithBootstrapButtons.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+        reverseButtons: true,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          swalWithBootstrapButtons.fire({
+            title: "Deleted!",
+            text: "contract file has been deleted.",
+            icon: "success",
+          });
+          deleteContractFunction();
+        } else if (
+          /* Read more about handling dismissals below */
+          result.dismiss === Swal.DismissReason.cancel
+        ) {
+          swalWithBootstrapButtons.fire({
+            title: "Cancelled",
+            text: "contract file is safe :)",
+            icon: "error"
+          });
+        }
+      });
+    }
+
     const deleteContractFunction = ()=>{
       try{
       const res = axios.delete(`${api_url}/api/deleteContract/${id}`);
       setResponse(res.data);
       navigate({pathname: '/viewContract'});
-      navigate(0);
+      window.location.reload()
       }catch (error){
         console.log(error)
       }
@@ -37,7 +77,7 @@ const PdfViewer = ({ pdf }) => {
         </span>
       </Link>
       <span >
-        <FaTrash onClick={deleteContractFunction} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
+        <FaTrash onClick={confirmDeleteAlert} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
         </span>
       <span >
         <FaEdit onClick={editContract} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
