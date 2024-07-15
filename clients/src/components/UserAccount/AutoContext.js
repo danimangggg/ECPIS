@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get(`${api_url}/api/check-auth`, {
+        const response = await axios.get(`${api_url}/api/`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
         });
         setIsAuthenticated(response.data.authenticated);

@@ -31,6 +31,7 @@ const App = () => {
   return (
    <>
      <Router>
+     <AuthProvider>
      <Navbar2/>
 
       <Routes>
@@ -59,6 +60,7 @@ const App = () => {
         <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
         
       </Routes>
+      </AuthProvider>
      </Router>
      <br/><br/><br/><br/>
      <footer className="footer" style={{
