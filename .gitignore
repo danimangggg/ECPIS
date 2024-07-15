@@ -2,4 +2,5 @@
 /server/node_modules
 /clients/node_modules
 /server/resources
-**/.env
+/server/*.env
+/clients/*.env
