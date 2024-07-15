@@ -1,7 +1,6 @@
 
 const db = require("../models");
 const Creadit = db.creadit;
-const path = require('path')
 
 const uploadFiles = (req, res) => {
     if (req.file == undefined) {
@@ -21,7 +20,6 @@ const uploadFiles = (req, res) => {
       if(result){
         res.status(200).send({message:"contract created"})
       }
-      
         }
 
 module.exports = {
