@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar2.css';
 import { SidebarData } from './SidebarData';
 import {  FaUser } from 'react-icons/fa'
 import { useAuth } from '../UserAccount/AutoContext';
+
 function Navbar() {
-  //const { isAuthenticated, logout } = useAuth();
+
+  const { isAuthenticated, logout } = useAuth();
   const [active, setActive] = useState("nav__menu");
   const [icon, setIcon] = useState("nav__toggler");
-  const [dropdown, setDropdown] = useState(false); // State to handle dropdown visibility
+  const [dropdown, setDropdown] = useState(false);
   const navigate = useNavigate();
 
   const navToggle = () => {
@@ -23,22 +25,26 @@ function Navbar() {
   };
 
   const toggleDropdown = () => {
-    setDropdown(!dropdown); // Toggle dropdown visibility
+    setDropdown(!dropdown); 
   };
 
   return (
-   // isAuthenticated ? (
+    
     <nav className="nav">
       <img src='Epss-logo.png' width={100} alt="Logo" />
       <h2 className="nav__brand">EPSS-1 CMIS</h2>
       <ul className={active}>
-        {SidebarData.map((item, index) => (
+        {
+        SidebarData.map((item, index) => (
           <li key={index} className={item.cName}>
             <Link to={item.path}>
               <span>{item.title}</span>
             </Link>
           </li>
-        ))}
+          
+        ))
+        }
+
         <li className="nav__item dropdown">
           
           <span onClick={toggleDropdown}>Contract</span>
@@ -109,9 +115,17 @@ function Navbar() {
               <li className="dropdown__item">
                 <Link>Change password</Link>
               </li>
+              {
+                isAuthenticated ? (
               <li className="dropdown__item">
                 <Link to = '/loading'>Log out</Link>
-              </li>   
+              </li> 
+                 ):(
+                  <li className="dropdown__item">
+                  <Link to = '/loading'>Log In</Link>
+                </li> 
+                 )
+                }  
             </ul>
           )}
         </li>
@@ -122,11 +136,9 @@ function Navbar() {
         <div className="line3"></div>
       </div>
     </nav>
-    )/*: (
-     navigate('/signIn')
-    )
+   
   );
-  */
+  
 }
 
 export default Navbar;

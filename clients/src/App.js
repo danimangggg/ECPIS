@@ -30,12 +30,14 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
   return (
    <>
+
+<AuthProvider>
      <Router>
-     <AuthProvider>
      <Navbar2/>
 
       <Routes>
-        <Route path = '/' Component={viewContract} />
+        <Route path = '/' Component={SignIn} />
+        <Route path = '/login' Component={SignIn} />
         <Route path = '/add-facility' exact Component={AddFacility}/>
         <Route path = '/addContract' Component={addContract} />
         <Route path = '/viewContract' Component={viewContract} />
@@ -60,8 +62,8 @@ const App = () => {
         <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
         
       </Routes>
-      </AuthProvider>
      </Router>
+      </AuthProvider>
      <br/><br/><br/><br/>
      <footer className="footer" style={{
           "background-color": "#f8f9fa",

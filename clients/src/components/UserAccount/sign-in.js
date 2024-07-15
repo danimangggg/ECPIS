@@ -49,7 +49,7 @@ export default function SignIn() {
     console.log(user_name)
     console.log(password)
     try {
-        const response = await axios.post(`${api_url}/api/signIn`, { user_name, password });
+        const response = await axios.post(`${api_url}/api/login`, { user_name, password });
         const { token } = response.data;
 
         // Save the token in localStorage (or cookie)
