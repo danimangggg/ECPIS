@@ -7,7 +7,7 @@ import { useAuth } from '../UserAccount/AutoContext';
 
 function Navbar() {
 
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth;
   const [active, setActive] = useState("nav__menu");
   const [icon, setIcon] = useState("nav__toggler");
   const [dropdown, setDropdown] = useState(false);

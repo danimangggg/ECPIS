@@ -57,6 +57,7 @@ export default function SignIn() {
 
         // Redirect to a protected route
         navigate('/viewContract');     
+       // navigate();
         
     } catch (err) {
         setError('Invalid email or password.');
