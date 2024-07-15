@@ -7,7 +7,7 @@ const addRegisterer = (req, res) => {
             registerer: req.body.registerer,
           });
           if(result){
-            res.status(200).send({message:'Region created'})
+            res.status(200).send({message:'Registrant created'})
           }
           
         }
