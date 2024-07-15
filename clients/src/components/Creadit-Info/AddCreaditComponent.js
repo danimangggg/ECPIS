@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './AddCreaditComponent.css';
 import axios from 'axios'
 
+import 'bootstrap/dist/css/bootstrap.css';
 const AddCreadit = () => {
   const api_url = process.env.REACT_APP_API_URL;
   const [file, setFile] = useState()
