@@ -22,12 +22,9 @@ import AddPodReceiver from './pages/Pod/PodHandler/addReceiver';
 import addPodRegisterer from './pages/Pod/PodHandler/addRegisterer';
 import ViewPodReceiver from './pages/Pod/PodHandler/viewReceiver';
 import ViewPodRegisterer from './pages/Pod/PodHandler/viewRegisterer';
-<<<<<<< HEAD
-=======
-import SignIn from './pages/UserAccountPages/SignInPage';
+import SignIn from './pages/UserAccountPage/SignInPage';
 import ProtectedComponent from './components/UserAccount/ProtectedComponents';
 import { AuthProvider } from './components/UserAccount/AutoContext';
->>>>>>> b637c40 (changes)
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -37,11 +34,6 @@ const App = () => {
      <Navbar2/>
 
       <Routes>
-<<<<<<< HEAD
-
-=======
-        <Route path='/Protected' Component={ProtectedComponent}/>
->>>>>>> b637c40 (changes)
         <Route path = '/' Component={viewContract} />
         <Route path = '/add-facility' exact Component={AddFacility}/>
         <Route path = '/addContract' Component={addContract} />
