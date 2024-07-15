@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar2.css';
 import { SidebarData } from './SidebarData';
 import {  FaUser } from 'react-icons/fa'
-
+import { useAuth } from '../UserAccount/AutoContext';
 function Navbar() {
+  //const { isAuthenticated, logout } = useAuth();
   const [active, setActive] = useState("nav__menu");
   const [icon, setIcon] = useState("nav__toggler");
   const [dropdown, setDropdown] = useState(false); // State to handle dropdown visibility
+  const navigate = useNavigate();
 
   const navToggle = () => {
     if (active === "nav__menu") {
@@ -25,6 +27,7 @@ function Navbar() {
   };
 
   return (
+   // isAuthenticated ? (
     <nav className="nav">
       <img src='Epss-logo.png' width={100} alt="Logo" />
       <h2 className="nav__brand">EPSS-1 CMIS</h2>
@@ -36,7 +39,6 @@ function Navbar() {
             </Link>
           </li>
         ))}
-        {/* Dropdown menu item */}
         <li className="nav__item dropdown">
           
           <span onClick={toggleDropdown}>Contract</span>
@@ -120,7 +122,11 @@ function Navbar() {
         <div className="line3"></div>
       </div>
     </nav>
+    )/*: (
+     navigate('/signIn')
+    )
   );
+  */
 }
 
 export default Navbar;

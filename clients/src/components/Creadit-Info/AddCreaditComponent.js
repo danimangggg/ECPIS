@@ -125,8 +125,7 @@ const AddCreadit = () => {
      <label>
        Region
        <br/><br/>
-       <select value={region} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
-        
+       <select value={region} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'> 
        <option>Select Region</option>
        {
         infoRegion.map((data)=>{

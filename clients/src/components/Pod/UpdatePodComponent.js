@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './AddCreaditComponent.css'
+import './updatePodComponent.css'
 import { useLocation, useNavigate } from "react-router-dom";
 
 const UpdateComponent = () => {

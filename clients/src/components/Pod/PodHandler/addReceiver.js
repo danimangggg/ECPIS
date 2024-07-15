@@ -20,11 +20,11 @@ const AddReciver = () => {
 
 
   return (
-    <div className="form-container" >
+    <div className="form-containerPod" >
       <form className="form" onSubmit={submitUploaded}>
-         <h2 className="form-title">Add Pod Receiver</h2>
+         <h2 className="form-titlePod">Add Pod Receiver</h2>
 
-        <div className="form-group">
+        <div className="form-groupPod">
           <label htmlFor="name" className="form-label">Receiver</label>
           <input
             type="text"
