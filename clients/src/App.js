@@ -70,13 +70,14 @@ const App = () => {
      <br/><br/><br/><br/>
 
      <footer className="footer" style={{
-          "background-color": "#f8f9fa",
-          "padding": "2px",
+          "background-color": "red",
           "text-align": "center",
           "position": "fixed",
           "left": "0",
           "bottom": "0",
           "width": "100%",
+          "color": "white",
+          "fontWeight" : "bold"
         }}>
       <p>© 2024 EPSS AA1 Branch. All rights reserved.</p>
     </footer>

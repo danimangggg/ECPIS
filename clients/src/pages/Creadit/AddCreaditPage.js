@@ -8,7 +8,7 @@ const AddFacilityPage = () => {
     <div>
     <Link to="/viewContract"  >
       <span >
-        <FaBackward className='icon' size="30" style={{ marginTop: '60px' }}/>
+        <FaBackward className='icon' size="30" style={{ marginTop: '10px' }}/>
         </span>
       </Link>
      <br/>
