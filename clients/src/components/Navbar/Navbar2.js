@@ -51,10 +51,10 @@ function Navbar() {
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
-                <Link to="/viewContract">View Contract</Link>
+                <Link to="/viewContract">View</Link>
               </li>
               <li className="dropdown__item">
-                <Link to="/addContract">Add Contract</Link>
+                <Link to="/addContract">Add</Link>
               </li>
               
             </ul>
@@ -67,29 +67,20 @@ function Navbar() {
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
-                <Link to="/viewPod">View POD</Link>
+                <Link to="/viewPod">POD</Link>
               </li>
               <li className="dropdown__item">
-                <Link to="/add-Pod">Add POD</Link>
+                <Link to="/viewreceiver">Receiver</Link>
               </li>
               <li className="dropdown__item">
-                <Link to="/add-receiver">add Receiver</Link>
-              </li>
-              <li className="dropdown__item">
-                <Link to="/add-registrant">Add Registrant</Link>
-              </li>
-              <li className="dropdown__item">
-                <Link to="/viewreceiver">View Receiver</Link>
-              </li>
-              <li className="dropdown__item">
-                <Link to="/viewregistrant">View Registrant</Link>
+                <Link to="/viewregistrant">Registrant</Link>
               </li>
             </ul>
           )}
         </li>
 
         <li className="nav__item dropdown">   
-          <span onClick={toggleDropdown}>Organization Profile</span>
+          <span onClick={toggleDropdown}>Org Profile</span>
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">

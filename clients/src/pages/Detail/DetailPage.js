@@ -3,7 +3,6 @@ import DetailComponent from '../../components/Detail/DetailComponent';
 
 const DetailPage = () => (
   <div >
-    <br/> <br/> 
     <DetailComponent/>
   </div>
 );

@@ -5,7 +5,8 @@ const Dashboard = () => {
   
     return(
         <>
-        <Grid margin={10} container my={4} rowSpacing={2} columnSpacing={1}>
+       { 
+       /*<Grid margin={10} container my={4} rowSpacing={2} columnSpacing={1}>
             <Grid item xs= '9'>
            <Box color={'white'} borderRadius={5} boxShadow={10} bgcolor='#333' p={2}>
             <Items/>
@@ -26,7 +27,10 @@ const Dashboard = () => {
            <Items/>
            </Box>
             </Grid>
-            </Grid>
+            </Grid>*/
+            }
+
+        <h2 className='container'>Dashboard Under Constraction</h2>
         </>
     )
 
