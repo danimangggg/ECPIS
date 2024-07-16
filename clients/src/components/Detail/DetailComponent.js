@@ -38,6 +38,7 @@ const PdfViewer = ({ pdf }) => {
             text: "Your file has been deleted.",
             icon: "success"
           });
+          deleteContractFunction()
         } else if (
           /* Read more about handling dismissals below */
           result.dismiss === Swal.DismissReason.cancel
