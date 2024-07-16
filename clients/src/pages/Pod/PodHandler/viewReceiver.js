@@ -3,10 +3,13 @@ import ReceiveComponent from '../../../components/Pod/PodHandler/viewReceiver'
 
 import {Link } from "react-router-dom";
 import {  FaPlusSquare } from 'react-icons/fa'
+import Navbar2 from '../../../components/Navbar/Navbar2'
 
 
 const ReceiverPage = () => {
   return (
+    <>
+    <Navbar2/>
     <div className='container' >
       
       <Link to="/add-receiver">
@@ -18,6 +21,7 @@ const ReceiverPage = () => {
       <ReceiveComponent/>
       </div>
     </div>
+    </>
   )
 }
 
