@@ -3,10 +3,13 @@ import RegionComponent from '../../../components/facility-info/Region/RegionComp
 import './viewRegionPage.css'
 import {Link } from "react-router-dom";
 import {  FaPlusSquare } from 'react-icons/fa'
+import Navbar2 from '../../../components/Navbar/Navbar2'
 
 
 const FacilityInfoPage = () => {
   return (
+    <>
+    <Navbar2/>
     <div className='container' >
       
       <Link to="/add-region">
@@ -18,6 +21,7 @@ const FacilityInfoPage = () => {
       <RegionComponent/>
       </div>
     </div>
+    </>
   )
 }
 

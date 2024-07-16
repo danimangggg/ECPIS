@@ -2,10 +2,13 @@ import FacilityComponent from '../../../components/facility-info/Facility/Displa
 import './viewFacilityPage.css'
 import {Link } from "react-router-dom";
 import {  FaPlusSquare } from 'react-icons/fa'
+import Navbar2 from '../../../components/Navbar/Navbar2'
 
 
 const FacilityInfoPage = () => {
   return (
+    <>
+    <Navbar2/>
     <div className='container' >
       
       <Link to="/add-facility" >
@@ -17,6 +20,7 @@ const FacilityInfoPage = () => {
       <FacilityComponent/>
       <br/><br/>
     </div>
+    </>
   )
 }
 

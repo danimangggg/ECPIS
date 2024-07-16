@@ -23,7 +23,7 @@ import addPodRegisterer from './pages/Pod/PodHandler/addRegisterer';
 import ViewPodReceiver from './pages/Pod/PodHandler/viewReceiver';
 import ViewPodRegisterer from './pages/Pod/PodHandler/viewRegisterer';
 import SignIn from './pages/UserAccountPage/SignInPage';
-import ProtectedComponent from './components/UserAccount/ProtectedComponents';
+import ProtectedRoutes from './components/ProtectedRoutes/ProtectedRoutes';
 import { AuthProvider } from './components/UserAccount/AutoContext';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
@@ -33,38 +33,42 @@ const App = () => {
 
 <AuthProvider>
      <Router>
-     <Navbar2/>
 
       <Routes>
         <Route path = '/' Component={SignIn} />
         <Route path = '/login' Component={SignIn} />
-        <Route path = '/add-facility' exact Component={AddFacility}/>
-        <Route path = '/addContract' Component={addContract} />
-        <Route path = '/viewContract' Component={viewContract} />
-        <Route path = '/dashbord' Component={Dashbord} />
-        <Route path = '/facility-profile' Component={FacilitProfile} />
-        <Route path = '/add-region' Component={addRegionPage} />
-        <Route path = '/add-zone' Component={ZonePage} />
-        <Route path = '/add-woreda' Component={WoredaPage} />
-        <Route path = '/viewWoreda' Component={ViewWoredaPage} />
-        <Route path = '/viewZone' Component={ViewZonePage} />
-        <Route path = '/viewRegion' Component={ViewRegionPage} />
-        <Route path = '/detailPage' Component={DetailPage} />
-        <Route path = '/updateCreadit' Component={updateCredit} />
-        <Route path = '/loading' Component={loading} />
-        <Route path = '/viewPod' Component={ViewPod} />
-        <Route path = '/add-pod' Component={addPod} />
-        <Route path = '/detailPodPage' Component={DetailPodPage} />
-        <Route path = '/updatePod' Component={updatePod} />
-        <Route path = '/add-receiver' Component={AddPodReceiver} />
-        <Route path = '/add-registrant' Component={addPodRegisterer} />
-        <Route path = '/viewreceiver' Component={ViewPodReceiver} />
-        <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
+
+        <Route element = {<ProtectedRoutes/>}>
+            <Route path = '/add-facility' exact Component={AddFacility}/>
+            <Route path = '/addContract' Component={addContract} />
+            <Route path = '/viewContract' Component={viewContract} />
+            <Route path = '/dashbord' Component={Dashbord} />
+            <Route path = '/facility-profile' Component={FacilitProfile} />
+            <Route path = '/add-region' Component={addRegionPage} />
+            <Route path = '/add-zone' Component={ZonePage} />
+            <Route path = '/add-woreda' Component={WoredaPage} />
+            <Route path = '/viewWoreda' Component={ViewWoredaPage} />
+            <Route path = '/viewZone' Component={ViewZonePage} />
+            <Route path = '/viewRegion' Component={ViewRegionPage} />
+            <Route path = '/detailPage' Component={DetailPage} />
+            <Route path = '/updateCreadit' Component={updateCredit} />
+            <Route path = '/loading' Component={loading} />
+            <Route path = '/viewPod' Component={ViewPod} />
+            <Route path = '/add-pod' Component={addPod} />
+            <Route path = '/detailPodPage' Component={DetailPodPage} />
+            <Route path = '/updatePod' Component={updatePod} />
+            <Route path = '/add-receiver' Component={AddPodReceiver} />
+            <Route path = '/add-registrant' Component={addPodRegisterer} />
+            <Route path = '/viewreceiver' Component={ViewPodReceiver} />
+            <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
+        </Route>
         
       </Routes>
      </Router>
       </AuthProvider>
+
      <br/><br/><br/><br/>
+
      <footer className="footer" style={{
           "background-color": "#f8f9fa",
           "padding": "2px",
@@ -76,6 +80,7 @@ const App = () => {
         }}>
       <p>© 2024 EPSS AA1 Branch. All rights reserved.</p>
     </footer>
+
    </>
   );
 };

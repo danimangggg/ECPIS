@@ -1,10 +1,12 @@
 import PodComponent from '../../components/Pod/viewPodComponent'
-
+import Navbar2 from '../../components/Navbar/Navbar2'
 import {Link } from "react-router-dom";
 import {  FaPlusSquare } from 'react-icons/fa'
 
 const ViewPodPage = () => {
   return (
+    <>
+    <Navbar2/>
     <div className='container'>
      <Link to="/add-Pod" >
       <span>
@@ -15,6 +17,7 @@ const ViewPodPage = () => {
      <br/>
       <PodComponent/>
     </div>
+    </>
   )
 }
 
