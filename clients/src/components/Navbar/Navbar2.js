@@ -113,16 +113,16 @@ function Navbar() {
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
-                <Link>Change password</Link>
+                <Link to = '/loading'>Change password</Link>
               </li>
               {
                 isAuthenticated ? (
               <li className="dropdown__item">
-                <Link to = '/loading'>Log out</Link>
+                <Link to = ''>Log out</Link>
               </li> 
                  ):(
                   <li className="dropdown__item">
-                  <Link to = '/loading'>Log In</Link>
+                  <Link to = '/login'>Log Out</Link>
                 </li> 
                  )
                 }  
