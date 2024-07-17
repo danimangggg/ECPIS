@@ -77,9 +77,9 @@ const App = () => {
           "bottom": "0",
           "width": "100%",
           "color": "white",
-          "fontWeight" : "bold"
+          "fontWeight" : "lighter",
         }}>
-      <p>© 2024 EPSS AA1 Branch. All rights reserved.</p>
+      <h6>© 2024 EPSS AA1.</h6>
     </footer>
 
    </>

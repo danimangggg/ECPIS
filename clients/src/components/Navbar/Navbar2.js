@@ -27,6 +27,11 @@ function Navbar() {
   const toggleDropdown = () => {
     setDropdown(!dropdown); 
   };
+  
+  const signOut = () => {
+    localStorage.clear();
+    window.location.href = '/';
+  }
 
   return (
     
@@ -107,7 +112,7 @@ function Navbar() {
                 <Link >Change password</Link>
               </li>
               <li className="dropdown__item">
-                <Link to = '/'>Log out</Link>
+                <Link onClick={signOut} to = '/'>Log out</Link>
               </li> 
             </ul>
           )}

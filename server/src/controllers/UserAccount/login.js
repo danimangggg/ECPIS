@@ -2,7 +2,7 @@
 const bcrypt = require('bcryptjs');
 const db = require("../../models");
 const jwt = require('jsonwebtoken');
-const User = db.login;
+const User = db.user;
 
 const login =  async (req, res) => {
 

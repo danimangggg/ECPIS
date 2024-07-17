@@ -30,6 +30,7 @@ const ViewPodRegisterer = require('../controllers/PodController/PodHandler/showR
 
 
 const Login = require('../controllers/UserAccount/login')
+const ChangePassword = require('../controllers/UserAccount/changePassword')
 
 const upload = require("../middleware/upload");
 
@@ -66,6 +67,7 @@ let routes =  (app) => {
 
 
   router.post("/api/login", Login.login);
+  router.post("/api/changePassword", ChangePassword.changePassword);
 
   return app.use("/", router);
 };
