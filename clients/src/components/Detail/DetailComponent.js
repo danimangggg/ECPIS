@@ -64,8 +64,7 @@ const PdfViewer = ({ pdf }) => {
     }
 
     const editContract = () =>{
-      navigate({pathname: '/updateCreadit'}, {state:{idNo : id}});
-           
+      navigate({pathname: '/updateCreadit'}, {state:{idNo : id}});      
     }
 
   return (

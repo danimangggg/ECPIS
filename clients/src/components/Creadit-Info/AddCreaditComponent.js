@@ -225,7 +225,7 @@ const AddCreadit = () => {
         </div>
         <label>
           Attach Document :
-        <input type = 'file' onChange={handleFile} required/>
+        <input type = 'file' accept="application/pdf" onChange={handleFile} required/>
         </label>                               
 
         <br/> <br/>
