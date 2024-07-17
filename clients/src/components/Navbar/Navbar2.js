@@ -109,7 +109,7 @@ function Navbar() {
           {dropdown && (
             <ul className="dropdown__menu">
               <li className="dropdown__item">
-                <Link >Change password</Link>
+                <Link to = "/change-password">Change password</Link>
               </li>
               <li className="dropdown__item">
                 <Link onClick={signOut} to = '/'>Log out</Link>

@@ -16,7 +16,6 @@ const changePassword = async (req, res) => {
     const { user_name, currentPassword, newPassword } = req.body;
 
     // Find user by username (simulate database query)
-    //const user = users.find(u => u.username === username);
     const user = await User.findOne({ where: { user_name } });
 
     if (!user) {
@@ -34,8 +33,7 @@ const changePassword = async (req, res) => {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
             // Update user's password (simulate database update)
-            user.password = hashedPassword;
-            console.log(hashedPassword)
+            await user.update({password: hashedPassword})
 
             res.status(200).json({ message: 'Password changed successfully' });
         } catch (error) {

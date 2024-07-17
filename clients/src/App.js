@@ -23,15 +23,13 @@ import addPodRegisterer from './pages/Pod/PodHandler/addRegisterer';
 import ViewPodReceiver from './pages/Pod/PodHandler/viewReceiver';
 import ViewPodRegisterer from './pages/Pod/PodHandler/viewRegisterer';
 import SignIn from './pages/UserAccountPage/SignInPage';
+import ChangePassword from './pages/UserAccountPage/ChangePasswordPage';
 import ProtectedRoutes from './components/ProtectedRoutes/ProtectedRoutes';
-import { AuthProvider } from './components/UserAccount/AutoContext';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
   return (
    <>
-
-<AuthProvider>
      <Router>
 
       <Routes>
@@ -39,6 +37,7 @@ const App = () => {
         <Route path = '/login' Component={SignIn} />
 
         <Route element = {<ProtectedRoutes/>}>
+            <Route path = '/change-password' exact Component={ChangePassword}/>
             <Route path = '/add-facility' exact Component={AddFacility}/>
             <Route path = '/addContract' Component={addContract} />
             <Route path = '/viewContract' Component={viewContract} />
@@ -65,7 +64,6 @@ const App = () => {
         
       </Routes>
      </Router>
-      </AuthProvider>
 
      <br/><br/><br/><br/>
 
