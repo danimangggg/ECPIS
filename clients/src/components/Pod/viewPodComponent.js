@@ -26,35 +26,39 @@ const api_url = process.env.REACT_APP_API_URL;
          sort: true,
         }
        },
+
+       {
+        name: "facilityName",
+        label: "Facility",
+        options: {
+         filter: false,
+         sort: false,
+        }
+       },
+
+       {
+        name: "woreda",
+        label: "Woreda",
+        options: {
+         filter: true,
+         sort: false,
+        }
+       },
+
+       {
+        name: "zone_Subcity",
+        label: "Zone/subcity",
+        options: {
+         filter: true,
+         sort: false,
+        }
+       },
+       
         {
          name: "region",
          label: "Region",
          options: {
           filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "zone_Subcity",
-         label: "Zone/subcity",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "woreda",
-         label: "Woreda",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "facilityName",
-         label: "Facility",
-         options: {
-          filter: false,
           sort: false,
          }
         },
