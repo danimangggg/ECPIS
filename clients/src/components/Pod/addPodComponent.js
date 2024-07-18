@@ -17,7 +17,6 @@ const AddPod = () => {
   const [orderNo, setorderNo]= useState('')
   const [podNo, setpodNo]= useState('')
   const [manualDeliveryNo, setmanualDeliveryNo]= useState('')
-  const [registeredBy, setregisteredBy]= useState('')
   const [receivedBy, setreceivedBy]= useState('')
   const [infoRegion , setData] = useState([])
   const [infoZone , setZone] = useState([])

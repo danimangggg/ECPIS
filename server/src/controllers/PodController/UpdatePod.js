@@ -17,7 +17,7 @@ const updatePod = async (req, res) => {
         pod_no: req.body.podNo,
         registered_by: req.body.registeredBy,
         received_by: req.body.receivedBy,
-        //date: req.body.date,
+        date: req.body.date,
         //image: req.file.filename
       
       },

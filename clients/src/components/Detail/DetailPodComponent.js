@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import axios from 'axios'
 import { FaEdit,  FaTrash, FaBackward } from 'react-icons/fa'
+import Swal from 'sweetalert2'
+import 'bootstrap/dist/css/bootstrap.css';
 
 const PdfViewer = ({ pdf }) => {
     const navigate = useNavigate();
@@ -12,6 +14,43 @@ const PdfViewer = ({ pdf }) => {
     const nameStri = (fileName.state.docname);
     const id = (fileName.state.identity);
     const docName = (nameStri.replace(/['"]+/g, ''));
+
+    const confirmDeleteAlert = () => {
+      const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-success",
+          cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: true
+      });
+      swalWithBootstrapButtons.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          swalWithBootstrapButtons.fire({
+            title: "Deleted!",
+            text: "Your file has been deleted.",
+            icon: "success"
+          });
+          deletePodFunction()
+        } else if (
+          /* Read more about handling dismissals below */
+          result.dismiss === Swal.DismissReason.cancel
+        ) {
+          swalWithBootstrapButtons.fire({
+            title: "Cancelled",
+            text: "Your imaginary file is safe :)",
+            icon: "error"
+          });
+        }
+      });
+    }
 
     const deletePodFunction = ()=>{
       try{
@@ -37,7 +76,7 @@ const PdfViewer = ({ pdf }) => {
         </span>
       </Link>
       <span >
-        <FaTrash onClick={deletePodFunction} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
+        <FaTrash onClick={confirmDeleteAlert} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
         </span>
       <span >
         <FaEdit onClick={editPod} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
