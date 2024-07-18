@@ -12,7 +12,7 @@ const [info , setData] = useState([])
             name: "facility_name",
             label: "Org Name",
             options: {
-             filter: true,
+             filter: false,
              sort: true,
             }
            },
@@ -20,7 +20,7 @@ const [info , setData] = useState([])
             name: "woreda_name",
             label: "Woreda",
             options: {
-             filter: true,
+             filter: false,
              sort: false,
             }
            },

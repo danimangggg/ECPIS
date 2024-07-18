@@ -77,9 +77,6 @@ function Navbar() {
               <li className="dropdown__item">
                 <Link to="/viewreceiver">Receiver</Link>
               </li>
-              <li className="dropdown__item">
-                <Link to="/viewregistrant">Registrant</Link>
-              </li>
             </ul>
           )}
         </li>

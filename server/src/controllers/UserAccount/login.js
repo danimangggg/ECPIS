@@ -6,7 +6,6 @@ const User = db.user;
 
 const login =  async (req, res) => {
 
-    
         const { user_name, password } = req.body;
         const user = await User.findOne({ where: { user_name } });
         if (!user) {
@@ -19,7 +18,7 @@ const login =  async (req, res) => {
           return res.status(400).json({ error: 'Invalid username or password' });
         }
         const token = jwt.sign({ id: user.id }, 'your_jwt_secret', { expiresIn: '1h' });
-        res.json({ message: 'Login successful', token });
+        res.json({ message: 'Login successful', token , FullName: user.first_name+" "+ user.last_name });
      
 }
 

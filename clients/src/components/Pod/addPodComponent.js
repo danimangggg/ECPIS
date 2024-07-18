@@ -23,6 +23,7 @@ const AddPod = () => {
   const [infoZone , setZone] = useState([])
   const [infoWoreda , setInfoWoreda] = useState([])
   const [infoFacility , setInfoFacility] = useState([])
+  const [infoPodReceiver , setInfoPodReceiver] = useState([])
 
 
   const submitUploaded = async(e) =>{     
@@ -42,7 +43,7 @@ const AddPod = () => {
     formdata.append('podNo', podNo);
     formdata.append('orderNo', orderNo);
     formdata.append('manualDeliveryNo', manualDeliveryNo);
-    formdata.append('registeredBy', registeredBy);
+    formdata.append('registeredBy', localStorage.getItem('FullName'));
     formdata.append('receivedBy', receivedBy);
     await axios.post(`${api_url}/api/addPod`, formdata)
       .then((res)=> {
@@ -61,14 +62,14 @@ const AddPod = () => {
       .then((e)=>{
           return e.json()
       })
-      .then((infoRegion)=>{
-      setData(infoRegion)
+        .then((infoRegion)=>{
+        setData(infoRegion)
       })       
       }
       useEffect(()=>
-          { 
-              getRegion()
-          } ,[]) 
+        { 
+            getRegion()
+        } ,[]) 
 
       const getZone =  ()=>
       {
@@ -114,6 +115,22 @@ const AddPod = () => {
       { 
               getFacility()
       } ,[]) 
+
+      const getPodReceiver =  ()=>
+      {
+            fetch(`${api_url}/api/receivedBy`)
+            .then((e)=>{
+                return e.json()
+            })
+            .then((infoPodReceiver)=>{
+            setInfoPodReceiver(infoPodReceiver)
+            })       
+      }
+      useEffect(()=>
+      { 
+              getPodReceiver()
+      } ,[]) 
+
 
   return (
     <div className="form-container">
@@ -255,31 +272,26 @@ const AddPod = () => {
           />
         </div>
 
-        <div className="form-group">
-              <label htmlFor="name" className="form-label">Registered By</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className="form-input"
-                onChange={(e)=> setregisteredBy(e.target.value)}
-                required  />
-        </div>
+        <div className='form-group'>
+          <label htmlFor="name" className="form-label">
+            Pod Receiver
+            <br/><br/>
+            <select value={receivedBy} placeholder='select' onChange={(e)=> setreceivedBy(e.target.value)} className='form-input'>
+              
+            <option>Select Receiver</option>
+            {
+              infoPodReceiver.map((data)=>{
+                return(
+                <option value={data.receiver}>{data.receiver}</option>
+                    )})
+            }
+            </select>
 
-        <div className="form-group">
-          <label htmlFor="name" className="form-label">Received By</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="form-input"
-            onChange={(e)=> setreceivedBy(e.target.value)}
-            required
-          />
+          </label>
         </div>
 
         <label>
-          Attach Document :
+          Attach Model :
         <input type = 'file' onChange={handleFile} required/>
         </label>                               
 

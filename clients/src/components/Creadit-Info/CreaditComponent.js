@@ -24,9 +24,37 @@ const api_url = process.env.REACT_APP_API_URL;
             label: "Fiscal Year",
             options: {
              filter: true,
-             sort: true,
+             sort: false,
             }
            },
+
+           {
+            name: "facilityName",
+            label: "Facility",
+            options: {
+             filter: false,
+             sort: false,
+            }
+           },
+
+           {
+            name: "woreda",
+            label: "Woreda",
+            options: {
+             filter: true,
+             sort: false,
+            }
+           },
+
+           {
+            name: "zone_Subcity",
+            label: "Zone/Subcity",
+            options: {
+             filter: true,
+             sort: false,
+            }
+           },
+
         {
          name: "region",
          label: "Region",
@@ -35,30 +63,7 @@ const api_url = process.env.REACT_APP_API_URL;
           sort: false,
          }
         },
-        {
-         name: "zone_Subcity",
-         label: "Zone/subcity",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "woreda",
-         label: "Woreda",
-         options: {
-          filter: true,
-          sort: false,
-         }
-        },
-        {
-         name: "facilityName",
-         label: "Facility",
-         options: {
-          filter: false,
-          sort: false,
-         }
-        },
+
         {
          name: "facilityDeligate",
          label: "Deligate",
@@ -66,7 +71,8 @@ const api_url = process.env.REACT_APP_API_URL;
           filter: false,
           sort: false,
          }
-        },  
+        }, 
+
         {
             name: "creaditAmount",
             label: "Credit amount",
@@ -80,6 +86,7 @@ const api_url = process.env.REACT_APP_API_URL;
               }
             }
            },
+
            {
             name: "image",
             label: "Contract PDF",

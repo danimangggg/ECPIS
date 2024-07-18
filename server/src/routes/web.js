@@ -2,8 +2,8 @@ const express = require("express");
 const cors = require('cors');
 const app = express();
 const router = express.Router();
-const addContract = require("../controllers/upload");
-const retriveController = require("../controllers/retrive");
+
+// Organization profile controller path
 const addRegion = require('../controllers/FacilityProfile-Controller/Region/addRegion')
 const showRegions = require('../controllers/FacilityProfile-Controller/Region/showRegions')
 const addZone = require('../controllers/FacilityProfile-Controller/Zone/addZone')
@@ -12,25 +12,31 @@ const addWoreda = require('../controllers/FacilityProfile-Controller/Woreda/addW
 const showWoreda = require('../controllers/FacilityProfile-Controller/Woreda/showWoreda')
 const addFacility = require('../controllers/FacilityProfile-Controller/Facility/addFacility')
 const showFacility = require('../controllers/FacilityProfile-Controller/Facility/showFacility')
+
+// contract controller path
 const deleteContract = require('../controllers/CreaditController/DeleteCreditController')
 const findOne = require('../controllers/CreaditController/fineOne')
 const updateContract = require('../controllers/CreaditController/UpdateCredit')
+const addContract = require("../controllers/upload");
+const retriveController = require("../controllers/retrive");
 
+// Pod 
 const AddPod = require('../controllers/PodController/addPod')
 const ViewPod = require('../controllers/PodController/viewPod')
 const findOnePod = require('../controllers/PodController/fineOne')
 const updatePod = require('../controllers/PodController/UpdatePod')
 const deletePod = require('../controllers/PodController/DeletePodController')
 
-
+// Pod Handler
 const AddPodReceiver = require('../controllers/PodController/PodHandler/addReceiver')
 const ViewPodReceiver = require('../controllers/PodController/PodHandler/showReceiver')
 const AddPodRegisterer = require('../controllers/PodController/PodHandler/addRegisterer')
 const ViewPodRegisterer = require('../controllers/PodController/PodHandler/showRegisterer')
 
-
+//user Account
 const Login = require('../controllers/UserAccount/login')
 const ChangePassword = require('../controllers/UserAccount/changePassword')
+const ViewUsers = require('../controllers/UserAccount/showUsers')
 
 const upload = require("../middleware/upload");
 
@@ -38,9 +44,6 @@ const upload = require("../middleware/upload");
 app.use(cors());
 let routes =  (app) => {
 
-  router.get('/api/all',retriveController.retriveFiles)
-
-  router.post("/api/upload", upload.single('file'), addContract.uploadFiles);
   router.post("/api/addregion", upload.none(), addRegion.addRegion);
   router.get('/api/regions', showRegions.retriveRegions);
   router.post("/api/addzone", upload.none(), addZone.addZone);
@@ -49,9 +52,12 @@ let routes =  (app) => {
   router.get('/api/woredas', showWoreda.retriveWoreda);
   router.post("/api/addfacility", upload.none(), addFacility.addFacility);
   router.get('/api/facilities', showFacility.retriveFacility);
+
   router.delete('/api/deleteContract/:id', deleteContract.deleteFiles);
   router.get('/api/find/:id', findOne.findFiles);
   router.put('/api/updateContract/:id', upload.none(), updateContract.updateFiles);
+  router.get('/api/all',retriveController.retriveFiles)
+  router.post("/api/upload", upload.single('file'), addContract.uploadFiles);
 
   router.post("/api/addPod", upload.single('file'), AddPod.addPod);
   router.get('/api/viewPod',ViewPod.retrivePods)
@@ -68,6 +74,7 @@ let routes =  (app) => {
 
   router.post("/api/login", Login.login);
   router.post("/api/changePassword", ChangePassword.changePassword);
+  router.get("/api/users", ViewUsers.retriveUsers);
 
   return app.use("/", router);
 };
