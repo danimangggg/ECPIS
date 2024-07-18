@@ -204,7 +204,7 @@ const AddCreadit = () => {
         <div className="form-group">
               <label htmlFor="name" className="form-label">Creadit Amount</label>
               <input
-                type="text"
+                type="number"
                 id="name"
                 name="name"
                 className="form-input"

@@ -16,6 +16,7 @@ const ChangePassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const apiUrl = process.env.REACT_APP_API_PORT;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +24,7 @@ const ChangePassword = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3001/api/changePassword', {
+      const response = await axios.post(`${apiUrl}/api/changePassword`, {
         user_name,
         currentPassword,
         newPassword,

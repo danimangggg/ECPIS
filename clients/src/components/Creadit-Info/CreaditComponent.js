@@ -8,6 +8,7 @@ const CreaditComponent = () => {
 const [info , setData] = useState([])
 const navigate = useNavigate();
 const api_url = process.env.REACT_APP_API_URL;
+
     const columns = [
       {
         name: "id",
@@ -23,7 +24,7 @@ const api_url = process.env.REACT_APP_API_URL;
             label: "Fiscal Year",
             options: {
              filter: true,
-             sort: false,
+             sort: true,
             }
            },
         {
@@ -72,6 +73,11 @@ const api_url = process.env.REACT_APP_API_URL;
             options: {
              filter: false,
              sort: false,
+             customBodyRender: (value) => {
+              // Format number with commas
+              const formattedValue = Number(value).toLocaleString();
+              return <span>{formattedValue}</span>;
+              }
             }
            },
            {
@@ -89,15 +95,15 @@ const api_url = process.env.REACT_APP_API_URL;
         await fetch(`${api_url}/api/all`)
         .then((e)=>{
             return e.json()
-        })
+          })
         .then((info)=>{
         setData(info)
         })       
-     }
-    useEffect( ()=>
-        { 
-           getUser()
-        } ,[])    
+         }
+        useEffect( ()=>
+            { 
+              getUser()
+            } ,[])    
 
         const getMuiTheme = () => createTheme({
             components: {
@@ -111,7 +117,7 @@ const api_url = process.env.REACT_APP_API_URL;
             }
           })
           
-    const options = {
+         const options = {
          filterType: 'checkbox',
          onRowClick: (rowData, rowMeta) => {
             const fname = JSON.stringify(rowData[8], null, 2);
@@ -120,7 +126,7 @@ const api_url = process.env.REACT_APP_API_URL;
           },
           selectableRows: false,
           responsive: 'standard'
-       }
+          }
        
     return (
         <div style={{display: 'table', tableLayout:'fixed', width:'90%'}}>     

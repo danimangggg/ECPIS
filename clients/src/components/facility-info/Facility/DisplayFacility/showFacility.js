@@ -10,10 +10,10 @@ const [info , setData] = useState([])
        
         {
             name: "facility_name",
-            label: "organization Name",
+            label: "Org Name",
             options: {
              filter: true,
-             sort: false,
+             sort: true,
             }
            },
            {
@@ -47,6 +47,7 @@ const [info , setData] = useState([])
             options: {
              filter: true,
              sort: false,
+             display: false
             }
            },
        ];
