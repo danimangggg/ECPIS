@@ -68,6 +68,7 @@ const PdfViewer = ({ pdf }) => {
            
     }
 
+    if(localStorage.getItem("token") !== "guest"){
   return (
     <div style={{ width: '100%', height: '800px', backgroundColor: '#333' }}>
       <Link to="/viewPod"  >
@@ -89,7 +90,25 @@ const PdfViewer = ({ pdf }) => {
         allowFullScreen
       />
     </div>
-  );
+  )
+    }else{
+      return (
+        <div style={{ width: '100%', height: '800px', backgroundColor: '#333' }}>
+          <Link to="/viewPod"  >
+          <span >
+            <FaBackward className='icon' size="30" style={{ marginTop: '20px', marginRight:'80px', color: 'white'}}/>
+            </span>
+          </Link>
+    
+          <iframe
+            title="Contract document"
+            src={`${api_url}/${docName}`}
+            style={{ width: '100%', height: '100%', border: 'none' }}
+            allowFullScreen
+          />
+        </div>
+      )
+    }
 };
 
 export default PdfViewer;

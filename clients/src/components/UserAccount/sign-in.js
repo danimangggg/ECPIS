@@ -59,6 +59,12 @@ export default function SignIn() {
     }
 };
 
+    const guest = () =>{
+      localStorage.setItem("FullName" , 'Guest')
+      localStorage.setItem('token', 'guest')
+      navigate('/viewContract')
+    }
+
   return (
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -106,11 +112,32 @@ export default function SignIn() {
             />
             <Button
               type="submit"
+              style={{
+                borderRadius: 35,
+                backgroundColor: "blue",
+                padding: "18px 36px",
+                fontSize: "18px"
+            }}
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
               Sign In
+            </Button>
+            <Button
+              type="submit"
+              style={{
+                borderRadius: 35,
+                backgroundColor: "#21b6ae",
+                padding: "18px 36px",
+                fontSize: "15px",
+                
+            }}
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              onClick={guest}
+            >
+              Guest mode
             </Button>
             <ToastContainer />
           </Box>

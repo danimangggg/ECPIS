@@ -4,6 +4,8 @@ import {Link } from "react-router-dom";
 import {  FaPlusSquare } from 'react-icons/fa'
 
 const ViewPodPage = () => {
+
+  if(localStorage.getItem("token") !== "guest"){
   return (
     <>
     <Navbar2/>
@@ -19,6 +21,18 @@ const ViewPodPage = () => {
     </div>
     </>
   )
+  }else{
+    return (
+      <>
+      <Navbar2/>
+      <div className='container'>
+       
+       <br/><br/><br/><br/>
+        <PodComponent/>
+      </div>
+      </>
+    )
+  }
 }
 
 export default ViewPodPage

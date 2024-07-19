@@ -7,6 +7,8 @@ import Navbar2 from '../../../components/Navbar/Navbar2'
 
 
 const ReceiverPage = () => {
+  
+  if(localStorage.getItem("token") !== "guest"){
   return (
     <>
     <Navbar2/>
@@ -23,6 +25,19 @@ const ReceiverPage = () => {
     </div>
     </>
   )
+  }else{
+    return (
+      <>
+      <Navbar2/>
+      <div className='container' >
+        <br/> <br/> <br/> <br/>
+        <div className='table'>
+        <ReceiveComponent/>
+        </div>
+      </div>
+      </>
+    )
+  }
 }
 
 export default ReceiverPage

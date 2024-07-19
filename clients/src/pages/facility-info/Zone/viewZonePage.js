@@ -6,6 +6,8 @@ import Navbar2 from '../../../components/Navbar/Navbar2'
 
 
 const FacilityInfoPage = () => {
+
+  if(localStorage.getItem("token") !== "guest"){
   return (
     <>
     <Navbar2/>
@@ -20,6 +22,17 @@ const FacilityInfoPage = () => {
     </div>
     </>
   )
+  } else{
+    return (
+      <>
+      <Navbar2/>
+      <div className='container' >
+        <br/> <br/> <br/> <br/>
+        <ZoneComponent/>
+      </div>
+      </>
+    )
+  }
 }
 
 export default FacilityInfoPage
