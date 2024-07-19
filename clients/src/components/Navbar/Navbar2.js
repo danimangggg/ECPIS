@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Navbar2.css';
 import { SidebarData } from './SidebarData';
 import {  FaUser } from 'react-icons/fa'
+import {  FaSmile } from 'react-icons/fa'
 import { useAuth } from '../UserAccount/AutoContext';
 
 function Navbar() {
@@ -46,24 +47,11 @@ function Navbar() {
               <span>{item.title}</span>
             </Link>
           </li>
-          
         ))
         }
 
-        <li className="nav__item dropdown">
-          
-          <span onClick={toggleDropdown}>Contract</span>
-          {dropdown && (
-            <ul className="dropdown__menu">
-              <li className="dropdown__item">
-                <Link to="/viewContract">View</Link>
-              </li>
-              <li className="dropdown__item">
-                <Link to="/addContract">Add</Link>
-              </li>
-              
-            </ul>
-          )}
+        <li>
+          <Link to = "/viewContract" style={{color: "white", textDecoration : "none"}}> Contract </Link>
         </li>
 
         <li className="nav__item dropdown">
@@ -105,6 +93,10 @@ function Navbar() {
           <span onClick={toggleDropdown}> <FaUser size="30" color='white' className='icon' /></span>
           {dropdown && (
             <ul className="dropdown__menu">
+                  <li style={{backgroundColor: "red"}}>
+                    
+                     <h3 style={{color: "white", fontWeight:"lighter", fontSize: "15px", }}> <FaSmile size="23"/> {localStorage.getItem("FullName")} </h3>
+                  </li>
               <li className="dropdown__item">
                 <Link to = "/change-password">Change password</Link>
               </li>

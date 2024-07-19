@@ -3,7 +3,6 @@ import DetailPodComponent from '../../components/Detail/DetailPodComponent';
 
 const DetailPodPage = () => (
   <div >
-    <br/> <br/> 
     <DetailPodComponent/>
   </div>
 );
