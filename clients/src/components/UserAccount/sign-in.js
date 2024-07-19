@@ -132,7 +132,7 @@ export default function SignIn() {
                 sx={{ mt: 3, mb: 2 }}
                 style={{
                   borderRadius: 35,
-                  backgroundColor: "blue",
+                  backgroundColor: "red",
                   padding: "10px 20px",
                   fontSize: "18px"
                 }}
@@ -141,7 +141,6 @@ export default function SignIn() {
               </Button>
               <Button
                 type="button"
-                fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={guest}

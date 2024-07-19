@@ -1,267 +1,257 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './AddCreaditComponent.css'
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Typography,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Button,
+  CircularProgress,
+  Grid,
+  Box,
+} from '@mui/material';
 
 const UpdateComponent = () => {
-   const navigate = useNavigate();
-    const api_url = process.env.REACT_APP_API_URL;
-    const fileName = useLocation();
-    const id = (fileName.state.idNo);
-    const [message, setMessage] = useState('');
-    const [fiscalYear, setfiscalYear]= useState('')
-    const [region, setRegion]= useState('')
-    const [zone_Subcity, setZone_Subcity]= useState('')
-    const [woreda, setWoreda]= useState('')
-    const [facilityName, setFacilityName]= useState('')
-    const [facilityDeligate, setFacilityDeligate]= useState('')
-    const [creaditAmount, setCreaditAmount]= useState('')
-    const [infoRegion , setData] = useState([])
-    const [infoZone , setZone] = useState([])
-    const [infoWoreda , setInfoWoreda] = useState([])
-    const [infoFacility , setInfoFacility] = useState([])
-    const [credit , setCredit] = useState([])
+  const navigate = useNavigate();
+  const api_url = process.env.REACT_APP_API_URL;
+  const { state } = useLocation();
+  const id = state?.idNo || '';
 
- const submitUploaded = async () =>{      
+  const [message, setMessage] = useState('');
+  const [fiscalYear, setFiscalYear] = useState('');
+  const [region, setRegion] = useState('');
+  const [zone_Subcity, setZone_Subcity] = useState('');
+  const [woreda, setWoreda] = useState('');
+  const [facilityName, setFacilityName] = useState('');
+  const [facilityDeligate, setFacilityDeligate] = useState('');
+  const [creaditAmount, setCreaditAmount] = useState('');
+  const [infoRegion, setData] = useState([]);
+  const [infoZone, setZone] = useState([]);
+  const [infoWoreda, setInfoWoreda] = useState([]);
+  const [infoFacility, setInfoFacility] = useState([]);
+  const [credit, setCredit] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const submitUploaded = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
     const formdata = new FormData();
-    
-    if(fiscalYear != ""){
-    formdata.append('fiscalYear', fiscalYear);
-    }
-    if(region != ""){
-    formdata.append('region', region);
-    }
-    if(zone_Subcity != ""){
-    formdata.append('zone_Subcity', zone_Subcity);
-    }
-    if(woreda != ""){
-    formdata.append('woreda', woreda);
-    }
-    if(facilityName != ""){
-    formdata.append('facilityName', facilityName);
-    }
+    if (fiscalYear) formdata.append('fiscalYear', fiscalYear);
+    if (region) formdata.append('region', region);
+    if (zone_Subcity) formdata.append('zone_Subcity', zone_Subcity);
+    if (woreda) formdata.append('woreda', woreda);
+    if (facilityName) formdata.append('facilityName', facilityName);
     formdata.append('facilityDeligate', facilityDeligate);
-    
     formdata.append('creaditAmount', creaditAmount);
-   
-     await axios.put(`${api_url}/api/updateContract/${id}`, formdata) 
-      .then(
-        navigate('/viewContract'),
-        navigate(0)
-        )
-      
-      .catch(err=> console.log(err));
-    }
 
-
-  const getRegion =  ()=>{
-    fetch(`${api_url}/api/regions`)
-    .then((e)=>{
-        return e.json()
-    })
-    .then((infoRegion)=>{
-    setData(infoRegion)
-    })       
+    try {
+      await axios.put(`${api_url}/api/updateContract/${id}`, formdata);
+      navigate('/viewContract');
+    } catch (err) {
+      console.error(err);
+      setMessage('Error updating data.');
+    } finally {
+      setLoading(false);
     }
-    useEffect(()=>
-        { 
-            getRegion()
-        } ,[]) 
+  };
 
-    const getZone =  ()=>
-    {
-          fetch(`${api_url}/api/zones`)
-          .then((e)=>{
-              return e.json()
-          })
-          .then((infoZone)=>{
-          setZone(infoZone)
-          })       
+  const fetchData = async (endpoint, setter) => {
+    try {
+      const response = await fetch(`${api_url}/api/${endpoint}`);
+      const data = await response.json();
+      setter(data);
+    } catch (err) {
+      console.error(err);
     }
-    useEffect(()=>
-    { 
-            getZone()
-    } ,[]) 
+  };
 
-    const getWoreda =  ()=>
-    {
-          fetch(`${api_url}/api/woredas`)
-          .then((e)=>{
-              return e.json()
-          })
-          .then((infoWoreda)=>{
-          setInfoWoreda(infoWoreda)
-          })       
-    }
-    useEffect(()=>
-    { 
-            getWoreda()
-    } ,[]) 
+  useEffect(() => {
+    fetchData('regions', setData);
+    fetchData('zones', setZone);
+    fetchData('woredas', setInfoWoreda);
+    fetchData('facilities', setInfoFacility);
+  }, []);
 
-    const getFacility =  ()=>
-    {
-          fetch(`${api_url}/api/facilities`)
-          .then((e)=>{
-              return e.json()
-          })
-          .then((infoFacility)=>{
-          setInfoFacility(infoFacility)
-          })       
+  const GetCredit = async () => {
+    try {
+      const response = await fetch(`${api_url}/api/find/${id}`);
+      const credit = await response.json();
+      setCredit(credit);
+      setFiscalYear(credit.fiscalYear || '');
+      setRegion(credit.region || '');
+      setZone_Subcity(credit.zone_Subcity || '');
+      setWoreda(credit.woreda || '');
+      setFacilityName(credit.facilityName || '');
+      setFacilityDeligate(credit.facilityDeligate || '');
+      setCreaditAmount(credit.creaditAmount || '');
+    } catch (err) {
+      console.error(err);
     }
-    useEffect(()=>
-    { 
-            getFacility()
-    } ,[]) 
+  };
 
-    const GetCredit = () =>{
-      fetch(`${api_url}/api/find/${id}`)
-      .then((e)=>{
-        return e.json()
-      })
-      .then((credit)=>{
-        setCredit(credit)
-      })
+  useEffect(() => {
+    if (id) {
+      GetCredit();
     }
-      useEffect(()=>{
-        GetCredit()
-      },[])
-    
+  }, [id]);
 
   return (
-    <div className="form-container">
-      <form className="form" onSubmit={submitUploaded}>
-        
-      <div className='form-group' >
-     <label>
-       Fiscal Year
-       <br/><br/>
-       <select value={fiscalYear} placeholder='select' onChange={(e)=> setfiscalYear(e.target.value)} className='form-input'>
-       
-       <option value={credit.fiscalYear}>{credit.fiscalYear}</option>
-         <option value="2015">2015</option>
-         <option value="2016">2016</option>
-         <option value="2017">2017</option>
-       </select>
-     </label>
-   </div>
-      
-    <div className='form-group'>
-     <label>
-       Region
-       <br/><br/>
-       <select value={region} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
-       
-          <option value={credit.region}>{credit.region}</option>
-            {
-          infoRegion.map((data)=> {
-            if(data.region_name != credit.region){
-          return(
-          <option value={data.region_name}>{data.region_name}</option>
-            
-          )}
-        }
-               )
-       }
-       </select>
+    <Container component="main" maxWidth="md" sx={{ mt: 4 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        Update Facility
+      </Typography>
+      <br/>
+      <Box
+        component="form"
+        onSubmit={submitUploaded}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Fiscal Year</InputLabel>
+              <Select
+                value={fiscalYear}
+                onChange={(e) => setFiscalYear(e.target.value)}
+                label="Fiscal Year"
+              >
+                <MenuItem value="2015">2015</MenuItem>
+                <MenuItem value="2016">2016</MenuItem>
+                <MenuItem value="2017">2017</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
-     </label>
-   </div>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Region</InputLabel>
+              <Select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                label="Region"
+              >
+                <MenuItem value={credit.region}>{credit.region || 'Select Region'}</MenuItem>
+                {infoRegion
+                  .filter((data) => data.region_name !== credit.region)
+                  .map((data) => (
+                    <MenuItem key={data.region_name} value={data.region_name}>
+                      {data.region_name}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-   <div className='form-group'>
-     <label>
-       Zone/Subcity       
-       <br/><br/>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Zone/Subcity</InputLabel>
+              <Select
+                value={zone_Subcity}
+                onChange={(e) => setZone_Subcity(e.target.value)}
+                label="Zone/Subcity"
+                disabled={!region}
+              >
+                <MenuItem value={credit.zone_Subcity}>{credit.zone_Subcity || 'Select Zone/Subcity'}</MenuItem>
+                {infoZone
+                  .filter((data) => data.region_name === region && data.zone_name !== credit.zone_Subcity)
+                  .map((data) => (
+                    <MenuItem key={data.zone_name} value={data.zone_name}>
+                      {data.zone_name}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-       <select value={zone_Subcity} onChange={(e)=> setZone_Subcity(e.target.value)} className='form-input'>
-      
-       <option value={credit.zone_Subcity}>{credit.zone_Subcity}</option>
-        {
-        infoZone.map((data)=>{
-        if(data.region_name === region && data.zone_name != credit.zone_Subcity){
-          return(
-          <option value={data.zone_name}> {data.zone_name} </option>
-               )}
-         })
-         }
-     </select>
-     </label>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Woreda</InputLabel>
+              <Select
+                value={woreda}
+                onChange={(e) => setWoreda(e.target.value)}
+                label="Woreda"
+                disabled={!zone_Subcity}
+              >
+                <MenuItem value={credit.woreda}>{credit.woreda || 'Select Woreda'}</MenuItem>
+                {infoWoreda
+                  .filter((data) => data.zone_name === zone_Subcity && data.woreda_name !== credit.woreda)
+                  .map((data) => (
+                    <MenuItem key={data.woreda_name} value={data.woreda_name}>
+                      {data.woreda_name}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-   </div>
-   <div className='form-group'>
-     <label>
-       Woreda   
-       <br/><br/>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Facility Name</InputLabel>
+              <Select
+                value={facilityName}
+                onChange={(e) => setFacilityName(e.target.value)}
+                label="Facility Name"
+                disabled={!woreda}
+              >
+                <MenuItem value={credit.facilityName}>{credit.facilityName || 'Select Facility Name'}</MenuItem>
+                {infoFacility
+                  .filter((data) => data.woreda_name === woreda && data.facility_name !== credit.facilityName)
+                  .map((data) => (
+                    <MenuItem key={data.facility_name} value={data.facility_name}>
+                      {data.facility_name}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-       <select value={woreda} onChange={(e)=> setWoreda(e.target.value)} className='form-input'>
-      
-       <option value={credit.woreda}>{credit.woreda}</option>
-         {
-        infoWoreda.map((data)=>{
-        if(data.zone_name === zone_Subcity && data.woreda_name != credit.woreda){
-          return(
-          <option value={data.woreda_name}> {data.woreda_name} </option>
-               )
-          }
-         })
-         }
-       </select>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Credit Amount"
+              type="text"
+              value={creaditAmount}
+              onChange={(e) => setCreaditAmount(e.target.value)}
+              fullWidth
+              required
+            />
+          </Grid>
 
-     </label>
-   </div>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Facility Delegate"
+              type="text"
+              value={facilityDeligate}
+              onChange={(e) => setFacilityDeligate(e.target.value)}
+              fullWidth
+              required
+            />
+          </Grid>
 
-   <div className='form-group'>
-     <label>
-       Facility Name   
-       <br/><br/>
-       <select value={facilityName} onChange={(e)=> setFacilityName(e.target.value)} className='form-input'>
-       
-       <option value={credit.facilityName}> {credit.facilityName} </option>
-         {
-        infoFacility.map((data)=>{
-        if(data.woreda_name === woreda && data.facilityName != credit.facilityName){
-          return(
-          <option value={data.facility_name}> {data.facility_name} </option>
-               )
-          }
-         })
-         }
-       </select>
-     </label>
-   </div>
-
-        <div className="form-group">
-              <label htmlFor="name" className="form-label">Credit Amount</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder={credit.creaditAmount}
-                className="form-input"
-                onChange={(e)=> setCreaditAmount(e.target.value)}
-                required
-                 />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="name" className="form-label">Facility Deligate</label>
-          <input
-            type="text"
-            id="name"
-            placeholder={credit.facilityDeligate}
-            name="name"
-            className="form-input"
-            onChange={(e)=> setFacilityDeligate(e.target.value)}
-            required
-          />
-        </div>
-        
-        <br/> <br/>
-        <button type="submit" className="form-button">Submit</button>
-      
-      </form>
-      <p>{message}</p>
-    </div>
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Submit'}
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+      {message && (
+        <Typography color="error" align="center" sx={{ mt: 2 }}>
+          {message}
+        </Typography>
+      )}
+    </Container>
   );
-        }
+};
 
 export default UpdateComponent;
