@@ -1,36 +1,46 @@
-import { useEffect, useState } from 'react';
-import './AddPodComponent.css';
-import axios from 'axios'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Container, TextField, Button, MenuItem, Select, InputLabel, FormControl, Typography, Grid } from '@mui/material';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { styled } from '@mui/material/styles';
+
+const api_url = process.env.REACT_APP_API_URL;
+
+const StyledForm = styled('form')(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[3],
+  backgroundColor: theme.palette.background.paper,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+}));
 
 const AddPod = () => {
-  
-  const api_url = process.env.REACT_APP_API_URL;
-  const [file, setFile] = useState()
+  const [file, setFile] = useState();
   const [date, setDate] = useState(new Date());
-  const [region, setRegion]= useState('')
-  const [zone_Subcity, setZone_Subcity]= useState('')
-  const [woreda, setWoreda]= useState('')
-  const [facilityName, setFacilityName]= useState('')
-  const [dnNo, setdnNo]= useState('')
-  const [orderNo, setorderNo]= useState('')
-  const [podNo, setpodNo]= useState('')
-  const [manualDeliveryNo, setmanualDeliveryNo]= useState('')
-  const [receivedBy, setreceivedBy]= useState('')
-  const [infoRegion , setData] = useState([])
-  const [infoZone , setZone] = useState([])
-  const [infoWoreda , setInfoWoreda] = useState([])
-  const [infoFacility , setInfoFacility] = useState([])
-  const [infoPodReceiver , setInfoPodReceiver] = useState([])
+  const [region, setRegion] = useState('');
+  const [zone_Subcity, setZone_Subcity] = useState('');
+  const [woreda, setWoreda] = useState('');
+  const [facilityName, setFacilityName] = useState('');
+  const [dnNo, setDnNo] = useState('');
+  const [orderNo, setOrderNo] = useState('');
+  const [podNo, setPodNo] = useState('');
+  const [manualDeliveryNo, setManualDeliveryNo] = useState('');
+  const [receivedBy, setReceivedBy] = useState('');
+  const [infoRegion, setData] = useState([]);
+  const [infoZone, setZone] = useState([]);
+  const [infoWoreda, setInfoWoreda] = useState([]);
+  const [infoFacility, setInfoFacility] = useState([]);
+  const [infoPodReceiver, setInfoPodReceiver] = useState([]);
 
-
-  const submitUploaded = async(e) =>{     
-    e.preventDefault();   
+  const submitUploaded = async (e) => {
+    e.preventDefault();
     const day = date.getDate();
-    const month = date.getMonth()+1;
+    const month = date.getMonth() + 1;
     const year = date.getFullYear();
-    const newDate = `${year}-${month}-${day}`
+    const newDate = `${year}-${month}-${day}`;
     const formdata = new FormData();
     formdata.append('file', file);
     formdata.append('date', newDate);
@@ -44,261 +54,175 @@ const AddPod = () => {
     formdata.append('manualDeliveryNo', manualDeliveryNo);
     formdata.append('registeredBy', localStorage.getItem('FullName'));
     formdata.append('receivedBy', receivedBy);
-    await axios.post(`${api_url}/api/addPod`, formdata)
-      .then((res)=> {
-        alert(res.data.message);
-        window.location.reload();
-      })
-      .catch(err=> console.log(err));
+    try {
+      const res = await axios.post(`${api_url}/api/addPod`, formdata);
+      alert(res.data.message);
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    const handleFile = (e)=>{
-      setFile(e.target.files[0])
-     }
+  const handleFile = (e) => {
+    setFile(e.target.files[0]);
+  };
 
-    const getRegion =  ()=>{
-      fetch(`${api_url}/api/regions`)
-      .then((e)=>{
-          return e.json()
-      })
-        .then((infoRegion)=>{
-        setData(infoRegion)
-      })       
-      }
-      useEffect(()=>
-        { 
-            getRegion()
-        } ,[]) 
+  const fetchOptions = async (endpoint, setter) => {
+    try {
+      const response = await fetch(`${api_url}/api/${endpoint}`);
+      const data = await response.json();
+      setter(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-      const getZone =  ()=>
-      {
-            fetch(`${api_url}/api/zones`)
-            .then((e)=>{
-                return e.json()
-            })
-            .then((infoZone)=>{
-            setZone(infoZone)
-            })       
-      }
-      useEffect(()=>
-      { 
-              getZone()
-      } ,[]) 
-
-      const getWoreda =  ()=>
-      {
-            fetch(`${api_url}/api/woredas`)
-            .then((e)=>{
-                return e.json()
-            })
-            .then((infoWoreda)=>{
-            setInfoWoreda(infoWoreda)
-            })       
-      }
-      useEffect(()=>
-      { 
-              getWoreda()
-      } ,[]) 
-
-      const getFacility =  ()=>
-      {
-            fetch(`${api_url}/api/facilities`)
-            .then((e)=>{
-                return e.json()
-            })
-            .then((infoFacility)=>{
-            setInfoFacility(infoFacility)
-            })       
-      }
-      useEffect(()=>
-      { 
-              getFacility()
-      } ,[]) 
-
-      const getPodReceiver =  ()=>
-      {
-            fetch(`${api_url}/api/receivedBy`)
-            .then((e)=>{
-                return e.json()
-            })
-            .then((infoPodReceiver)=>{
-            setInfoPodReceiver(infoPodReceiver)
-            })       
-      }
-      useEffect(()=>
-      { 
-              getPodReceiver()
-      } ,[]) 
-
+  useEffect(() => {
+    fetchOptions('regions', setData);
+    fetchOptions('zones', setZone);
+    fetchOptions('woredas', setInfoWoreda);
+    fetchOptions('facilities', setInfoFacility);
+    fetchOptions('receivedBy', setInfoPodReceiver);
+  }, []);
 
   return (
-    <div className="form-container">
-      <form className="form" onSubmit={submitUploaded}>
-
-         <h2 className="form-title">Add Pod</h2>
-
-         <div className='form-group'>
-          <label htmlFor="name" className="form-label">
-            Date
-            <br/><br/>
-           <DatePicker selected={date} onChange={(date) => setDate(date)} className='form-input'/>
-           </label>
-         </div>
-      
-        <div className='form-group'>
-          <label htmlFor="name" className="form-label">
-            Region
-            <br/><br/>
-            <select value={region} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
-              
-            <option>Select Region</option>
-            {
-              infoRegion.map((data)=>{
-                return(
-                <option value={data.region_name}>{data.region_name}</option>
-                    )})
-            }
-            </select>
-
-          </label>
-        </div>
-
-        <div className='form-group'>
-          <label htmlFor="name" className="form-label">
-            Zone/Subcity       
-            <br/><br/>
-
-            <select value={zone_Subcity} onChange={(e)=> setZone_Subcity(e.target.value)} className='form-input'>
-              <option>select Zone/Subcity</option>
-              {
-              infoZone.map((data)=>{
-              if(data.region_name === region){
-                return(
-                <option value={data.zone_name}> {data.zone_name} </option>
-                    )
-                }
-              })
-              }
-
-          </select>
-          </label>
-
-        </div>
-
-        <div className='form-group'>
-          <label htmlFor="name" className="form-label">
-            Woreda   
-            <br/><br/>
-
-            <select value={woreda} onChange={(e)=> setWoreda(e.target.value)} className='form-input'>
-              <option>Select Woreda</option>
-              {
-              infoWoreda.map((data)=>{
-              if(data.zone_name === zone_Subcity){
-                return(
-                <option value={data.woreda_name}> {data.woreda_name} </option>
-                    )
-                }
-              })
-              }
-            </select>
-
-          </label>
-        </div>
-
-        <div className='form-group'>
-          <label htmlFor="name" className="form-label">
-            Facility Name   
-            <br/><br/>
-            <select value={facilityName} onChange={(e)=> setFacilityName(e.target.value)} className='form-input'>
-              <option>select Facility</option>
-              {
-              infoFacility.map((data)=>{
-              if(data.woreda_name === woreda){
-                return(
-                <option value={data.facility_name}> {data.facility_name} </option>
-                    )
-                }
-              })
-              }
-            </select>
-          </label>
-        </div>
-
-        <div className="form-group">
-              <label htmlFor="name" className="form-label">DN Number</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className="form-input"
-                onChange={(e)=> setdnNo(e.target.value)}
-                required  />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="name" className="form-label">Order Number</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="form-input"
-            onChange={(e)=> setorderNo(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-              <label htmlFor="name" className="form-label">Manual Delivery No</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className="form-input"
-                onChange={(e)=> setmanualDeliveryNo(e.target.value)}
-                required  />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="name" className="form-label">Pod Number</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="form-input"
-            onChange={(e)=> setpodNo(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className='form-group'>
-          <label htmlFor="name" className="form-label">
-            Pod Receiver
-            <br/><br/>
-            <select value={receivedBy} placeholder='select' onChange={(e)=> setreceivedBy(e.target.value)} className='form-input'>
-              
-            <option>Select Receiver</option>
-            {
-              infoPodReceiver.map((data)=>{
-                return(
-                <option value={data.receiver}>{data.receiver}</option>
-                    )})
-            }
-            </select>
-
-          </label>
-        </div>
-
-        <label>
-          Attach Model :
-        <input type = 'file' onChange={handleFile} required/>
-        </label>                               
-
-        <br/> <br/>
-        <button type="submit" className="form-button">Submit</button>
-      </form>
-
-    </div>
+    <Container maxWidth="md">
+      <StyledForm onSubmit={submitUploaded}>
+        <Typography variant="h4" gutterBottom>
+          Add Pod
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Date</InputLabel>
+              <DatePicker selected={date} onChange={(date) => setDate(date)} className="form-input" />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Region</InputLabel>
+              <Select value={region} onChange={(e) => setRegion(e.target.value)} className='form-input'>
+                <MenuItem value="">Select Region</MenuItem>
+                {infoRegion.map((data) => (
+                  <MenuItem key={data.region_name} value={data.region_name}>
+                    {data.region_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Zone/Subcity</InputLabel>
+              <Select value={zone_Subcity} onChange={(e) => setZone_Subcity(e.target.value)} className='form-input'>
+                <MenuItem value="">Select Zone/Subcity</MenuItem>
+                {infoZone.map((data) => (
+                  data.region_name === region && (
+                    <MenuItem key={data.zone_name} value={data.zone_name}>
+                      {data.zone_name}
+                    </MenuItem>
+                  )
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Woreda</InputLabel>
+              <Select value={woreda} onChange={(e) => setWoreda(e.target.value)} className='form-input'>
+                <MenuItem value="">Select Woreda</MenuItem>
+                {infoWoreda.map((data) => (
+                  data.zone_name === zone_Subcity && (
+                    <MenuItem key={data.woreda_name} value={data.woreda_name}>
+                      {data.woreda_name}
+                    </MenuItem>
+                  )
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Facility Name</InputLabel>
+              <Select value={facilityName} onChange={(e) => setFacilityName(e.target.value)} className='form-input'>
+                <MenuItem value="">Select Facility</MenuItem>
+                {infoFacility.map((data) => (
+                  data.woreda_name === woreda && (
+                    <MenuItem key={data.facility_name} value={data.facility_name}>
+                      {data.facility_name}
+                    </MenuItem>
+                  )
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="DN Number"
+              variant="outlined"
+              value={dnNo}
+              onChange={(e) => setDnNo(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Order Number"
+              variant="outlined"
+              value={orderNo}
+              onChange={(e) => setOrderNo(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Manual Delivery No"
+              variant="outlined"
+              value={manualDeliveryNo}
+              onChange={(e) => setManualDeliveryNo(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Pod Number"
+              variant="outlined"
+              value={podNo}
+              onChange={(e) => setPodNo(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Pod Receiver</InputLabel>
+              <Select value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} className='form-input'>
+                <MenuItem value="">Select Receiver</MenuItem>
+                {infoPodReceiver.map((data) => (
+                  <MenuItem key={data.receiver} value={data.receiver}>
+                    {data.receiver}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <Button variant="contained" component="label" fullWidth>
+              Attach Model
+              <input type="file" onChange={handleFile} hidden required />
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Submit
+            </Button>
+          </Grid>
+        </Grid>
+      </StyledForm>
+    </Container>
   );
 };
 
