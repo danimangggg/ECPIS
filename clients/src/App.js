@@ -25,6 +25,7 @@ import ViewPodRegisterer from './pages/Pod/PodHandler/viewRegisterer';
 import SignIn from './pages/UserAccountPage/SignInPage';
 import ChangePassword from './pages/UserAccountPage/ChangePasswordPage';
 import ProtectedRoutes from './components/ProtectedRoutes/ProtectedRoutes';
+import AddCreditPdf from './pages/Detail/AddCreaditPdf';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -60,12 +61,13 @@ const App = () => {
             <Route path = '/add-registrant' Component={addPodRegisterer} />
             <Route path = '/viewreceiver' Component={ViewPodReceiver} />
             <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
+            <Route path = '/add-credit-pdf' Component={AddCreditPdf} />
         </Route>
         
       </Routes>
      </Router>
 
-     <br/><br/><br/><br/>
+     <br/><br/><br/>
 
      <footer className="footer" style={{
           "background-color": "red",

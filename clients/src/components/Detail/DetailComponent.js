@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import axios from 'axios'
-import { FaEdit,  FaTrash, FaBackward } from 'react-icons/fa'
+import { FaEdit,  FaTrash, FaBackward, FaPlus } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import 'bootstrap/dist/css/bootstrap.css';
 
@@ -81,6 +81,11 @@ const PdfViewer = ({ pdf }) => {
       <span >
         <FaEdit onClick={editContract} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
         </span>
+        <Link to="/add-credit-pdf"  >
+      <span >
+        <FaPlus className='icon' size="30" style={{ marginTop: '20px', marginRight:'80px', color: 'white'}}/>
+        </span>
+      </Link>
 
       <iframe
         title="Contract document"
