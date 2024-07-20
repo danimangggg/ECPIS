@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, TextField, Button, MenuItem, Select, InputLabel, FormControl, Typography, Grid } from '@mui/material';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { Container, TextField, Button, MenuItem, Select, InputLabel, FormControl, Typography, Grid, Box, CircularProgress, FormHelperText } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { styled } from '@mui/material/styles';
 
 const api_url = process.env.REACT_APP_API_URL;
 
-const StyledForm = styled('form')(({ theme }) => ({
+const StyledForm = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[3],
@@ -15,6 +16,7 @@ const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
+  marginTop: theme.spacing(4),
 }));
 
 const AddPod = () => {
@@ -34,9 +36,11 @@ const AddPod = () => {
   const [infoWoreda, setInfoWoreda] = useState([]);
   const [infoFacility, setInfoFacility] = useState([]);
   const [infoPodReceiver, setInfoPodReceiver] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const submitUploaded = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
@@ -60,6 +64,8 @@ const AddPod = () => {
       window.location.reload();
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,21 +93,29 @@ const AddPod = () => {
 
   return (
     <Container maxWidth="md">
-      <StyledForm onSubmit={submitUploaded}>
+      <StyledForm component="form" onSubmit={submitUploaded}>
         <Typography variant="h4" gutterBottom>
           Add Pod
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Date</InputLabel>
-              <DatePicker selected={date} onChange={(date) => setDate(date)} className="form-input" />
-            </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Date"
+                value={date}
+                onChange={(newDate) => setDate(newDate)}
+                renderInput={(params) => <TextField fullWidth {...params} />}
+              />
+            </LocalizationProvider>
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Region</InputLabel>
-              <Select value={region} onChange={(e) => setRegion(e.target.value)} className='form-input'>
+              <Select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                label="Region"
+              >
                 <MenuItem value="">Select Region</MenuItem>
                 {infoRegion.map((data) => (
                   <MenuItem key={data.region_name} value={data.region_name}>
@@ -114,7 +128,11 @@ const AddPod = () => {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Zone/Subcity</InputLabel>
-              <Select value={zone_Subcity} onChange={(e) => setZone_Subcity(e.target.value)} className='form-input'>
+              <Select
+                value={zone_Subcity}
+                onChange={(e) => setZone_Subcity(e.target.value)}
+                label="Zone/Subcity"
+              >
                 <MenuItem value="">Select Zone/Subcity</MenuItem>
                 {infoZone.map((data) => (
                   data.region_name === region && (
@@ -129,7 +147,11 @@ const AddPod = () => {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Woreda</InputLabel>
-              <Select value={woreda} onChange={(e) => setWoreda(e.target.value)} className='form-input'>
+              <Select
+                value={woreda}
+                onChange={(e) => setWoreda(e.target.value)}
+                label="Woreda"
+              >
                 <MenuItem value="">Select Woreda</MenuItem>
                 {infoWoreda.map((data) => (
                   data.zone_name === zone_Subcity && (
@@ -144,7 +166,11 @@ const AddPod = () => {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Facility Name</InputLabel>
-              <Select value={facilityName} onChange={(e) => setFacilityName(e.target.value)} className='form-input'>
+              <Select
+                value={facilityName}
+                onChange={(e) => setFacilityName(e.target.value)}
+                label="Facility Name"
+              >
                 <MenuItem value="">Select Facility</MenuItem>
                 {infoFacility.map((data) => (
                   data.woreda_name === woreda && (
@@ -199,7 +225,11 @@ const AddPod = () => {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Pod Receiver</InputLabel>
-              <Select value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} className='form-input'>
+              <Select
+                value={receivedBy}
+                onChange={(e) => setReceivedBy(e.target.value)}
+                label="Pod Receiver"
+              >
                 <MenuItem value="">Select Receiver</MenuItem>
                 {infoPodReceiver.map((data) => (
                   <MenuItem key={data.receiver} value={data.receiver}>
@@ -208,19 +238,27 @@ const AddPod = () => {
                 ))}
               </Select>
             </FormControl>
+
           </Grid>
+
+         
           <Grid item xs={12}>
-            <Button variant="contained" component="label" fullWidth>
-              Attach Model
-              <input type="file" onChange={handleFile} hidden required />
-            </Button>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleFile}
+              required
+            />
+            <FormHelperText>Select a PDF file to attach</FormHelperText>
           </Grid>
+
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Submit
+            <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : 'Submit'}
             </Button>
           </Grid>
         </Grid>
+        
       </StyledForm>
     </Container>
   );
