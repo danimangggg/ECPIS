@@ -9,14 +9,24 @@ import {
   MenuItem,
   Box,
   Button,
+  Divider,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
-import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
+import {
+  Menu as MenuIcon,
+  AccountCircle,
+  AddCircleOutline,
+  VpnKey,
+  ExitToApp,
+  Edit,
+} from '@mui/icons-material';
 import { SidebarData } from './SidebarData';
 
 const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [dropdownAnchorEl, setDropdownAnchorEl] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null); // Track which dropdown is open
+  const [openMenuId, setOpenMenuId] = useState(null);
   const navigate = useNavigate();
 
   const handleMenu = (event) => {
@@ -25,26 +35,31 @@ const Navbar = () => {
 
   const handleDropdownMenu = (event, menuId) => {
     setDropdownAnchorEl(event.currentTarget);
-    setOpenMenuId(menuId); // Set the ID of the open dropdown
+    setOpenMenuId(menuId);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
     setDropdownAnchorEl(null);
-    setOpenMenuId(null); // Reset the open menu ID
+    setOpenMenuId(null);
   };
 
   const signOut = () => {
     localStorage.clear();
     window.location.href = '/';
   };
+
   const addUser = () => {
     navigate('/add-users');
   };
 
+  const resetPassword = () => {
+    navigate('/reset-password');
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="fixed" style={{backgroundColor:"black"}} sx={{ zIndex: 1300 }}>
+      <AppBar position="fixed" style={{ backgroundColor: "black" }} sx={{ zIndex: 1300 }}>
         <Toolbar>
           <IconButton
             size="large"
@@ -78,60 +93,25 @@ const Navbar = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             EPSS-1 CMIS
           </Typography>
+
           <Button
             color="inherit"
-            onClick={(e) => handleDropdownMenu(e, 'contract')}
+            component={Link}
+            to="/viewContract"
             sx={{ marginLeft: 2 }}
           >
             Contract
           </Button>
-          <Menu
-            anchorEl={dropdownAnchorEl}
-            open={openMenuId === 'contract'}
-            onClose={handleClose}
-            PaperProps={{
-              style: {
-                marginTop: '40px',
-                zIndex: 1301,
-              },
-            }}
-          >
-            <MenuItem onClick={handleClose}>
-              <Link to="/viewContract" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Contract
-              </Link>
-            </MenuItem>
-          
-          </Menu>
+
           <Button
             color="inherit"
-            onClick={(e) => handleDropdownMenu(e, 'pod')}
+            component={Link}
+            to="/viewPod"
             sx={{ marginLeft: 2 }}
           >
             POD
           </Button>
-          <Menu
-            anchorEl={dropdownAnchorEl}
-            open={openMenuId === 'pod'}
-            onClose={handleClose}
-            PaperProps={{
-              style: {
-                marginTop: '40px',
-                zIndex: 1301,
-              },
-            }}
-          >
-            <MenuItem onClick={handleClose}>
-              <Link to="/viewPod" style={{ textDecoration: 'none', color: 'inherit' }}>
-                POD
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Link to="/viewreceiver" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Receiver
-              </Link>
-            </MenuItem>
-          </Menu>
+
           <Button
             color="inherit"
             onClick={(e) => handleDropdownMenu(e, 'orgProfile')}
@@ -171,6 +151,7 @@ const Navbar = () => {
               </Link>
             </MenuItem>
           </Menu>
+
           <IconButton
             size="large"
             aria-label="account of current user"
@@ -204,22 +185,48 @@ const Navbar = () => {
             }}
           >
             <MenuItem onClick={handleClose}>
-              <Typography variant="body2" component="div">
-                <AccountCircle /> {localStorage.getItem('FullName')}
-              </Typography>
+              <ListItemIcon>
+                <AccountCircle fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{localStorage.getItem('FullName')}</ListItemText>
             </MenuItem>
+            <Divider />
+            {localStorage.getItem("AccountType") === "Admin" && (
+              <>
+                <MenuItem onClick={addUser}>
+                  <ListItemIcon>
+                    <AddCircleOutline fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Add User</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={resetPassword}>
+                  <ListItemIcon>
+                    <VpnKey fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Reset Password</ListItemText>
+                </MenuItem>
+                <Divider />
+              </>
+            )}
             <MenuItem onClick={handleClose}>
-              <Link to="/change-password" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Change Password
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={addUser}>
-                Add User
+              <ListItemIcon>
+                <Edit fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>
+                <Link to="/change-password" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  Change Password
+                </Link>
+              </ListItemText>
             </MenuItem>
             <MenuItem onClick={signOut}>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Log Out
-              </Link>
+              <ListItemIcon>
+                <ExitToApp fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>
+                <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  Log Out
+                </Link>
+              </ListItemText>
             </MenuItem>
           </Menu>
         </Toolbar>

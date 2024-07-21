@@ -27,6 +27,7 @@ import ChangePassword from './pages/UserAccountPage/ChangePasswordPage';
 import ProtectedRoutes from './components/ProtectedRoutes/ProtectedRoutes';
 import AddCreditPdf from './pages/Detail/AddCreaditPdf';
 import AddUsersPage from './pages/UserAccountPage/AddUsersPage';
+import ResetPasswordPage from './pages/UserAccountPage/ResetPasswordPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -64,6 +65,7 @@ const App = () => {
             <Route path = '/viewregistrant' Component={ViewPodRegisterer} />
             <Route path = '/add-credit-pdf' Component={AddCreditPdf} />
             <Route path = '/add-users' Component={AddUsersPage} />
+            <Route path = '/reset-password' Component={ResetPasswordPage} />
         </Route>
         
       </Routes>

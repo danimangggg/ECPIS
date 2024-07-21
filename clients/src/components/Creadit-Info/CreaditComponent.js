@@ -131,7 +131,7 @@ const CreaditComponent = () => {
     selectableRows: false,
     responsive: "standard",
   };
-  if(localStorage.getItem("token") !== "guest"){
+  if((localStorage.getItem("AccountType") === "Admin") || (localStorage.getItem("AccountType") == "Credit Manager")){
   return (
     <div style={{ display: "table", tableLayout: "fixed", width: "90%", margin: '0 auto' }}>
       <ThemeProvider theme={getMuiTheme}>

@@ -2,6 +2,9 @@ import MUIDataTable from "mui-datatables";
 import { useEffect, useState } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { Fab } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 
 const PodComponent = () => {
@@ -169,6 +172,32 @@ const api_url = process.env.REACT_APP_API_URL;
             options={options}
                 />
                </ThemeProvider>
+
+               <Fab
+        color="primary"
+        aria-label="add"
+        style={{
+          position: "fixed",
+          bottom: "46px",
+          right: "26px",
+        }}
+        onClick={() => navigate('/add-pod')}
+      >
+        <AddIcon />
+      </Fab>
+
+      <Fab
+        color="primary"
+        aria-label="add"
+        style={{
+          position: "fixed",
+          bottom: "46px",
+          left: "26px",
+        }}
+        onClick={() => navigate('/viewReceiver')}
+      >
+        <LocalShippingIcon />
+      </Fab>
         </div>
     )}
 
