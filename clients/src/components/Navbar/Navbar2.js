@@ -38,6 +38,9 @@ const Navbar = () => {
     localStorage.clear();
     window.location.href = '/';
   };
+  const addUser = () => {
+    navigate('/add-users');
+  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -209,6 +212,9 @@ const Navbar = () => {
               <Link to="/change-password" style={{ textDecoration: 'none', color: 'inherit' }}>
                 Change Password
               </Link>
+            </MenuItem>
+            <MenuItem onClick={addUser}>
+                Add User
             </MenuItem>
             <MenuItem onClick={signOut}>
               <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>

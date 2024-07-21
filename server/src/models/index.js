@@ -27,6 +27,7 @@ db.facility = require("./FacilityProfile-Model/facilityModel.js")(sequelize, Seq
 db.pod = require("./pod.model.js")(sequelize, Sequelize);
 db.registerer = require("./podHandler/registerer.js")(sequelize, Sequelize);
 db.receiver = require("./podHandler/receiver.js")(sequelize, Sequelize);
-db.user = require("./UserAccount/signIn.js")(sequelize, Sequelize);
+db.user = require("./UserAccount/user.js")(sequelize, Sequelize);
+db.accountType = require("./UserAccount/accountType.js")(sequelize, Sequelize);
 
 module.exports = db;

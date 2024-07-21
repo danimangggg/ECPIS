@@ -38,6 +38,7 @@ const ViewPodRegisterer = require('../controllers/PodController/PodHandler/showR
 const Login = require('../controllers/UserAccount/login')
 const ChangePassword = require('../controllers/UserAccount/changePassword')
 const ViewUsers = require('../controllers/UserAccount/showUsers')
+const AddUser = require('../controllers/UserAccount/AddUsers')
 
 const upload = require("../middleware/upload");
 
@@ -74,6 +75,7 @@ let routes =  (app) => {
   router.get('/api/registeredBy', ViewPodRegisterer.retriveRegisterer);
 
 
+  router.post("/api/addUser", AddUser.AddUser);
   router.post("/api/login", Login.login);
   router.post("/api/changePassword", ChangePassword.changePassword);
   router.get("/api/users", ViewUsers.retriveUsers);

@@ -48,6 +48,7 @@ export default function SignIn() {
         // Save the token in localStorage (or cookie)
         localStorage.setItem('token', token);
         localStorage.setItem("FullName", response.data.FullName);
+        localStorage.setItem("AccountType", response.data.AccountType);
 
         // Redirect to a protected route
         navigate('/viewContract');
