@@ -42,7 +42,7 @@ const App = () => {
             <Route path = '/add-facility' exact Component={AddFacility}/>
             <Route path = '/addContract' Component={addContract} />
             <Route path = '/viewContract' Component={viewContract} />
-            <Route path = '/dashbord' Component={Dashbord} />
+            <Route path = '/dashboard' Component={Dashbord} />
             <Route path = '/facility-profile' Component={FacilitProfile} />
             <Route path = '/add-region' Component={addRegionPage} />
             <Route path = '/add-zone' Component={ZonePage} />

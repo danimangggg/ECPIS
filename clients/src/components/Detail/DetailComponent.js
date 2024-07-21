@@ -66,6 +66,10 @@ const PdfViewer = ({ pdf }) => {
     const editContract = () =>{
       navigate({pathname: '/updateCreadit'}, {state:{idNo : id}});      
     }
+
+    const addPdfPages = () =>{
+      navigate({pathname: '/add-credit-pdf'}, {state:{fileName : docName}});      
+    }
     
   if(localStorage.getItem("token") !== "guest"){
   return (
@@ -75,17 +79,19 @@ const PdfViewer = ({ pdf }) => {
         <FaBackward className='icon' size="30" style={{ marginTop: '20px', marginRight:'80px', color: 'white'}}/>
         </span>
       </Link>
+      
       <span >
         <FaTrash onClick={confirmDeleteAlert} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
         </span>
+
       <span >
         <FaEdit onClick={editContract} className='icon' size="30" style={{ marginTop: '20px', color: 'white'}}/>
         </span>
-        <Link to="/add-credit-pdf"  >
+        
       <span >
-        <FaPlus className='icon' size="30" style={{ marginTop: '20px', marginRight:'80px', color: 'white'}}/>
+        <FaPlus onClick={addPdfPages} className='icon' size="30" style={{ marginTop: '20px', marginRight:'80px', color: 'white'}}/>
         </span>
-      </Link>
+    
 
       <iframe
         title="Contract document"

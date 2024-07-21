@@ -71,6 +71,7 @@ const Navbar = () => {
               </MenuItem>
             ))}
           </Menu>
+
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             EPSS-1 CMIS
           </Typography>
@@ -97,6 +98,7 @@ const Navbar = () => {
                 Contract
               </Link>
             </MenuItem>
+          
           </Menu>
           <Button
             color="inherit"

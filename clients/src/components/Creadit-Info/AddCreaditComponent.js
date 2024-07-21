@@ -79,7 +79,7 @@ const AddCreadit = () => {
   return (
     <Container component="main" maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
-        Add Facility
+        Add Contract Information
       </Typography>
       <br/>
       <Box

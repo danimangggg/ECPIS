@@ -19,6 +19,7 @@ const findOne = require('../controllers/CreaditController/fineOne')
 const updateContract = require('../controllers/CreaditController/UpdateCredit')
 const addContract = require("../controllers/upload");
 const retriveController = require("../controllers/retrive");
+const addCreaditPdfPage = require("../controllers/CreaditController/AddPdfPage");
 
 // Pod 
 const AddPod = require('../controllers/PodController/addPod')
@@ -58,6 +59,7 @@ let routes =  (app) => {
   router.put('/api/updateContract/:id', upload.none(), updateContract.updateFiles);
   router.get('/api/all',retriveController.retriveFiles)
   router.post("/api/upload", upload.single('file'), addContract.uploadFiles);
+  router.post("/api/addCreditPdf", upload.single('file'), addCreaditPdfPage.addPdf);
 
   router.post("/api/addPod", upload.single('file'), AddPod.addPod);
   router.get('/api/viewPod',ViewPod.retrivePods)
