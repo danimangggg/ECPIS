@@ -162,6 +162,8 @@ const api_url = process.env.REACT_APP_API_URL;
           responsive: 'standard'
        }
        
+
+  if((localStorage.getItem("AccountType") === "Admin") || (localStorage.getItem("AccountType") == "Pod Manager")){
     return (
         <div style={{display: 'table', tableLayout:'fixed', width:'90%'}}>     
             <ThemeProvider theme={getMuiTheme}>
@@ -200,6 +202,22 @@ const api_url = process.env.REACT_APP_API_URL;
       </Fab>
         </div>
     )}
+    else{
+      return (
+        <div style={{display: 'table', tableLayout:'fixed', width:'90%'}}>     
+            <ThemeProvider theme={getMuiTheme}>
+            <MUIDataTable
+            title={"Pod list"}
+            data={info}
+            columns={columns}
+            options={options}
+                />
+               </ThemeProvider>
+
+        </div>
+    )
+    }
+  }
 
     export default PodComponent
 

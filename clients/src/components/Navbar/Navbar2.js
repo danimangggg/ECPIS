@@ -208,6 +208,8 @@ const Navbar = () => {
                 <Divider />
               </>
             )}
+
+    {localStorage.getItem("token") !== "guest" ?
             <MenuItem onClick={handleClose}>
               <ListItemIcon>
                 <Edit fontSize="small" />
@@ -217,7 +219,10 @@ const Navbar = () => {
                   Change Password
                 </Link>
               </ListItemText>
-            </MenuItem>
+            </MenuItem> : null
+              }
+
+        {localStorage.getItem("token") !== "guest" ?
             <MenuItem onClick={signOut}>
               <ListItemIcon>
                 <ExitToApp fontSize="small" />
@@ -227,7 +232,19 @@ const Navbar = () => {
                   Log Out
                 </Link>
               </ListItemText>
-            </MenuItem>
+            </MenuItem> : 
+
+             <MenuItem onClick={signOut}>
+             <ListItemIcon>
+               <ExitToApp fontSize="small" />
+             </ListItemIcon>
+             <ListItemText>
+               <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                 Log In
+               </Link>
+             </ListItemText>
+           </MenuItem>
+            }
           </Menu>
         </Toolbar>
       </AppBar>
