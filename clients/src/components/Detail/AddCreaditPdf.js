@@ -41,6 +41,7 @@ function AddCreaditPdf() {
         },
       });
       alert('File uploaded successfully');
+      window.location.reload()
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file');

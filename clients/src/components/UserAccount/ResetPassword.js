@@ -43,8 +43,9 @@ const ResetPasswordForm = () => {
     console.log(selectedUser)
     // Implement the password reset logic here
     const result = await axios.post(`${api_url}/api/resetPassword`,{user_name: selectedUser});
-    alert(`Password reset for user ID: ${selectedUser}`);
+    
     alert(result.data.message)
+    window.location.reload()
   };
 
   const handleBack = () => {
