@@ -40,6 +40,7 @@ const ChangePassword = require('../controllers/UserAccount/changePassword')
 const ViewUsers = require('../controllers/UserAccount/showUsers')
 const AddUser = require('../controllers/UserAccount/AddUsers')
 const ResetPassword = require('../controllers/UserAccount/ResetPassword')
+const DeleteUser = require('../controllers/UserAccount/DeleteUser')
 
 const upload = require("../middleware/upload");
 
@@ -81,6 +82,7 @@ let routes =  (app) => {
   router.post("/api/changePassword", ChangePassword.changePassword);
   router.get("/api/users", ViewUsers.retriveUsers);
   router.post("/api/resetPassword", ResetPassword.ResetPassword);
+  router.delete('/api/deleteUser/:id', DeleteUser.deleteUser);
 
   return app.use("/", router);
 };

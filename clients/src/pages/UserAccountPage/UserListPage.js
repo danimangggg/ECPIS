@@ -5,7 +5,6 @@ import Navbar from '../../components/Navbar/Navbar2'
 export default function UserListPage() {
   return (
     <div>
-        <Navbar/>
       <UserList/>
     </div>
   )

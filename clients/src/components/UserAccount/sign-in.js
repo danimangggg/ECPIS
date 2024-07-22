@@ -13,7 +13,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 
@@ -27,11 +26,11 @@ export default function SignIn() {
   const formValidation = () => {
     let isvalid = true;
     if (!user_name) {
-      toast.warn("user name is required");
+      toast.warn("User name is required");
       isvalid = false;
     }
     if (!password) {
-      toast.warn("password is required");
+      toast.warn("Password is required");
       isvalid = false;
     }
     return isvalid;
@@ -103,12 +102,14 @@ export default function SignIn() {
                 margin="normal"
                 required
                 fullWidth
-                id="email"
+                id="user_name"
                 label="User Name"
-                name="email"
+                name="username"
+                autoComplete="username"
                 autoFocus
                 value={user_name}
                 onChange={(e) => setuserName(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
               <TextField
                 margin="normal"
@@ -121,6 +122,7 @@ export default function SignIn() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
               <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}

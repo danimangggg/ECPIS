@@ -47,10 +47,11 @@ const UserList = ({ onClose }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/users/${selectedUser.id}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/deleteUser/${selectedUser.id}`);
       setUsers(users.filter((user) => user.id !== selectedUser.id));
       setOpenDialog(false);
       setSelectedUser(null);
+     
     } catch (error) {
       console.error('Error deleting user:', error);
     }
@@ -60,6 +61,9 @@ const UserList = ({ onClose }) => {
     setOpenDialog(false);
     setSelectedUser(null);
   };
+  const handleBack = () => {
+    window.history.back();
+  };
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -67,7 +71,7 @@ const UserList = ({ onClose }) => {
         <IconButton
           edge="end"
           color="inherit"
-          onClick={onClose}
+          onClick={handleBack}
           sx={{ position: 'absolute', top: 8, right: 8 }}
         >
           <CloseIcon />
@@ -84,7 +88,7 @@ const UserList = ({ onClose }) => {
                   secondary={`Username: ${user.user_name} | Account Type: ${user.account_type}`}
                 />
                 <ListItemSecondaryAction>
-                  <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteClick(user)}>
+                  <IconButton style={{color: 'red'}} edge="end" aria-label="delete" onClick={() => handleDeleteClick(user)}>
                     <DeleteIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
