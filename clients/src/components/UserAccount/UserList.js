@@ -87,11 +87,14 @@ const UserList = ({ onClose }) => {
                   primary={`${user.first_name} ${user.last_name}`}
                   secondary={`Username: ${user.user_name} | Account Type: ${user.account_type}`}
                 />
+                {
+                  user.account_type !== "Admin" ?
                 <ListItemSecondaryAction>
                   <IconButton style={{color: 'red'}} edge="end" aria-label="delete" onClick={() => handleDeleteClick(user)}>
                     <DeleteIcon />
                   </IconButton>
-                </ListItemSecondaryAction>
+                </ListItemSecondaryAction> : null
+                  }
               </ListItem>
               {index < users.length - 1 && <Divider />}
             </React.Fragment>
