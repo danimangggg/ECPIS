@@ -1,18 +1,17 @@
 import AddFacility from  '../../../components/facility-info/Facility/AddFacility/AddFacility'
 import './AddFacilityPage.css'
 import {Link } from "react-router-dom";
-import {  FaBackward } from 'react-icons/fa'
+import {  FaTimes } from 'react-icons/fa'
 
 const AddFacilityPage = () => {
   return (
-    <div>
+    <div className='container'>
     <Link to="/facility-profile" >
       <span >
-        <FaBackward className='icon' size="30" style={{ marginTop: '60px' }}/>
+        <FaTimes className='icon' size="30" style={{ marginTop: '20px' }}/>
         </span>
       </Link>
      
-     <br/>
       <AddFacility/>
     </div>
   )

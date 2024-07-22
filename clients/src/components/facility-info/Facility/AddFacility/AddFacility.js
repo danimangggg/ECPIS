@@ -1,199 +1,189 @@
 import { useEffect, useState } from 'react';
-import './AttractiveForm.css';
-import axios from 'axios'
+import axios from 'axios';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Container from '@mui/material/Container';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
+const theme = createTheme();
 
 const AddFacility = () => {
-    const [selectedOption, setSelectedOption] = useState('');
-    const api_url = process.env.REACT_APP_API_URL
-    const handleOptionChange = (event) => {
-      setSelectedOption(event.target.value);
-    }
+  const [selectedOption, setSelectedOption] = useState('');
+  const [region2, setRegion] = useState('');
+  const [zone_Subcity2, setZone_Subcity] = useState('');
+  const [woreda2, setWoreda] = useState('');
+  const [facilityName2, setFacilityName] = useState('');
+  const [infoRegion2, setData] = useState([]);
+  const [infoZone2, setZone] = useState([]);
+  const [infoWoreda2, setInfoWoreda] = useState([]);
+  const api_url = process.env.REACT_APP_API_URL;
 
-  const [region2, setRegion]= useState('')
-  const [zone_Subcity2, setZone_Subcity]= useState('')
-  const [woreda2, setWoreda]= useState('')
-  const [facilityName2, setFacilityName]= useState('')
-  const [infoRegion2 , setData] = useState([])
-  const [infoZone2 , setZone] = useState([])
-  const [infoWoreda2 , setInfoWoreda] = useState([])
+  const handleOptionChange = (event) => {
+    setSelectedOption(event.target.value);
+  };
 
-  const submitFacility= async(e) =>{
+  const submitFacility = async (e) => {
+    e.preventDefault();
     const fdata = new FormData();
     fdata.append('region_name', region2);
     fdata.append('zone_name', zone_Subcity2);
     fdata.append('woreda_name', woreda2);
     fdata.append('facility_name', facilityName2);
     fdata.append('facility_type', selectedOption);
-    await axios.post(`${api_url}/api/addfacility`, fdata)
-      .then((res)=> {
-        alert(res.data.message)
-        setRegion("");
-      }
-        )
-      .catch(err=> console.log(err));
+    try {
+      const res = await axios.post(`${api_url}/api/addfacility`, fdata);
+      alert(res.data.message);
+      setRegion('');
+      setZone_Subcity('');
+      setWoreda('');
+      setFacilityName('');
+      setSelectedOption('');
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-  const getRegion =  ()=>{
+  const getRegion = () => {
     fetch(`${api_url}/api/regions`)
-    .then((e)=>{
-        return e.json()
-    })
-    .then((infoRegion2)=>{
-    setData(infoRegion2)
-    })       
-    }
-    useEffect(()=>
-        { 
-            getRegion()
-        } ,[]) 
+      .then((res) => res.json())
+      .then((infoRegion2) => setData(infoRegion2));
+  };
 
-    const getZone =  ()=>
-    {
-          fetch(`${api_url}/api/zones`)
-          .then((e)=>{
-              return e.json()
-          })
-          .then((infoZone2)=>{
-          setZone(infoZone2)
-          })       
-    }
-    useEffect(()=>
-    { 
-            getZone()
-    } ,[]) 
+  const getZone = () => {
+    fetch(`${api_url}/api/zones`)
+      .then((res) => res.json())
+      .then((infoZone2) => setZone(infoZone2));
+  };
 
-    const getWoreda =  ()=>
-    {
-          fetch(`${api_url}/api/woredas`)
-          .then((e)=>{
-              return e.json()
-          })
-          .then((infoWoreda2)=>{
-          setInfoWoreda(infoWoreda2)
-          })       
-    }
-    useEffect(()=>
-    { 
-            getWoreda()
-    } ,[]) 
+  const getWoreda = () => {
+    fetch(`${api_url}/api/woredas`)
+      .then((res) => res.json())
+      .then((infoWoreda2) => setInfoWoreda(infoWoreda2));
+  };
 
+  useEffect(() => {
+    getRegion();
+    getZone();
+    getWoreda();
+  }, []);
 
   return (
-    <div className="form-container">
-      <form className="form" onSubmit={submitFacility}>
-         <h2 className="form-title">Add Facility</h2>
-      
-        <div className='form-group'>
-          <label>
-            Region
-            <br/><br/>
-            <select value={region2} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
-            
-            <option>Select Region</option>
-            {
-            infoRegion2.map((data)=>{
-              return(
-              <option key={data.region_name} value={data.region_name}>{data.region_name}</option>
-                    )
-              })
-            }
-            </select>
+    <ThemeProvider theme={theme}>
+      <Container component="main" maxWidth="sm">
+        <Box
+          sx={{
+            marginTop: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Typography component="h1" variant="h5">
+            Add Facility
+          </Typography>
+          <Box component="form" onSubmit={submitFacility} sx={{ mt: 3 }}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="region-label">Region</InputLabel>
+              <Select
+                labelId="region-label"
+                value={region2}
+                onChange={(e) => setRegion(e.target.value)}
+                label="Region"
+              >
+                <MenuItem value="">
+                  <em>Select Region</em>
+                </MenuItem>
+                {infoRegion2.map((data) => (
+                  <MenuItem key={data.region_name} value={data.region_name}>
+                    {data.region_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          </label>
-        </div>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="zone-label">Zone/Subcity</InputLabel>
+              <Select
+                labelId="zone-label"
+                value={zone_Subcity2}
+                onChange={(e) => setZone_Subcity(e.target.value)}
+                label="Zone/Subcity"
+              >
+                <MenuItem value="">
+                  <em>Select Zone/Subcity</em>
+                </MenuItem>
+                {infoZone2.map((data) =>
+                  data.region_name === region2 ? (
+                    <MenuItem key={data.zone_name} value={data.zone_name}>
+                      {data.zone_name}
+                    </MenuItem>
+                  ) : null
+                )}
+              </Select>
+            </FormControl>
 
-        <div className='form-group'>
-          <label>
-            Zone/Subcity       
-            <br/><br/>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="woreda-label">Woreda</InputLabel>
+              <Select
+                labelId="woreda-label"
+                value={woreda2}
+                onChange={(e) => setWoreda(e.target.value)}
+                label="Woreda"
+              >
+                <MenuItem value="">
+                  <em>Select Woreda</em>
+                </MenuItem>
+                {infoWoreda2.map((data) =>
+                  data.zone_name === zone_Subcity2 ? (
+                    <MenuItem key={data.woreda_name} value={data.woreda_name}>
+                      {data.woreda_name}
+                    </MenuItem>
+                  ) : null
+                )}
+              </Select>
+            </FormControl>
 
-            <select value={zone_Subcity2} onChange={(e)=> setZone_Subcity(e.target.value)} className='form-input'>
-              <option>select Zone/Subcity</option>
-            {
-            infoZone2.map((data)=>{
-            if(data.region_name === region2){
-              return(
-              <option key={data.zone_name} value={data.zone_name}> {data.zone_name} </option>
-                    )
-              }
-              })
-              }
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Facility Name"
+              value={facilityName2}
+              onChange={(e) => setFacilityName(e.target.value)}
+              required
+            />
 
-          </select>
-          </label>
+            <FormControl component="fieldset" margin="normal">
+              <FormLabel component="legend">Facility Type</FormLabel>
+              <RadioGroup value={selectedOption} onChange={handleOptionChange} row>
+                <FormControlLabel value="Public" control={<Radio />} label="Public" />
+                <FormControlLabel value="Private" control={<Radio />} label="Private" />
+                <FormControlLabel value="Gov" control={<Radio />} label="Gov" />
+              </RadioGroup>
+            </FormControl>
 
-        </div>
-
-        <div className='form-group'>
-          <label>
-            Woreda   
-            <br/><br/>
-            <select value={woreda2} onChange={(e)=> setWoreda(e.target.value)} className='form-input'>
-              <option>Select Woreda</option>
-              {
-            infoWoreda2.map((data)=>{
-            if(data.zone_name === zone_Subcity2){
-              return(
-              <option key={data.woreda_name} value={data.woreda_name}> {data.woreda_name} </option>
-                    )
-              }
-              })
-              }
-            </select>
-
-          </label>
-        </div>
-
-        <div className="form-group">
-              <label htmlFor="name" className="form-label">Facility Name</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className="form-input"
-                value={facilityName2}
-                onChange= {(e)=> setFacilityName(e.target.value)}
-                required
-              />
-            </div>
-
-        <div className="radio">
-        <label>
-        <input
-          type="radio"
-          value="Health Center"
-          checked={selectedOption === 'Health Center'}
-          onChange={handleOptionChange}
-        />
-        Health Center
-      </label>
-      
-      <label>
-        <input
-          type="radio"
-          value="Hospital"
-          checked={selectedOption === 'Hospital'}
-          onChange={handleOptionChange}
-        />
-        Hospital
-        
-      </label>
-
-      <label>
-        <input
-          type="radio"
-          value="Others"
-          checked={selectedOption === 'Others'}
-          onChange={handleOptionChange}
-        />
-        Others
-        
-      </label>
-        </div>
-              <br/>
-        <button type="submit" className="form-button">Submit</button>
-      </form>
-    </div>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Submit
+            </Button>
+          </Box>
+        </Box>
+      </Container>
+    </ThemeProvider>
   );
 };
 

@@ -40,7 +40,7 @@ const RegionComponent = () => {
     <div style={{display: 'table', tableLayout:'fixed'}}>
        
         <MUIDataTable
-        title={"Facility list"}
+        title={"Region list"}
         data={info}
         columns={columns}
         options={options}

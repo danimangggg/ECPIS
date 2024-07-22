@@ -91,7 +91,7 @@ const ShowFacilityComponent = () => {
     };
 
     return (
-        <Box sx={{ backgroundColor: 'gray', minHeight: '100vh', position: 'relative' }}>
+        <Box sx={{ minHeight: '100vh', position: 'relative' }}>
             <ThemeProvider theme={getMuiTheme}>
                 <MUIDataTable
                     title={"Organization list"}

@@ -1,121 +1,133 @@
 import { useEffect, useState } from 'react';
-import './AttractiveForm.css';
-import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Box, Button, Container, CssBaseline, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
+const defaultTheme = createTheme();
 
 const AddWoreda = () => {
-
+  const navigate = useNavigate();
   const api_url = process.env.REACT_APP_API_URL; 
-  const [region2, setRegion]= useState('')
-  const [zone_Subcity2, setZone_Subcity]= useState('')
-  const [woreda2, setWoreda]= useState('')
-  const [infoRegion2 , setData] = useState([])
-  const [infoZone2 , setZone] = useState([])
+  const [region2, setRegion] = useState('');
+  const [zone_Subcity2, setZone_Subcity] = useState('');
+  const [woreda2, setWoreda] = useState('');
+  const [infoRegion2, setData] = useState([]);
+  const [infoZone2, setZone] = useState([]);
 
-  const submitFacility= (e) =>{
-   // e.preventDefault();
+  const submitFacility = (e) => {
+    e.preventDefault();
     const fdata = new FormData();
     fdata.append('region', region2);
     fdata.append('zone', zone_Subcity2);
     fdata.append('woreda', woreda2);
     axios.post(`${api_url}/api/addworeda`, fdata)
-      .then((res)=> {
-        alert(res.data.message)
-        setRegion("");
-      }
-        )
-      .catch(err=> console.log(err));
-    }
+      .then((res) => {
+        alert(res.data.message);
+        setRegion('');
+        setZone_Subcity('');
+        setWoreda('');
+      })
+      .catch(err => console.log(err));
+  };
 
-    const getRegion =  ()=>{
+  const getRegion = () => {
     fetch(`${api_url}/api/regions`)
-    .then((e)=>{
-        return e.json()
-    })
-    .then((infoRegion2)=>{
-    setData(infoRegion2)
-    })       
-    }
-    useEffect(()=>
-        { 
-            getRegion()
-        } ,[]) 
+      .then((e) => e.json())
+      .then((infoRegion2) => setData(infoRegion2));
+  };
 
-    const getZone =  ()=>
-    {
-          fetch(`${api_url}/api/zones`)
-          .then((e)=>{
-              return e.json()
-          })
-          .then((infoZone2)=>{
-          setZone(infoZone2)
-          })       
-    }
-    useEffect(()=>
-    { 
-            getZone()
-    } ,[]) 
+  useEffect(() => {
+    getRegion();
+  }, []);
 
+  const getZone = () => {
+    fetch(`${api_url}/api/zones`)
+      .then((e) => e.json())
+      .then((infoZone2) => setZone(infoZone2));
+  };
+
+  useEffect(() => {
+    getZone();
+  }, []);
 
   return (
-    <div className='form-container'>
-      <form className="form" onSubmit={submitFacility}>
-         <h2 className="form-title">Add Woreda</h2>
-      
-         <div className='form-group'>
-     <label>
-       Region
-       <br/><br/>
-       <select value={region2} placeholder='select' onChange={(e)=> setRegion(e.target.value)} className='form-input'>
-        
-       <option>Select Region</option>
-       {
-        infoRegion2.map((data)=>{
-          return(
-          <option key={data.region_name} value={data.region_name}>{data.region_name}</option>
-               )
-         })
-       }
-       </select>
+    <ThemeProvider theme={defaultTheme}>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <IconButton onClick={() => navigate(-1)} sx={{ alignSelf: 'flex-end' }}>
+            <CloseIcon />
+          </IconButton>
+          <Typography component="h1" variant="h5">
+            Add Woreda
+          </Typography>
+          <Box component="form" onSubmit={submitFacility} sx={{ mt: 1 }}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="region-label">Region</InputLabel>
+              <Select
+                labelId="region-label"
+                id="region"
+                value={region2}
+                onChange={(e) => setRegion(e.target.value)}
+                label="Region"
+              >
+                <MenuItem value="">
+                  <em>Select Region</em>
+                </MenuItem>
+                {infoRegion2.map((data) => (
+                  <MenuItem key={data.region_name} value={data.region_name}>
+                    {data.region_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-     </label>
-   </div>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="zone-label">Zone/Subcity</InputLabel>
+              <Select
+                labelId="zone-label"
+                id="zone"
+                value={zone_Subcity2}
+                onChange={(e) => setZone_Subcity(e.target.value)}
+                label="Zone/Subcity"
+              >
+                <MenuItem value="">
+                  <em>Select Zone/Subcity</em>
+                </MenuItem>
+                {infoZone2.filter(data => data.region_name === region2).map((data) => (
+                  <MenuItem key={data.zone_name} value={data.zone_name}>
+                    {data.zone_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-   <div className='form-group'>
-     <label>
-       Zone/Subcity       
-       <br/><br/>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="name"
+              label="Woreda name"
+              name="name"
+              autoComplete="name"
+              value={woreda2}
+              onChange={(e) => setWoreda(e.target.value)}
+            />
 
-       <select value={zone_Subcity2} onChange={(e)=> setZone_Subcity(e.target.value)} className='form-input'>
-         <option>select Zone/Subcity</option>
-        {
-        infoZone2.map((data)=>{
-        if(data.region_name === region2){
-          return(
-          <option key={data.zone_name} value={data.zone_name}> {data.zone_name} </option>
-               )
-          }
-         })
-         }
-
-     </select>
-     </label>
-   </div>
-
-   <div className="form-group">
-          <label htmlFor="name" className="form-label">Woreda name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="form-input"
-            value={woreda2}
-            onChange= {(e)=> setWoreda(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="form-button">Submit</button>
-      </form>
-    </div>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Submit
+            </Button>
+          </Box>
+        </Box>
+      </Container>
+    </ThemeProvider>
   );
 };
 
