@@ -68,7 +68,7 @@ const PdfViewer = ({ pdf }) => {
            
     }
 
-    if(localStorage.getItem("token") !== "guest"){
+    if(localStorage.getItem("AccountType") === "Pod Manager" || localStorage.getItem("AccountType") === "Admin"){
   return (
     <div style={{ width: '100%', height: '800px', backgroundColor: '#333' }}>
       <Link to="/viewPod"  >
