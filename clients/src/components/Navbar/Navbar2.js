@@ -53,6 +53,11 @@ const Navbar = () => {
     navigate('/add-users');
   };
 
+  const userList = () => {
+    navigate('/users');
+  };
+
+
   const resetPassword = () => {
     navigate('/reset-password');
   };
@@ -193,6 +198,12 @@ const Navbar = () => {
             <Divider />
             {localStorage.getItem("AccountType") === "Admin" && (
               <>
+               <MenuItem onClick={userList}>
+                  <ListItemIcon>
+                    <AccountCircle fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Users</ListItemText>
+                </MenuItem>
                 <MenuItem onClick={addUser}>
                   <ListItemIcon>
                     <AddCircleOutline fontSize="small" />
