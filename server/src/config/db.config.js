@@ -1,5 +1,5 @@
 module.exports = {
-  HOST: process.env.REACT_APP_API_URL,
+  HOST: "localhost",
   USER: "root",
   PASSWORD: "areacode",
   DB: "cmmis-dev",
