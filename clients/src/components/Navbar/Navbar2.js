@@ -96,8 +96,16 @@ const Navbar = () => {
           </Menu>
 
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            EPSS-1 CMIS
+            EPSS - Hub 1 Software solutions
           </Typography>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/performance-tracking"
+            sx={{ marginLeft: 2 }}
+          >
+            Performance tracking
+          </Button>
 
           <Button
             color="inherit"
@@ -111,7 +119,7 @@ const Navbar = () => {
           <Button
             color="inherit"
             component={Link}
-            to="/viewPod"
+            to="https://model19-b49f4.web.app/login"
             sx={{ marginLeft: 2 }}
           >
             POD

@@ -13,7 +13,7 @@ const CreateUserForm = () => {
     account_type: '',
   });
 
-  const accountTypes = ['Admin', 'Credit Manager', 'Pod Manager'];
+  const accountTypes = ['Admin', 'Credit Manager', 'Pod Manager', 'Self '];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
