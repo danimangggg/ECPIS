@@ -30,6 +30,7 @@ import AddUsersPage from './pages/UserAccountPage/AddUsersPage';
 import ResetPasswordPage from './pages/UserAccountPage/ResetPasswordPage';
 import UserListPage from './pages/UserAccountPage/UserListPage';
 import TaskTrackingPage from './pages/Performance-tracking/TaskTrackingPage';
+import AddTaskPage from './pages/Performance-tracking/AddTaskPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -70,6 +71,7 @@ const App = () => {
             <Route path = '/reset-password' Component={ResetPasswordPage} />
             <Route path = '/users' Component={UserListPage} />
             <Route path = '/performance-tracking' Component={TaskTrackingPage} />
+            <Route path = '/add-task' Component={AddTaskPage} />
         </Route>
         
       </Routes>
