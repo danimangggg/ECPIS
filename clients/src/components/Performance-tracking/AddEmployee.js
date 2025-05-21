@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+
 import {
   Container,
   Typography,
@@ -31,6 +33,8 @@ const AddEmployee = () => {
     jobTitle: '',
     department: ''
   });
+  
+  const api_url = process.env.REACT_APP_API_URL;
 
   const handleChange = (field, value) => {
     setEmployee((prev) => ({
@@ -39,11 +43,16 @@ const AddEmployee = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    if (!employee.fullName || !employee.jobTitle || !employee.department) {
-      alert('Please fill all fields.');
-      return;
+  const handleSubmit = async () => {
+      //e.preventDefault();
+    try {
+      const result = await axios.post(`${api_url}/api/addEmployee`, employee);
+      alert(result.data.message);
+      window.location.reload();
+    } catch (e) {
+      console.log(`the error is ${e}`);
     }
+    
 
     console.log('Employee submitted:', employee);
 
@@ -54,6 +63,7 @@ const AddEmployee = () => {
       department: ''
     });
   };
+
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>

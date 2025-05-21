@@ -42,6 +42,9 @@ const AddUser = require('../controllers/UserAccount/AddUsers')
 const ResetPassword = require('../controllers/UserAccount/ResetPassword')
 const DeleteUser = require('../controllers/UserAccount/DeleteUser')
 
+//performance tracking
+const addEmployee = require('../controllers/PerformanceTracking-Controller/Employee')
+
 const upload = require("../middleware/upload");
 
 
@@ -83,6 +86,8 @@ let routes =  (app) => {
   router.get("/api/users", ViewUsers.retriveUsers);
   router.post("/api/resetPassword", ResetPassword.ResetPassword);
   router.delete('/api/deleteUser/:id', DeleteUser.deleteUser);
+
+  router.post("/api/addEmployee", addEmployee.CreateEmployee)
 
   return app.use("/", router);
 };
