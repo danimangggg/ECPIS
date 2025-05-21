@@ -7,7 +7,8 @@ import {
   MenuItem,
   Paper,
   Box,
-  IconButton
+  IconButton,
+  Grid
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -21,18 +22,25 @@ const departmentOptions = [
   'EWM'
 ];
 
+const measurementOptions = ['Percentage', 'Number', 'Time'];
+
 const AddTaskForm = () => {
   const [department, setDepartment] = useState('');
-  const [tasks, setTasks] = useState(['']);
+  const [tasks, setTasks] = useState([
+    { description: '', measurement: 'Percentage', target: '' }
+  ]);
 
-  const handleTaskChange = (index, value) => {
+  const handleTaskChange = (index, field, value) => {
     const newTasks = [...tasks];
-    newTasks[index] = value;
+    newTasks[index][field] = value;
     setTasks(newTasks);
   };
 
   const handleAddTask = () => {
-    setTasks([...tasks, '']);
+    setTasks([
+      ...tasks,
+      { description: '', measurement: 'Percentage', target: '' }
+    ]);
   };
 
   const handleRemoveTask = (index) => {
@@ -41,8 +49,13 @@ const AddTaskForm = () => {
   };
 
   const handleSubmit = () => {
-    if (!department || tasks.some((task) => !task.trim())) {
-      alert('Please select a department and fill all task fields.');
+    if (
+      !department ||
+      tasks.some(
+        (task) => !task.description.trim() || !task.target.trim()
+      )
+    ) {
+      alert('Please fill all fields for every task and select a department.');
       return;
     }
 
@@ -54,13 +67,13 @@ const AddTaskForm = () => {
     // Replace this with your actual POST request
     console.log('Submitting:', payload);
 
-    // Reset form after submission
+    // Reset form
     setDepartment('');
-    setTasks(['']);
+    setTasks([{ description: '', measurement: 'Percentage', target: '' }]);
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>
         Add Department Tasks
       </Typography>
@@ -82,28 +95,61 @@ const AddTaskForm = () => {
         </TextField>
 
         {tasks.map((task, index) => (
-          <Box
-            key={index}
-            display="flex"
+          <Grid
+            container
+            spacing={1}
             alignItems="center"
-            gap={1}
+            key={index}
             sx={{ mb: 2 }}
           >
-            <TextField
-              fullWidth
-              label={`Task ${index + 1}`}
-              value={task}
-              onChange={(e) => handleTaskChange(index, e.target.value)}
-            />
-            {tasks.length > 1 && (
-              <IconButton
-                onClick={() => handleRemoveTask(index)}
-                color="error"
+            <Grid item xs={5}>
+              <TextField
+                fullWidth
+                label={`Task ${index + 1}`}
+                value={task.description}
+                onChange={(e) =>
+                  handleTaskChange(index, 'description', e.target.value)
+                }
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                select
+                label="Measurement"
+                fullWidth
+                value={task.measurement}
+                onChange={(e) =>
+                  handleTaskChange(index, 'measurement', e.target.value)
+                }
               >
-                <DeleteIcon />
-              </IconButton>
-            )}
-          </Box>
+                {measurementOptions.map((option, i) => (
+                  <MenuItem key={i} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                fullWidth
+                label="Target"
+                value={task.target}
+                onChange={(e) =>
+                  handleTaskChange(index, 'target', e.target.value)
+                }
+              />
+            </Grid>
+            <Grid item xs={1}>
+              {tasks.length > 1 && (
+                <IconButton
+                  onClick={() => handleRemoveTask(index)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )}
+            </Grid>
+          </Grid>
         ))}
 
         <Box display="flex" justifyContent="space-between" sx={{ mb: 2 }}>
