@@ -20,7 +20,7 @@ const CreateUserForm = () => {
     position: '',
   });
 
-  const accountTypes = ['Admin', 'Credit Manager', 'Pod Manager', 'Self'];
+  const accountTypes = ['Admin', 'Credit Manager', 'Pod Manager', 'Self Assesment'];
   const departments = [
     'ICT Department', 'Finance', 'Human Resource',
     'Transport Management', 'Demand', 'EWM'
@@ -172,7 +172,7 @@ const CreateUserForm = () => {
             <Grid item xs={6}>
               <FormControl fullWidth required>
                 <Select
-                  name="job-title"
+                  name="job_title"
                   value={formData.job_title}
                   onChange={handleChange}
                   displayEmpty

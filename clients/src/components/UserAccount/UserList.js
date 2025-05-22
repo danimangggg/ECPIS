@@ -1,31 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
+import { useNavigate } from 'react-router-dom';
 import {
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Typography,
-  Toolbar,
-  AppBar,
   Box,
-  Divider,
+  Container,
+  IconButton,
+  Paper,
+  Typography,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Button,
-  Paper,
-  Container,
 } from '@mui/material';
-import { Close as CloseIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import {
+  Close as CloseIcon,
+  Delete as DeleteIcon,
+  Add as PlusIcon,
+} from '@mui/icons-material';
+import { DataGrid } from '@mui/x-data-grid';
+import axios from 'axios';
 
-const UserList = ({ onClose }) => {
+const UserList = () => {
   const [users, setUsers] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -51,7 +52,6 @@ const UserList = ({ onClose }) => {
       setUsers(users.filter((user) => user.id !== selectedUser.id));
       setOpenDialog(false);
       setSelectedUser(null);
-     
     } catch (error) {
       console.error('Error deleting user:', error);
     }
@@ -61,58 +61,85 @@ const UserList = ({ onClose }) => {
     setOpenDialog(false);
     setSelectedUser(null);
   };
+
   const handleBack = () => {
     window.history.back();
   };
 
+  const handleAdd = () => {
+    
+        navigate('/add-users');
+  };
+
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'first_name', headerName: 'First Name', flex: 1 },
+    { field: 'last_name', headerName: 'Last Name', flex: 1 },
+    { field: 'user_name', headerName: 'Username', flex: 1 },
+    { field: 'account_type', headerName: 'Account Type', flex: 1 },
+    { field: 'department', headerName: 'Department', flex: 1, valueGetter: (params) => params.row.department || '-' },
+    { field: 'position', headerName: 'Position', flex: 1, valueGetter: (params) => params.row.position || '-' },
+    { field: 'job_title', headerName: 'Job Title', flex: 1, valueGetter: (params) => params.row.job_title || '-' },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      renderCell: (params) =>
+        params.row.account_type !== 'Admin' && (
+          <IconButton
+            style={{ color: 'red' }}
+            onClick={() => handleDeleteClick(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        ),
+    },
+  ];
+
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 2, position: 'relative' }}>
         <IconButton
           edge="end"
-          color="inherit"
           onClick={handleBack}
           sx={{ position: 'absolute', top: 8, right: 8 }}
         >
           <CloseIcon />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-          User List
+
+        <IconButton
+          edge="end"
+          onClick={handleAdd}
+          sx={{ position: 'absolute', top: 8, color: "green", }}
+        >
+          <PlusIcon />
+        </IconButton>
+
+        <Typography variant="h5" align="center" gutterBottom>
+          Employee List
         </Typography>
-        <List>
-          {users.map((user, index) => (
-            <React.Fragment key={user.id}>
-              <ListItem>
-                <ListItemText
-                  primary={`${user.first_name} ${user.last_name}`}
-                  secondary={`Username: ${user.user_name} | Account Type: ${user.account_type}`}
-                />
-                {
-                  user.account_type !== "Admin" ?
-                <ListItemSecondaryAction>
-                  <IconButton style={{color: 'red'}} edge="end" aria-label="delete" onClick={() => handleDeleteClick(user)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction> : null
-                  }
-              </ListItem>
-              {index < users.length - 1 && <Divider />}
-            </React.Fragment>
-          ))}
-        </List>
+
+        <Box sx={{ height: 500, width: '100%' }}>
+          <DataGrid
+            rows={users}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[5, 10, 20]}
+            getRowId={(row) => row.id}
+          />
+        </Box>
 
         <Dialog open={openDialog} onClose={handleDeleteCancel}>
           <DialogTitle>Confirm Delete</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to delete {selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}?
+              Are you sure you want to delete{' '}
+              {selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleDeleteCancel} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleDeleteConfirm} color="primary" autoFocus>
+            <Button onClick={handleDeleteCancel}>Cancel</Button>
+            <Button onClick={handleDeleteConfirm} color="error" autoFocus>
               Delete
             </Button>
           </DialogActions>
