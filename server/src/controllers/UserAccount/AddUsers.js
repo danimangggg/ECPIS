@@ -12,6 +12,9 @@ const AddUser = async (req, res) => {
         last_name : req.body.last_name,
         user_name : req.body.user_name,
         password : hashedPassword,
+        department : req.body.department,
+        position : req.body.position,
+        job_title : req.body.job_title,
         account_type : req.body.account_type
     });
     if(result){

@@ -16,6 +16,12 @@ module.exports = (sequelize, DataTypes) => {
       account_type: {
         type: DataTypes.STRING,
       },
+       position: {
+        type: DataTypes.STRING,
+      },
+       department: {
+        type: DataTypes.STRING,
+      },
       role: {
         type: DataTypes.STRING,
       }
