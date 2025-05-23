@@ -29,5 +29,6 @@ db.registerer = require("./podHandler/registerer.js")(sequelize, Sequelize);
 db.receiver = require("./podHandler/receiver.js")(sequelize, Sequelize);
 db.user = require("./UserAccount/user.js")(sequelize, Sequelize);
 db.accountType = require("./UserAccount/accountType.js")(sequelize, Sequelize);
+db.task = require("./PerformanceTracking/taskModel.js")(sequelize, Sequelize);
 
 module.exports = db;

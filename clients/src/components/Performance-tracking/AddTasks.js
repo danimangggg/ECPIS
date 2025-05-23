@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   Container,
   Typography,
@@ -8,7 +9,7 @@ import {
   Paper,
   Box,
   IconButton,
-  Grid
+  Grid,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -19,7 +20,7 @@ const departmentOptions = [
   'Human Resource',
   'Transport Management',
   'Demand',
-  'EWM'
+  'EWM',
 ];
 
 const measurementOptions = ['Percentage', 'Number', 'Time'];
@@ -27,7 +28,7 @@ const measurementOptions = ['Percentage', 'Number', 'Time'];
 const AddTaskForm = () => {
   const [department, setDepartment] = useState('');
   const [tasks, setTasks] = useState([
-    { description: '', measurement: 'Percentage', target: '' }
+    { description: '', measurement: 'Percentage', target: '' },
   ]);
 
   const handleTaskChange = (index, field, value) => {
@@ -39,7 +40,7 @@ const AddTaskForm = () => {
   const handleAddTask = () => {
     setTasks([
       ...tasks,
-      { description: '', measurement: 'Percentage', target: '' }
+      { description: '', measurement: 'Percentage', target: '' },
     ]);
   };
 
@@ -48,7 +49,7 @@ const AddTaskForm = () => {
     setTasks(newTasks);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !department ||
       tasks.some(
@@ -59,17 +60,26 @@ const AddTaskForm = () => {
       return;
     }
 
-    const payload = {
-      department,
-      tasks
-    };
+    try {
+      // Send POST request for each task
+      await Promise.all(
+        tasks.map((task) =>
+          axios.post(`${process.env.REACT_APP_API_URL}/api/addTask`, {
+            ...task,
+            department,
+          })
+        )
+      );
 
-    // Replace this with your actual POST request
-    console.log('Submitting:', payload);
+      alert('Tasks successfully submitted!');
 
-    // Reset form
-    setDepartment('');
-    setTasks([{ description: '', measurement: 'Percentage', target: '' }]);
+      // Reset form
+      setDepartment('');
+      setTasks([{ description: '', measurement: 'Percentage', target: '' }]);
+    } catch (error) {
+      console.error('Error submitting tasks:', error);
+      alert('There was an error submitting the tasks.');
+    }
   };
 
   return (
@@ -86,6 +96,7 @@ const AddTaskForm = () => {
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
           sx={{ mb: 3 }}
+          required
         >
           {departmentOptions.map((dept, idx) => (
             <MenuItem key={idx} value={dept}>
@@ -95,13 +106,7 @@ const AddTaskForm = () => {
         </TextField>
 
         {tasks.map((task, index) => (
-          <Grid
-            container
-            spacing={1}
-            alignItems="center"
-            key={index}
-            sx={{ mb: 2 }}
-          >
+          <Grid container spacing={1} alignItems="center" key={index} sx={{ mb: 2 }}>
             <Grid item xs={5}>
               <TextField
                 fullWidth
@@ -110,6 +115,7 @@ const AddTaskForm = () => {
                 onChange={(e) =>
                   handleTaskChange(index, 'description', e.target.value)
                 }
+                required
               />
             </Grid>
             <Grid item xs={3}>
@@ -137,6 +143,7 @@ const AddTaskForm = () => {
                 onChange={(e) =>
                   handleTaskChange(index, 'target', e.target.value)
                 }
+                required
               />
             </Grid>
             <Grid item xs={1}>
