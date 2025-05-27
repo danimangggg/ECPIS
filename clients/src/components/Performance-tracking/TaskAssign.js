@@ -1,146 +1,155 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Container,
   Typography,
-  Select,
-  MenuItem,
   TextField,
   Button,
-  Grid,
+  MenuItem,
   Paper,
   Box,
+  Grid
 } from '@mui/material';
-import axios from 'axios';
+import AddIcon from '@mui/icons-material/Add';
 
 const TaskAssign = ({ currentUser }) => {
-  const [availableUsers, setAvailableUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [tasks, setTasks] = useState([
-    { description: '', measurement: 'Percentage', target: '' }
-  ]);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [tasks, setTasks] = useState([{ description: '' }]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch users based on current user position
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      if (!currentUser || !currentUser.position) return;
-
-      const role =
-        currentUser.position === 'Manager'
-          ? 'Coordinator'
-          : currentUser.position === 'Coordinator'
-          ? 'Officer'
-          : null;
-
-      if (!role) return;
+    const fetchEmployees = async () => {
+      if (!currentUser || !currentUser.position) {
+        setLoading(false);
+        return;
+      }
 
       try {
-        const res = await axios.get(`http://localhost:3001/api/users?role=${role}`);
-        setAvailableUsers(res.data);
-      } catch (err) {
-        console.error('Error fetching users:', err);
+        let response;
+        if (currentUser.position === 'Manager') {
+          response = await axios.get('/api/employees/coordinators');
+        } else if (currentUser.position === 'Coordinator') {
+          response = await axios.get(`/api/employees/officers/${currentUser.department}`);
+        }
+
+        if (response && response.data) {
+          setEmployees(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchEmployees();
   }, [currentUser]);
 
-  const handleTaskChange = (index, field, value) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index][field] = value;
-    setTasks(updatedTasks);
+  const handleTaskChange = (index, value) => {
+    const newTasks = [...tasks];
+    newTasks[index].description = value;
+    setTasks(newTasks);
   };
 
   const handleAddTask = () => {
-    setTasks([...tasks, { description: '', measurement: 'Percentage', target: '' }]);
+    setTasks([...tasks, { description: '' }]);
   };
 
   const handleSubmit = async () => {
-    if (!selectedUserId || tasks.some(t => !t.description || !t.target)) {
-      alert('Please complete all fields and select a user.');
+    if (!selectedEmployeeId || tasks.some(t => !t.description.trim())) {
+      alert('Please select an employee and fill in all tasks.');
       return;
     }
 
     try {
       const payload = {
-        assignedBy: currentUser.id,
-        assignedTo: selectedUserId,
-        tasks,
+        assignerId: currentUser.id,
+        assigneeId: selectedEmployeeId,
+        tasks: tasks.map(t => t.description)
       };
 
-      const res = await axios.post('http://localhost:3001/api/assignTask', payload);
+      await axios.post('/api/taskAssignments', payload);
       alert('Tasks assigned successfully!');
-      setSelectedUserId('');
-      setTasks([{ description: '', measurement: 'Percentage', target: '' }]);
+      setSelectedEmployeeId('');
+      setTasks([{ description: '' }]);
     } catch (error) {
-      console.error('Error submitting task assignment:', error);
+      console.error('Error submitting tasks:', error);
+      alert('Failed to assign tasks.');
     }
   };
 
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (!currentUser) {
+    return <Typography color="error">Error: User information is missing.</Typography>;
+  }
+
   return (
-    <Container maxWidth="md">
-      <Typography variant="h5" gutterBottom mt={4}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Typography variant="h5" gutterBottom>
         Assign Tasks
       </Typography>
-      <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
-        <Select
+
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Box mb={2}>
+          <Typography variant="subtitle1">
+            <strong>User:</strong> {currentUser.first_name} {currentUser.last_name}
+          </Typography>
+          <Typography variant="subtitle1">
+            <strong>Position:</strong> {currentUser.position}
+          </Typography>
+          <Typography variant="subtitle1">
+            <strong>Department:</strong> {currentUser.department}
+          </Typography>
+        </Box>
+
+        <TextField
+          select
           fullWidth
-          value={selectedUserId}
-          displayEmpty
-          onChange={(e) => setSelectedUserId(e.target.value)}
+          label={
+            currentUser.position === 'Manager'
+              ? 'Select Coordinator'
+              : 'Select Officer'
+          }
+          value={selectedEmployeeId}
+          onChange={(e) => setSelectedEmployeeId(e.target.value)}
           sx={{ mb: 3 }}
         >
-          <MenuItem value="" disabled>
-            Select a {currentUser?.position === 'Manager' ? 'Coordinator' : 'Officer'}
-          </MenuItem>
-          {availableUsers.map((user) => (
-            <MenuItem key={user.id} value={user.id}>
-              {user.fullName} ({user.position})
+          {employees.map((emp) => (
+            <MenuItem key={emp.id} value={emp.id}>
+              {emp.first_name} {emp.last_name}
             </MenuItem>
           ))}
-        </Select>
+        </TextField>
 
         {tasks.map((task, index) => (
-          <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-            <Grid item xs={5}>
-              <TextField
-                fullWidth
-                label="Description"
-                value={task.description}
-                onChange={(e) => handleTaskChange(index, 'description', e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <TextField
-                select
-                fullWidth
-                label="Measurement"
-                value={task.measurement}
-                onChange={(e) => handleTaskChange(index, 'measurement', e.target.value)}
-              >
-                <MenuItem value="Percentage">Percentage</MenuItem>
-                <MenuItem value="Number">Number</MenuItem>
-                <MenuItem value="Time">Time</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label="Target"
-                value={task.target}
-                onChange={(e) => handleTaskChange(index, 'target', e.target.value)}
-              />
-            </Grid>
-          </Grid>
+          <TextField
+            key={index}
+            fullWidth
+            label={`Task ${index + 1}`}
+            value={task.description}
+            onChange={(e) => handleTaskChange(index, e.target.value)}
+            sx={{ mb: 2 }}
+          />
         ))}
 
-        <Box display="flex" justifyContent="space-between" mt={2}>
-          <Button onClick={handleAddTask} variant="outlined">
+        <Box display="flex" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={handleAddTask}
+            variant="outlined"
+          >
             Add Another Task
           </Button>
-          <Button onClick={handleSubmit} variant="contained">
-            Assign Tasks
-          </Button>
         </Box>
+
+        <Button variant="contained" onClick={handleSubmit}>
+          Assign Tasks
+        </Button>
       </Paper>
     </Container>
   );
