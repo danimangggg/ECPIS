@@ -45,6 +45,7 @@ const DeleteUser = require('../controllers/UserAccount/DeleteUser')
 //performance tracking
 const addTask = require('../controllers/PerformanceTracking-Controller/addTask')
 const ViewTask = require('../controllers/PerformanceTracking-Controller/viewTask')
+const addAssignedTask = require('../controllers/PerformanceTracking-Controller/AssignTask')
 
 const upload = require("../middleware/upload");
 
@@ -90,6 +91,7 @@ let routes =  (app) => {
 
   router.post("/api/addTask", addTask.AddTask)
   router.get("/api/tasks", ViewTask.retriveTasks)
+  router.post("/api/addAssignedTask", addAssignedTask.AssignedTask)
 
   return app.use("/", router);
 };

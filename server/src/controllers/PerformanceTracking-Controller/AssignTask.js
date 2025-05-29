@@ -1,24 +1,21 @@
-// controller/taskAssignmentController.js
 const db = require('../../models');
-const TaskAssignment = db.taskassignment;
+const assigned_task = db.assignedTask;
 
-const assignTasks = async (req, res) => {
-  const { assigned_by, assigned_to, tasks } = req.body;
-
+const AssignedTask = async (req, res) => {
   try {
-    const created = await Promise.all(
-      tasks.map(task => TaskAssignment.create({
-        assigned_by,
-        assigned_to,
-        task_description: task.description,
-      }))
-    );
+    const result = await assigned_task.create({
+      userId: req.body.userId,
+      taskId: req.body.taskId,
+      target: req.body.target,
+    });
 
-    res.status(200).json({ message: 'Tasks assigned successfully', data: created });
-  } catch (err) {
-    console.error('Error assigning tasks:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(200).send({ message: "Task created successfully", task: result });
+  } catch (error) {
+    console.error("Error saving task:", error);
+    res.status(500).send({ message: "Failed to save task", error: error.message });
   }
 };
 
-module.exports = { assignTasks };
+module.exports = {
+  AssignedTask
+};
