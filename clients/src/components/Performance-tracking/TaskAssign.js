@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Box,
   Container,
   Paper,
   Typography,
@@ -9,8 +10,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
-  Checkbox,
-  ListItemText,
+  TextField,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -26,7 +26,9 @@ const TaskAssign = () => {
 
   const [allTasks, setAllTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
-  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
+  const [selectedTaskId, setSelectedTaskId] = useState('');
+
+  const [dailyTarget, setDailyTarget] = useState('');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -56,45 +58,36 @@ const TaskAssign = () => {
       const coordinators = allUsers.filter(user => user.position === 'Coordinator');
       setFilteredEmployees(coordinators);
     } else if (Position === 'Coordinator') {
-      const officers = allUsers.filter(
-        user => user.position === 'Officer' && user.department === Department
+      const officers = allUsers.filter(user =>
+        user.position === 'Officer' && user.department === Department
       );
       setFilteredEmployees(officers);
     }
   }, [allUsers, Position, Department]);
 
   useEffect(() => {
-    const departmentTasks = allTasks.filter(
-      task => task.department === Department
-    );
+    const departmentTasks = allTasks.filter(task => task.department === Department);
     setFilteredTasks(departmentTasks);
   }, [allTasks, Department]);
 
-  const handleEmployeeSelect = (event) => {
-    setSelectedEmployeeId(event.target.value);
-  };
-
-  const handleTaskSelect = (event) => {
-    setSelectedTaskIds(event.target.value);
-  };
-
   const handleSubmit = async () => {
-    if (!selectedEmployeeId || selectedTaskIds.length === 0) {
-      alert('Please select one employee and at least one task.');
+    if (!selectedEmployeeId || !selectedTaskId || !dailyTarget) {
+      alert('Please select an employee, a task, and enter the daily target.');
       return;
     }
 
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/api/assignTask`, {
         employeeId: selectedEmployeeId,
-        taskIds: selectedTaskIds,
+        taskId: selectedTaskId,
+        dailyTarget: Number(dailyTarget),
       });
-      alert('Tasks assigned successfully!');
-      setSelectedEmployeeId('');
-      setSelectedTaskIds([]);
+      alert('Task assigned successfully!');
+      setSelectedTaskId('');
+      setDailyTarget('');
     } catch (err) {
-      console.error('Error assigning tasks:', err);
-      alert('Failed to assign tasks.');
+      console.error('Error assigning task:', err);
+      alert('Failed to assign task.');
     }
   };
 
@@ -114,20 +107,24 @@ const TaskAssign = () => {
         </IconButton>
 
         <Typography variant="h5" align="center" gutterBottom>
-          Assign Tasks
+          Assign Task
         </Typography>
 
         <Typography variant="subtitle1" align="center" gutterBottom>
           {FullName} | {Position} | {Department}
         </Typography>
 
-        {/* Select One Employee */}
+        {/* Select Employee */}
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Select Employee</InputLabel>
           <Select
             value={selectedEmployeeId}
-            onChange={handleEmployeeSelect}
-            label="Select Employee"
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            renderValue={(selected) =>
+              filteredEmployees.find(emp => emp.id === selected)
+                ? `${filteredEmployees.find(emp => emp.id === selected).first_name} ${filteredEmployees.find(emp => emp.id === selected).last_name}`
+                : ''
+            }
           >
             {filteredEmployees.map((emp) => (
               <MenuItem key={emp.id} value={emp.id}>
@@ -137,32 +134,43 @@ const TaskAssign = () => {
           </Select>
         </FormControl>
 
-              {/* Select Multiple Tasks */}
+        {/* Select Task */}
         <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Select Tasks</InputLabel>
+          <InputLabel>Select Task</InputLabel>
           <Select
-            multiple
-            value={selectedTaskIds}
-            onChange={(e) => setSelectedTaskIds(e.target.value.map(Number))}
+            value={selectedTaskId}
+            onChange={(e) => setSelectedTaskId(e.target.value)}
             renderValue={(selected) =>
-              filteredTasks
-                .filter(task => selected.includes(task.id))
-                .map(task => task.description)
-                .join(', ')
+              filteredTasks.find(task => task.id === selected)?.description || ''
             }
           >
             {filteredTasks.map((task) => (
               <MenuItem key={task.id} value={task.id}>
-                <Checkbox checked={selectedTaskIds.includes(task.id)} />
-                <ListItemText primary={task.description} />
+                {task.description}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
+        {/* Daily Target */}
+        <TextField
+          fullWidth
+          label="Daily Target"
+          type="number"
+          value={dailyTarget}
+          onChange={(e) => setDailyTarget(e.target.value)}
+          sx={{ mb: 2 }}
+        />
 
-        <Button onClick={handleSubmit} variant="contained" color="primary" fullWidth>
-          Assign Tasks
+        <Button onClick={handleSubmit} variant="contained" color="primary" fullWidth sx={{ mb: 1 }}>
+          Assign Task
+        </Button>
+
+        <Button onClick={() => {
+          setSelectedTaskId('');
+          setDailyTarget('');
+        }} variant="outlined" color="secondary" fullWidth>
+          Add Another Task
         </Button>
       </Paper>
     </Container>
