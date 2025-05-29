@@ -44,6 +44,7 @@ const DeleteUser = require('../controllers/UserAccount/DeleteUser')
 
 //performance tracking
 const addTask = require('../controllers/PerformanceTracking-Controller/addTask')
+const ViewTask = require('../controllers/PerformanceTracking-Controller/viewTask')
 
 const upload = require("../middleware/upload");
 
@@ -88,6 +89,7 @@ let routes =  (app) => {
   router.delete('/api/deleteUser/:id', DeleteUser.deleteUser);
 
   router.post("/api/addTask", addTask.AddTask)
+  router.get("/api/tasks", ViewTask.retriveTasks)
 
   return app.use("/", router);
 };

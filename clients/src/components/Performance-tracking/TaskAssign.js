@@ -1,153 +1,167 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
-  Typography,
-  TextField,
-  Button,
-  MenuItem,
   Paper,
-  Box,
-  Grid
+  Typography,
+  IconButton,
+  Button,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Checkbox,
+  ListItemText,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Close as CloseIcon } from '@mui/icons-material';
+import axios from 'axios';
 
-const TaskAssign = ({ currentUser }) => {
-  const [employees, setEmployees] = useState([]);
+const TaskAssign = () => {
+  const FullName = localStorage.getItem('FullName');
+  const Department = localStorage.getItem('Department');
+  const Position = localStorage.getItem('Position');
+
+  const [allUsers, setAllUsers] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
-  const [tasks, setTasks] = useState([{ description: '' }]);
-  const [loading, setLoading] = useState(true);
 
+  const [allTasks, setAllTasks] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      if (!currentUser || !currentUser.position) {
-        setLoading(false);
-        return;
-      }
-
+    const fetchUsers = async () => {
       try {
-        let response;
-        if (currentUser.position === 'Manager') {
-          response = await axios.get('/api/employees/coordinators');
-        } else if (currentUser.position === 'Coordinator') {
-          response = await axios.get(`/api/employees/officers/${currentUser.department}`);
-        }
-
-        if (response && response.data) {
-          setEmployees(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-      } finally {
-        setLoading(false);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/users`);
+        setAllUsers(res.data);
+      } catch (err) {
+        console.error('Error fetching users:', err);
       }
     };
 
-    fetchEmployees();
-  }, [currentUser]);
+    const fetchTasks = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks`);
+        setAllTasks(res.data);
+      } catch (err) {
+        console.error('Error fetching tasks:', err);
+      }
+    };
 
-  const handleTaskChange = (index, value) => {
-    const newTasks = [...tasks];
-    newTasks[index].description = value;
-    setTasks(newTasks);
+    fetchUsers();
+    fetchTasks();
+  }, []);
+
+  useEffect(() => {
+    if (Position === 'Manager') {
+      const coordinators = allUsers.filter(user => user.position === 'Coordinator');
+      setFilteredEmployees(coordinators);
+    } else if (Position === 'Coordinator') {
+      const officers = allUsers.filter(
+        user => user.position === 'Officer' && user.department === Department
+      );
+      setFilteredEmployees(officers);
+    }
+  }, [allUsers, Position, Department]);
+
+  useEffect(() => {
+    const departmentTasks = allTasks.filter(
+      task => task.department === Department
+    );
+    setFilteredTasks(departmentTasks);
+  }, [allTasks, Department]);
+
+  const handleEmployeeSelect = (event) => {
+    setSelectedEmployeeId(event.target.value);
   };
 
-  const handleAddTask = () => {
-    setTasks([...tasks, { description: '' }]);
+  const handleTaskSelect = (event) => {
+    setSelectedTaskIds(event.target.value);
   };
 
   const handleSubmit = async () => {
-    if (!selectedEmployeeId || tasks.some(t => !t.description.trim())) {
-      alert('Please select an employee and fill in all tasks.');
+    if (!selectedEmployeeId || selectedTaskIds.length === 0) {
+      alert('Please select one employee and at least one task.');
       return;
     }
 
     try {
-      const payload = {
-        assignerId: currentUser.id,
-        assigneeId: selectedEmployeeId,
-        tasks: tasks.map(t => t.description)
-      };
-
-      await axios.post('/api/taskAssignments', payload);
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/assignTask`, {
+        employeeId: selectedEmployeeId,
+        taskIds: selectedTaskIds,
+      });
       alert('Tasks assigned successfully!');
       setSelectedEmployeeId('');
-      setTasks([{ description: '' }]);
-    } catch (error) {
-      console.error('Error submitting tasks:', error);
+      setSelectedTaskIds([]);
+    } catch (err) {
+      console.error('Error assigning tasks:', err);
       alert('Failed to assign tasks.');
     }
   };
 
-  if (loading) {
-    return <Typography>Loading...</Typography>;
-  }
-
-  if (!currentUser) {
-    return <Typography color="error">Error: User information is missing.</Typography>;
-  }
+  const handleBack = () => {
+    window.history.back();
+  };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Assign Tasks
-      </Typography>
-
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Box mb={2}>
-          <Typography variant="subtitle1">
-            <strong>User:</strong> {currentUser.first_name} {currentUser.last_name}
-          </Typography>
-          <Typography variant="subtitle1">
-            <strong>Position:</strong> {currentUser.position}
-          </Typography>
-          <Typography variant="subtitle1">
-            <strong>Department:</strong> {currentUser.department}
-          </Typography>
-        </Box>
-
-        <TextField
-          select
-          fullWidth
-          label={
-            currentUser.position === 'Manager'
-              ? 'Select Coordinator'
-              : 'Select Officer'
-          }
-          value={selectedEmployeeId}
-          onChange={(e) => setSelectedEmployeeId(e.target.value)}
-          sx={{ mb: 3 }}
+    <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, position: 'relative' }}>
+        <IconButton
+          edge="end"
+          onClick={handleBack}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
         >
-          {employees.map((emp) => (
-            <MenuItem key={emp.id} value={emp.id}>
-              {emp.first_name} {emp.last_name}
-            </MenuItem>
-          ))}
-        </TextField>
+          <CloseIcon />
+        </IconButton>
 
-        {tasks.map((task, index) => (
-          <TextField
-            key={index}
-            fullWidth
-            label={`Task ${index + 1}`}
-            value={task.description}
-            onChange={(e) => handleTaskChange(index, e.target.value)}
-            sx={{ mb: 2 }}
-          />
-        ))}
+        <Typography variant="h5" align="center" gutterBottom>
+          Assign Tasks
+        </Typography>
 
-        <Box display="flex" justifyContent="space-between" sx={{ mb: 2 }}>
-          <Button
-            startIcon={<AddIcon />}
-            onClick={handleAddTask}
-            variant="outlined"
+        <Typography variant="subtitle1" align="center" gutterBottom>
+          {FullName} | {Position} | {Department}
+        </Typography>
+
+        {/* Select One Employee */}
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Select Employee</InputLabel>
+          <Select
+            value={selectedEmployeeId}
+            onChange={handleEmployeeSelect}
+            label="Select Employee"
           >
-            Add Another Task
-          </Button>
-        </Box>
+            {filteredEmployees.map((emp) => (
+              <MenuItem key={emp.id} value={emp.id}>
+                {emp.first_name} {emp.last_name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-        <Button variant="contained" onClick={handleSubmit}>
+              {/* Select Multiple Tasks */}
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Select Tasks</InputLabel>
+          <Select
+            multiple
+            value={selectedTaskIds}
+            onChange={(e) => setSelectedTaskIds(e.target.value.map(Number))}
+            renderValue={(selected) =>
+              filteredTasks
+                .filter(task => selected.includes(task.id))
+                .map(task => task.description)
+                .join(', ')
+            }
+          >
+            {filteredTasks.map((task) => (
+              <MenuItem key={task.id} value={task.id}>
+                <Checkbox checked={selectedTaskIds.includes(task.id)} />
+                <ListItemText primary={task.description} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+
+        <Button onClick={handleSubmit} variant="contained" color="primary" fullWidth>
           Assign Tasks
         </Button>
       </Paper>

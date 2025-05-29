@@ -48,6 +48,8 @@ export default function SignIn() {
         localStorage.setItem('token', token);
         localStorage.setItem("FullName", response.data.FullName);
         localStorage.setItem("AccountType", response.data.AccountType);
+        localStorage.setItem("Department", response.data.Department);
+        localStorage.setItem("Position", response.data.Position);
 
         // Redirect to a protected route
         navigate('/viewContract');

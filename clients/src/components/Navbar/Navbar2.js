@@ -255,7 +255,7 @@ const Navbar = () => {
 
              <MenuItem onClick={signOut}>
              <ListItemIcon>
-               <ExitToApp fontSize="small" />
+               <ExitToApp fontSize="small"/>
              </ListItemIcon>
              <ListItemText>
                <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
