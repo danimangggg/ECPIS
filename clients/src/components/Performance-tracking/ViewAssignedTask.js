@@ -9,36 +9,39 @@ const ViewAssignedTask = () => {
     const [editedAchievements, setEditedAchievements] = useState({});
 
     const userId = localStorage.getItem('UserId');
+    const userIdNumber = Number(userId);
 
     useEffect(() => {
-        const fetchAssignedTasks = async () => {
+        const fetchData = async () => {
             try {
-                const res = await axios.get('/api/viewAssignedTask');
-                const userAssignments = res.data.filter(assignment => assignment.userId === Number(userId));
+                // Fetch all assigned tasks
+                const assignedRes = await axios.get('http://localhost:3001/api/viewAssignedTask');
+                const userAssignments = assignedRes.data.filter(assignment => assignment.userId === userIdNumber);
 
-                // Fetch task details for each assignment
-                const detailedTasks = await Promise.all(
-                    userAssignments.map(async (assignment) => {
-                        const taskRes = await axios.get(`/api/tasks/${assignment.taskId}`);
-                        return {
-                            ...assignment,
-                            taskName: taskRes.data.taskName,
-                            target: taskRes.data.target,
-                            achievement: assignment.achievement || '',
-                        };
-                    })
-                );
+                const tasksRes = await axios.get('http://localhost:3001/api/tasks');
+                const allTasks = tasksRes.data;
 
-                setTasks(detailedTasks);
+                // Combine assignment + task details
+                const combinedTasks = userAssignments.map(assignment => {
+                    const matchedTask = allTasks.find(task => task.id === assignment.taskId);
+                    return {
+                        ...assignment,
+                        taskName: matchedTask?.taskName || 'Unknown Task',
+                        target: matchedTask?.target || '',
+                        achievement: assignment.achievement || '',
+                    };
+                });
+
+                setTasks(combinedTasks);
                 setLoading(false);
             } catch (error) {
-                console.error('Error fetching assigned tasks:', error);
+                console.error('Error fetching data:', error);
                 setLoading(false);
             }
         };
 
-        fetchAssignedTasks();
-    }, [userId]);
+        fetchData();
+    }, [userIdNumber]);
 
     const handleAchievementChange = (taskId, value) => {
         setEditedAchievements({
@@ -55,7 +58,6 @@ const ViewAssignedTask = () => {
                 achievement: newAchievement,
             });
 
-            // Update local state
             const updatedTasks = tasks.map(t =>
                 t.taskId === task.taskId ? { ...t, achievement: newAchievement } : t
             );
