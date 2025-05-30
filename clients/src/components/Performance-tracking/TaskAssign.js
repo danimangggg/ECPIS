@@ -77,16 +77,19 @@ const TaskAssign = () => {
     }
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/assignTask`, {
-        employeeId: selectedEmployeeId,
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/addAssignedTask`, {
+        userId: selectedEmployeeId,
         taskId: selectedTaskId,
-        dailyTarget: Number(dailyTarget),
+        target: Number(dailyTarget),
       });
       alert('Task assigned successfully!');
       setSelectedTaskId('');
       setDailyTarget('');
     } catch (err) {
       console.error('Error assigning task:', err);
+      alert(selectedEmployeeId  );
+      alert(selectedTaskId);
+      alert(dailyTarget);
       alert('Failed to assign task.');
     }
   };
