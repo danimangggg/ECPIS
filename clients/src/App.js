@@ -33,6 +33,7 @@ import TaskTrackingPage from './pages/Performance-tracking/TaskTrackingPage';
 import AddTaskPage from './pages/Performance-tracking/AddTaskPage';
 import AddEmployeePage from './pages/Performance-tracking/AddEployeePage';
 import AssignTaskPage from './pages/Performance-tracking/TaskAssignPage';
+import AssignedTaskPage from './pages/Performance-tracking/viewAssignedTaskPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -76,6 +77,7 @@ const App = () => {
             <Route path = '/add-task' Component={AddTaskPage} />
             <Route path = '/add-employee' Component={AddEmployeePage} />
             <Route path = '/assign-task' Component={AssignTaskPage} />
+            <Route path = '/assigned-task' Component={AssignedTaskPage} />
         </Route>
         
       </Routes>
