@@ -1,133 +1,148 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import MUIDataTable from 'mui-datatables';
 import { Button, TextField } from '@mui/material';
-import axios from 'axios';
+import SaveIcon from '@mui/icons-material/Save';
 
 const ViewAssignedTask = () => {
-    const [tasks, setTasks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [editedAchievements, setEditedAchievements] = useState({});
+  const [assignedTasks, setAssignedTasks] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const userId = localStorage.getItem('UserId');
+  const fullName = localStorage.getItem('FullName') || 'Unknown';
+  const department = localStorage.getItem('Department') || 'Unknown';
 
-    const userId = localStorage.getItem('UserId');
-    const userIdNumber = Number(userId);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const assignedRes = await axios.get('http://localhost:3001/api/viewAssignedTask');
+        const tasksRes = await axios.get('http://localhost:3001/api/tasks');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch all assigned tasks
-                const assignedRes = await axios.get('http://localhost:3001/api/viewAssignedTask');
-                const userAssignments = assignedRes.data.filter(assignment => assignment.userId === userIdNumber);
+        const userAssigned = assignedRes.data.filter(
+          (item) => String(item.userId) === userId
+        );
 
-                const tasksRes = await axios.get('http://localhost:3001/api/tasks');
-                const allTasks = tasksRes.data;
+        const combinedData = userAssigned.map((item, index) => {
+          const taskDetail = tasksRes.data.find(
+            (task) => String(task.id) === String(item.taskId)
+          );
 
-                // Combine assignment + task details
-                const combinedTasks = userAssignments.map(assignment => {
-                    const matchedTask = allTasks.find(task => task.id === assignment.taskId);
-                    return {
-                        ...assignment,
-                        taskName: matchedTask?.taskName || 'Unknown Task',
-                        target: matchedTask?.target || '',
-                        achievement: assignment.achievement || '',
-                    };
-                });
-
-                setTasks(combinedTasks);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [userIdNumber]);
-
-    const handleAchievementChange = (taskId, value) => {
-        setEditedAchievements({
-            ...editedAchievements,
-            [taskId]: value,
+          return {
+            rollNumber: index + 1,
+            fullName,
+            department,
+            taskDescription: taskDetail ? taskDetail.description : 'N/A',
+            target: item.target,
+            achievement: item.achievement || '',
+            assignedTaskId: item.id, // assuming each assignment has an ID
+          };
         });
+
+        setAssignedTasks(combinedData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        setLoading(false);
+      }
     };
 
-    const handleSave = async (task) => {
-        try {
-            const newAchievement = editedAchievements[task.taskId] || task.achievement;
-            await axios.put(`/api/tasks/${task.taskId}/achievement`, {
-                userId: task.userId,
-                achievement: newAchievement,
-            });
+    fetchData();
+  }, [userId, fullName, department]);
 
-            const updatedTasks = tasks.map(t =>
-                t.taskId === task.taskId ? { ...t, achievement: newAchievement } : t
-            );
-            setTasks(updatedTasks);
-            alert('Achievement updated!');
-        } catch (error) {
-            console.error('Error saving achievement:', error);
-            alert('Failed to update achievement.');
-        }
-    };
+  const handleAchievementChange = (value, rowIndex) => {
+    const updated = [...assignedTasks];
+    updated[rowIndex].achievement = value;
+    setAssignedTasks(updated);
+  };
 
-    const columns = [
-        { name: 'fullName', label: 'Full Name' },
-        { name: 'department', label: 'Department' },
-        { name: 'taskName', label: 'Assigned Task' },
-        { name: 'target', label: 'Target' },
-        {
-            name: 'achievement',
-            label: 'Achievement',
-            options: {
-                customBodyRenderLite: (dataIndex) => {
-                    const task = tasks[dataIndex];
-                    return (
-                        <TextField
-                            value={editedAchievements[task.taskId] ?? task.achievement}
-                            onChange={(e) => handleAchievementChange(task.taskId, e.target.value)}
-                            size="small"
-                        />
-                    );
-                }
+  const handleSave = async (rowData) => {
+    try {
+      await axios.put(`/api/updateAchievement/${rowData.assignedTaskId}`, {
+        achievement: rowData.achievement,
+      });
+      alert('Achievement updated successfully!');
+    } catch (error) {
+      console.error('Error saving achievement:', error);
+      alert('Failed to update achievement.');
+    }
+  };
+
+  const columns = [
+    { name: 'rollNumber', label: 'Roll Number', options: { filter: false, sort: true } },
+    { name: 'fullName', label: 'Full Name', options: { filter: false, sort: false } },
+    { name: 'department', label: 'Department', options: { filter: false, sort: false } },
+    { name: 'taskDescription', label: 'Task Description', options: { filter: false, sort: false } },
+    { name: 'target', label: 'Target', options: { filter: false, sort: false } },
+    {
+      name: 'achievement',
+      label: 'Achievement',
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (value, tableMeta) => (
+          <TextField
+            value={value}
+            onChange={(e) =>
+              handleAchievementChange(e.target.value, tableMeta.rowIndex)
             }
+            size="small"
+            variant="outlined"
+          />
+        ),
+      },
+    },
+    {
+      name: 'save',
+      label: 'Save',
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRenderLite: (dataIndex) => {
+          const rowData = assignedTasks[dataIndex];
+          return (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<SaveIcon />}
+              onClick={() => handleSave(rowData)}
+            >
+              Save
+            </Button>
+          );
         },
-        {
-            name: 'save',
-            label: 'Action',
-            options: {
-                customBodyRenderLite: (dataIndex) => {
-                    const task = tasks[dataIndex];
-                    return (
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleSave(task)}
-                        >
-                            Save
-                        </Button>
-                    );
-                }
-            }
-        }
-    ];
+      },
+    },
+  ];
 
-    const options = {
-        selectableRows: 'none',
-        isRowSelectable: () => false,
-    };
+  const options = {
+    selectableRows: 'none',
+    elevation: 4,
+    rowsPerPage: 10,
+    textLabels: {
+      body: {
+        noMatch: loading ? 'Loading...' : 'Sorry, no matching records found',
+      },
+    },
+    setTableProps: () => ({
+      sx: {
+        '& thead th': {
+          fontWeight: 'bold',
+          fontSize: '1rem',
+        },
+      },
+    }),
+  };
 
-    if (loading) return <div>Loading tasks...</div>;
-
-    return (
-        <div style={{ padding: '20px' }}>
-            <h2>My Assigned Tasks</h2>
-            <MUIDataTable
-                title={'Assigned Tasks List'}
-                data={tasks}
-                columns={columns}
-                options={options}
-            />
-        </div>
-    );
+  return (
+    <div style={{ padding: '20px' }}>
+      <MUIDataTable
+        title={'Assigned Tasks'}
+        data={assignedTasks}
+        columns={columns}
+        options={options}
+      />
+    </div>
+  );
 };
 
 export default ViewAssignedTask;
