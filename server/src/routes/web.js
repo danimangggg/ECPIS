@@ -98,7 +98,7 @@ let routes =  (app) => {
   router.post("/api/addAssignedTask", addAssignedTask.AssignedTask)
   router.get("/api/viewAssignedTask", viewAssignedTask.retriveAssignedTasks)
   router.post("/api/add-achievement", AddAchivment.AddAchivment)
-  router.get("/api/get-achievements", viewAssignedTask.retriveAssignedTasks)
+  router.get("/api/get-achievements", getAchivment.retriveAchievement)
 
   return app.use("/", router);
 };

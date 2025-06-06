@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     savedDate: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.STRING,
       allowNull: false
     },
   });
