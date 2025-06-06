@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  TextField,
-  Button,
-  Typography,
-  Box,
-  CircularProgress,
-} from "@mui/material";
+import { TextField, Button, Typography, Box, CircularProgress } from "@mui/material";
 
 const ViewAssignedTask = () => {
   const [assignedTasks, setAssignedTasks] = useState([]);
@@ -14,10 +8,10 @@ const ViewAssignedTask = () => {
   const [tasks, setTasks] = useState([]);
   const [achievements, setAchievements] = useState({});
   const [editedAchievements, setEditedAchievements] = useState({});
+  const [achievementIds, setAchievementIds] = useState({});
   const [loading, setLoading] = useState(true);
 
   const loggedInUserId = localStorage.getItem("UserId");
-
   const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
@@ -29,52 +23,51 @@ const ViewAssignedTask = () => {
           axios.get("http://localhost:3001/api/tasks"),
           axios.get("http://localhost:3001/api/get-achievements"),
         ]);
-  
+
         const allAssignedTasks = assignedRes.data;
         const allUsers = usersRes.data;
         const allTasks = tasksRes.data;
         const allAchievements = achievementRes.data;
-  
+
         const userAssignedTasks = allAssignedTasks.filter(
           (task) => String(task.userId) === loggedInUserId
         );
-  
-        // ✅ Filter achievements for TODAY only
+
         const achievementMap = {};
+        const achievementIdMap = {};
+
         allAchievements.forEach((ach) => {
-          
           if (
-            ach.savedDate === today && 
-            userAssignedTasks.some(task => task.id == ach.assignmentId)
-            
+            ach.savedDate === today &&
+            userAssignedTasks.some((task) => task.id == ach.assignmentId) // use == to handle type coercion
           ) {
             achievementMap[ach.assignmentId] = ach.achieved;
+            achievementIdMap[ach.assignmentId] = ach.id;
           }
         });
-  
-        console.log("Today's achievements:", achievementMap);
-  
+
         setAssignedTasks(userAssignedTasks);
         setUsers(allUsers);
         setTasks(allTasks);
         setAchievements(achievementMap);
-  
+        setAchievementIds(achievementIdMap);
+
         const initEdited = {};
         userAssignedTasks.forEach((task) => {
           initEdited[task.id] = achievementMap[task.id] ?? 0;
         });
         setEditedAchievements(initEdited);
-  
+
+        console.log("Today's achievements:", achievementMap);
         setLoading(false);
       } catch (error) {
         console.error("Fetch error:", error);
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [loggedInUserId, today]);
-  
 
   const getUserFullName = (userId) => {
     const user = users.find((u) => String(u.id) === String(userId));
@@ -95,27 +88,40 @@ const ViewAssignedTask = () => {
     if (value === "" || /^[0-9\b]+$/.test(value)) {
       setEditedAchievements((prev) => ({
         ...prev,
-        [String(assignmentId)]: value,
+        [assignmentId]: value,
       }));
     }
   };
 
   const handleSave = async (assignmentId) => {
     try {
-      const idStr = String(assignmentId);
-      const achievedValue = Number(editedAchievements[idStr]) || 0;
+      const achievedValue = Number(editedAchievements[assignmentId]) || 0;
 
-      await axios.post("http://localhost:3001/api/add-achievement", {
-        assignmentId,
-        achieved: achievedValue,
-        savedDate: today,
-      });
+      if (achievementIds[assignmentId]) {
+        // UPDATE existing achievement
+        await axios.put(`http://localhost:3001/api/update-achievement/${achievementIds[assignmentId]}`, {
+          achieved: achievedValue,
+        });
+      } else {
+        // CREATE new achievement
+        const res = await axios.post("http://localhost:3001/api/add-achievement", {
+          assignmentId,
+          achieved: achievedValue,
+          date: today,
+        });
+
+        // Save new achievement ID
+        setAchievementIds((prev) => ({
+          ...prev,
+          [assignmentId]: res.data.id,
+        }));
+      }
 
       alert("Saved successfully");
 
       setAchievements((prev) => ({
         ...prev,
-        [idStr]: achievedValue,
+        [assignmentId]: achievedValue,
       }));
     } catch (error) {
       console.error("Save failed:", error.response || error.message || error);
@@ -125,7 +131,7 @@ const ViewAssignedTask = () => {
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%", display: "flex", justifyContent: "center", mt: 10 }}>
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 10 }}>
         <CircularProgress />
       </Box>
     );
@@ -149,7 +155,7 @@ const ViewAssignedTask = () => {
         Date: {today}
       </Typography>
 
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ height: 500, width: "100%" }}>
         <table
           style={{
             width: "100%",
@@ -167,42 +173,33 @@ const ViewAssignedTask = () => {
             </tr>
           </thead>
           <tbody>
-            {assignedTasks.map((task, index) => {
-              const taskIdStr = String(task.id);
-              return (
-                <tr key={taskIdStr}>
-                  <td style={{ border: "1px solid #ccc", padding: "8px", width: 50 }}>
-                    {index + 1}
-                  </td>
-                  <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                    {getTaskDescription(task.taskId)}
-                  </td>
-                  <td style={{ border: "1px solid #ccc", padding: "8px", width: 100 }}>
-                    {task.target}
-                  </td>
-                  <td style={{ border: "1px solid #ccc", padding: "8px", width: 120 }}>
-                    <TextField
-                      type="text"
-                      value={editedAchievements[taskIdStr] ?? 0}
-                      onChange={(e) => handleAchievementChange(taskIdStr, e.target.value)}
-                      inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </td>
-                  <td style={{ border: "1px solid #ccc", padding: "8px", width: 120 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleSave(task.id)}
-                      size="small"
-                    >
-                      Save
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
+            {assignedTasks.map((task, index) => (
+              <tr key={task.id}>
+                <td style={{ border: "1px solid #ccc", padding: "8px", width: 50 }}>{index + 1}</td>
+                <td style={{ border: "1px solid #ccc", padding: "8px" }}>{getTaskDescription(task.taskId)}</td>
+                <td style={{ border: "1px solid #ccc", padding: "8px", width: 100 }}>{task.target}</td>
+                <td style={{ border: "1px solid #ccc", padding: "8px", width: 120 }}>
+                  <TextField
+                    type="text"
+                    value={editedAchievements[task.id] ?? 0}
+                    onChange={(e) => handleAchievementChange(task.id, e.target.value)}
+                    inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                    variant="outlined"
+                    size="small"
+                  />
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "8px", width: 120 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleSave(task.id)}
+                    size="small"
+                  >
+                    Save
+                  </Button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </Box>

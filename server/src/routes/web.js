@@ -49,6 +49,7 @@ const addAssignedTask = require('../controllers/PerformanceTracking-Controller/A
 const viewAssignedTask = require('../controllers/PerformanceTracking-Controller/viewAssignedTask')
 const AddAchivment = require('../controllers/PerformanceTracking-Controller/Achivment')
 const getAchivment = require('../controllers/PerformanceTracking-Controller/viewAchivment')
+const updateAchivment = require('../controllers/PerformanceTracking-Controller/updateAchivment')
 
 
 const upload = require("../middleware/upload");
@@ -99,6 +100,7 @@ let routes =  (app) => {
   router.get("/api/viewAssignedTask", viewAssignedTask.retriveAssignedTasks)
   router.post("/api/add-achievement", AddAchivment.AddAchivment)
   router.get("/api/get-achievements", getAchivment.retriveAchievement)
+  router.put('/api/update-achievement/:id', updateAchivment.updateFiles);
 
   return app.use("/", router);
 };
