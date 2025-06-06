@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TextField, Button, Typography, Box, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 const ViewAssignedTask = () => {
   const [assignedTasks, setAssignedTasks] = useState([]);
@@ -39,7 +53,7 @@ const ViewAssignedTask = () => {
         allAchievements.forEach((ach) => {
           if (
             ach.savedDate === today &&
-            userAssignedTasks.some((task) => task.id == ach.assignmentId) // use == to handle type coercion
+            userAssignedTasks.some((task) => task.id == ach.assignmentId)
           ) {
             achievementMap[ach.assignmentId] = ach.achieved;
             achievementIdMap[ach.assignmentId] = ach.id;
@@ -57,8 +71,6 @@ const ViewAssignedTask = () => {
           initEdited[task.id] = achievementMap[task.id] ?? 0;
         });
         setEditedAchievements(initEdited);
-
-        console.log("Today's achievements:", achievementMap);
         setLoading(false);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -98,19 +110,17 @@ const ViewAssignedTask = () => {
       const achievedValue = Number(editedAchievements[assignmentId]) || 0;
 
       if (achievementIds[assignmentId]) {
-        // UPDATE existing achievement
         await axios.put(`http://localhost:3001/api/update-achievement/${achievementIds[assignmentId]}`, {
           achieved: achievedValue,
+          date: today,
         });
       } else {
-        // CREATE new achievement
         const res = await axios.post("http://localhost:3001/api/add-achievement", {
           assignmentId,
           achieved: achievedValue,
           date: today,
         });
 
-        // Save new achievement ID
         setAchievementIds((prev) => ({
           ...prev,
           [assignmentId]: res.data.id,
@@ -131,78 +141,65 @@ const ViewAssignedTask = () => {
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 10 }}>
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center", mt: 10 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  if (assignedTasks.length === 0) {
-    return (
-      <Typography variant="h6" sx={{ mt: 4, textAlign: "center" }}>
-        No assigned tasks found.
-      </Typography>
-    );
-  }
-
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Assigned Tasks for {getUserFullName(loggedInUserId)} - {getUserDepartment(loggedInUserId)}
-      </Typography>
+    <Box sx={{ px: 4, py: 3 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          Assigned Tasks
+        </Typography>
+        <Typography variant="subtitle1" gutterBottom color="text.secondary">
+          {getUserFullName(loggedInUserId)} | Department: {getUserDepartment(loggedInUserId)}
+        </Typography>
+        <Typography variant="body2" gutterBottom color="text.secondary">
+          Date: {today}
+        </Typography>
 
-      <Typography variant="subtitle1" sx={{ mb: 2 }}>
-        Date: {today}
-      </Typography>
-
-      <Box sx={{ height: 500, width: "100%" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: "1.1rem",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#ddd" }}>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>#</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Task Description</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Target</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Achievement</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assignedTasks.map((task, index) => (
-              <tr key={task.id}>
-                <td style={{ border: "1px solid #ccc", padding: "8px", width: 50 }}>{index + 1}</td>
-                <td style={{ border: "1px solid #ccc", padding: "8px" }}>{getTaskDescription(task.taskId)}</td>
-                <td style={{ border: "1px solid #ccc", padding: "8px", width: 100 }}>{task.target}</td>
-                <td style={{ border: "1px solid #ccc", padding: "8px", width: 120 }}>
-                  <TextField
-                    type="text"
-                    value={editedAchievements[task.id] ?? 0}
-                    onChange={(e) => handleAchievementChange(task.id, e.target.value)}
-                    inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-                    variant="outlined"
-                    size="small"
-                  />
-                </td>
-                <td style={{ border: "1px solid #ccc", padding: "8px", width: 120 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleSave(task.id)}
-                    size="small"
-                  >
-                    Save
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Box>
+        <TableContainer sx={{ mt: 3 }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+              <TableRow>
+                <TableCell>#</TableCell>
+                <TableCell>Task Description</TableCell>
+                <TableCell>Target</TableCell>
+                <TableCell>Achievement</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {assignedTasks.map((task, index) => (
+                <TableRow key={task.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{getTaskDescription(task.taskId)}</TableCell>
+                  <TableCell>{task.target}</TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      value={editedAchievements[task.id] ?? 0}
+                      onChange={(e) => handleAchievementChange(task.id, e.target.value)}
+                      inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleSave(task.id)}
+                    >
+                      Save
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
 };
