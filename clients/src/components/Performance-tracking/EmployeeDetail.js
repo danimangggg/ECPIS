@@ -1,3 +1,4 @@
+// ... All your existing imports
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -21,10 +22,8 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import axios from 'axios';
 
-// ⬅️ EXTEND dayjs with plugins
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
-
 
 const EmployeeDetail = () => {
   const { id } = useParams();
@@ -44,20 +43,16 @@ const EmployeeDetail = () => {
         const userRes = await axios.get('http://localhost:3001/api/users');
         const foundUser = userRes.data.find(u => u.id === parseInt(id));
         setUser(foundUser);
-        console.log('Found User:', foundUser);
 
         const tasksRes = await axios.get(`http://localhost:3001/api/viewAssignedTask`);
         const userAssignedTasks = tasksRes.data.filter(task => task.userId === foundUser.id);
         setAssignedTasks(userAssignedTasks);
-        console.log('Assigned Tasks:', userAssignedTasks);
 
         const achRes = await axios.get(`http://localhost:3001/api/get-achievements`);
         setAchievements(achRes.data);
-        console.log('All Achievements:', achRes.data);
 
         const allTasksRes = await axios.get(`http://localhost:3001/api/tasks`);
         setTasks(allTasksRes.data);
-        console.log('All Task Descriptions:', allTasksRes.data);
 
         setLoading(false);
       } catch (error) {
@@ -71,52 +66,51 @@ const EmployeeDetail = () => {
 
   const formatDate = (date) => dayjs(date).format('YYYY-MM-DD');
 
-  // Console log selected and range dates
-  console.log("Selected Day:", formatDate(selectedDate));
-  console.log("Range Start:", formatDate(rangeStart));
-  console.log("Range End:", formatDate(rangeEnd));
-
   const filteredAchievementsByDay = assignedTasks.map(task => {
-  const achievementSum = achievements
-    .filter(a => {
-      const date = dayjs(a.savedDate); // parse savedDate
+    const achievementSum = achievements
+      .filter(a => {
+        const date = dayjs(a.savedDate);
+        return (
+          String(a.assignmentId) === String(task.id) &&
+          date.isSame(selectedDate, 'day')
+        );
+      })
+      .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
 
-      return (
-        String(a.assignmentId) === String(task.id) &&
-        date.isSame(selectedDate, 'day')  // filter exactly by selectedDay
-      );
-    })
-    .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
+    const target = task.target;
+    const percent = target > 0 ? (achievementSum / target) * 100 : 0;
 
-  return {
-    ...task,
-    achieved: achievementSum,
-    target: task.target, // just target for single day
-  };
-});
-
+    return {
+      ...task,
+      achieved: achievementSum,
+      target,
+      achievementPercent: percent.toFixed(1)
+    };
+  });
 
   const filteredAchievementsByRange = assignedTasks.map(task => {
-  const achievementSum = achievements
-    .filter(a => {
-      const date = dayjs(a.savedDate); // ensure date is parsed
+    const achievementSum = achievements
+      .filter(a => {
+        const date = dayjs(a.savedDate);
+        return (
+          String(a.assignmentId) === String(task.id) &&
+          date.isSameOrAfter(rangeStart, 'day') &&
+          date.isSameOrBefore(rangeEnd, 'day')
+        );
+      })
+      .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
 
-      return (
-        String(a.assignmentId) === String(task.id) &&
-        date.isSameOrAfter(rangeStart, 'day') &&
-        date.isSameOrBefore(rangeEnd, 'day')
-      );
-    })
-    .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
+    const totalDays = rangeEnd.diff(rangeStart, 'day') + 1;
+    const target = task.target * totalDays;
+    const percent = target > 0 ? (achievementSum / target) * 100 : 0;
 
-  const totalDays = rangeEnd.diff(rangeStart, 'day') + 1;
-  return {
-    ...task,
-    achieved: achievementSum,
-    target: task.target * totalDays
-  };
-});
-
+    return {
+      ...task,
+      achieved: achievementSum,
+      target,
+      achievementPercent: percent.toFixed(1)
+    };
+  });
 
   const getTaskDescription = (taskId) => {
     const task = tasks.find(t => t.id === parseInt(taskId));
@@ -169,6 +163,7 @@ const EmployeeDetail = () => {
               <TableCell>Task Description</TableCell>
               <TableCell>Target</TableCell>
               <TableCell>Achieved</TableCell>
+              <TableCell>Achievement (%)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -177,6 +172,7 @@ const EmployeeDetail = () => {
                 <TableCell>{getTaskDescription(task.taskId)}</TableCell>
                 <TableCell>{task.target}</TableCell>
                 <TableCell>{task.achieved}</TableCell>
+                <TableCell>{task.achievementPercent}%</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -213,6 +209,7 @@ const EmployeeDetail = () => {
               <TableCell>Task Description</TableCell>
               <TableCell>Target</TableCell>
               <TableCell>Achieved</TableCell>
+              <TableCell>Achievement (%)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -221,6 +218,7 @@ const EmployeeDetail = () => {
                 <TableCell>{getTaskDescription(task.taskId)}</TableCell>
                 <TableCell>{task.target}</TableCell>
                 <TableCell>{task.achieved}</TableCell>
+                <TableCell>{task.achievementPercent}%</TableCell>
               </TableRow>
             ))}
           </TableBody>

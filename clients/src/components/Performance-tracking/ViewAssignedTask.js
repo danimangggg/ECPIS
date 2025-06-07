@@ -26,7 +26,7 @@ const ViewAssignedTask = () => {
   const [loading, setLoading] = useState(true);
 
   const loggedInUserId = localStorage.getItem("UserId");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString('en-CA');
 
   useEffect(() => {
     const fetchData = async () => {

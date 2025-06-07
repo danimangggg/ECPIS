@@ -7,7 +7,7 @@ const AddAchivment = async (req, res) => {
     const result = await Achive.create({
       assignmentId: req.body.assignmentId,
       achieved: req.body.achieved,
-      savedDate: currentDate
+      savedDate: req.body.date
     });
 
     res.status(200).send({ message: "Achievement created successfully", task: result });
