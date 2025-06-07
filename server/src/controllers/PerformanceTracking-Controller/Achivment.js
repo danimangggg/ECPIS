@@ -3,10 +3,11 @@ const Achive = db.achivement;
 
 const AddAchivment = async (req, res) => {
   try {
+    const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     const result = await Achive.create({
       assignmentId: req.body.assignmentId,
       achieved: req.body.achieved,
-      savedDate: req.body.savedDate
+      savedDate: currentDate
     });
 
     res.status(200).send({ message: "Achievement created successfully", task: result });
