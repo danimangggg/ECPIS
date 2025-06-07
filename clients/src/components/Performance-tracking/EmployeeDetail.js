@@ -17,7 +17,14 @@ import {
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import axios from 'axios';
+
+// ⬅️ EXTEND dayjs with plugins
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+
 
 const EmployeeDetail = () => {
   const { id } = useParams();
@@ -63,39 +70,53 @@ const EmployeeDetail = () => {
   }, [id]);
 
   const formatDate = (date) => dayjs(date).format('YYYY-MM-DD');
-  const selected = new Date(selectedDate).toISOString().split("T")[0];
-  console.log(selected)
-  
+
+  // Console log selected and range dates
+  console.log("Selected Day:", formatDate(selectedDate));
+  console.log("Range Start:", formatDate(rangeStart));
+  console.log("Range End:", formatDate(rangeEnd));
+
   const filteredAchievementsByDay = assignedTasks.map(task => {
-    const found = achievements.find(a =>
-      String(a.assignmentId) === String(task.id) && formatDate(a.date) === formatDate(selected)
-    );
-    console.log(`Task ${task.id} (AssignmentId) Achievement on selected day:`, found);
-    return {
-      ...task,
-      achieved: found ? found.achieved : 0
-    };
-  });
+  const achievementSum = achievements
+    .filter(a => {
+      const date = dayjs(a.savedDate); // parse savedDate
+
+      return (
+        String(a.assignmentId) === String(task.id) &&
+        date.isSame(selectedDate, 'day')  // filter exactly by selectedDay
+      );
+    })
+    .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
+
+  return {
+    ...task,
+    achieved: achievementSum,
+    target: task.target, // just target for single day
+  };
+});
+
 
   const filteredAchievementsByRange = assignedTasks.map(task => {
-    const achievementSum = achievements
-      .filter(a => {
-        const date = dayjs(a.date);
-        return (
-          String(a.assignmentId) === String(task.id) &&
-          date.isAfter(rangeStart.subtract(1, 'day')) &&
-          date.isBefore(rangeEnd.add(1, 'day'))
-        );
-      })
-      .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
+  const achievementSum = achievements
+    .filter(a => {
+      const date = dayjs(a.savedDate); // ensure date is parsed
 
-    const totalDays = rangeEnd.diff(rangeStart, 'day') + 1;
-    return {
-      ...task,
-      achieved: achievementSum,
-      target: task.target * totalDays
-    };
-  });
+      return (
+        String(a.assignmentId) === String(task.id) &&
+        date.isSameOrAfter(rangeStart, 'day') &&
+        date.isSameOrBefore(rangeEnd, 'day')
+      );
+    })
+    .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
+
+  const totalDays = rangeEnd.diff(rangeStart, 'day') + 1;
+  return {
+    ...task,
+    achieved: achievementSum,
+    target: task.target * totalDays
+  };
+});
+
 
   const getTaskDescription = (taskId) => {
     const task = tasks.find(t => t.id === parseInt(taskId));
