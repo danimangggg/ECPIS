@@ -210,10 +210,6 @@ const Sidebar = () => {
         </List>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: '#ffffff', minHeight: '1vh' }}>
-        <Toolbar />
-        {/* Your main content goes here */}
-      </Box>
     </Box>
   );
 };
