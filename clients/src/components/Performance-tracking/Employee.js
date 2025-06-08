@@ -107,9 +107,6 @@ const UserList = () => {
           <Typography variant="h5" fontWeight="bold" color="primary">
             Self Assessment Employee List
           </Typography>
-          <IconButton onClick={handleAdd} sx={{ color: 'green' }}>
-            <PlusIcon />
-          </IconButton>
         </Box>
 
         <Box

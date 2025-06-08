@@ -8,7 +8,7 @@ const TaskTrackingPage = () => {
   return (
     <div className='container'>
       <br/>
-    <Link to="/viewContract"  >
+    <Link to="/all-employee"  >
       <span >
         <FaTimes className='icon' size="30" style={{ marginTop: '10px' }}/>
         </span>

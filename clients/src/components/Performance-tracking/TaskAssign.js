@@ -101,13 +101,7 @@ const TaskAssign = () => {
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 3, position: 'relative' }}>
-        <IconButton
-          edge="end"
-          onClick={handleBack}
-          sx={{ position: 'absolute', top: 8, right: 8 }}
-        >
-          <CloseIcon />
-        </IconButton>
+        
 
         <Typography variant="h5" align="center" gutterBottom>
           Assign Task
@@ -169,12 +163,6 @@ const TaskAssign = () => {
           Assign Task
         </Button>
 
-        <Button onClick={() => {
-          setSelectedTaskId('');
-          setDailyTarget('');
-        }} variant="outlined" color="secondary" fullWidth>
-          Add Another Task
-        </Button>
       </Paper>
     </Container>
   );

@@ -1,47 +1,57 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Menu,
-  MenuItem,
-  Box,
-  Button,
-  Divider,
+  Drawer,
+  List,
+  ListItem,
   ListItemIcon,
   ListItemText,
+  Collapse,
+  Toolbar,
+  Typography,
+  Box,
+  Divider,
+  Menu,
+  MenuItem,
+  Tooltip
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
+  Home,
+  Assignment,
+  Business,
+  ExpandLess,
+  ExpandMore,
   AccountCircle,
   AddCircleOutline,
   VpnKey,
   ExitToApp,
-  Edit,
+  Group,
+  Settings,
+  Task,
+  FormatListBulleted,
+  PlaylistAddCheckCircle,
+  PlaylistAdd
 } from '@mui/icons-material';
-import { SidebarData } from './SidebarData';
 
-const Navbar = () => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [dropdownAnchorEl, setDropdownAnchorEl] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
+const drawerWidth = 260;
+
+const Sidebar = () => {
+  const [collapsed, setCollapsed] = useState(true);
+  const [orgProfileOpen, setOrgProfileOpen] = useState(false);
+  const [assessmentAnchorEl, setAssessmentAnchorEl] = useState(null);
+
   const navigate = useNavigate();
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleOrgProfileToggle = () => {
+    setOrgProfileOpen(!orgProfileOpen);
   };
 
-  const handleDropdownMenu = (event, menuId) => {
-    setDropdownAnchorEl(event.currentTarget);
-    setOpenMenuId(menuId);
+  const handleAssessmentMenuOpen = (event) => {
+    setAssessmentAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-    setDropdownAnchorEl(null);
-    setOpenMenuId(null);
+  const handleAssessmentMenuClose = () => {
+    setAssessmentAnchorEl(null);
   };
 
   const signOut = () => {
@@ -49,227 +59,163 @@ const Navbar = () => {
     window.location.href = '/';
   };
 
-  const addUser = () => {
-    navigate('/add-users');
-  };
+  const accountType = localStorage.getItem("AccountType");
+  const token = localStorage.getItem("token");
+  const fullName = localStorage.getItem("FullName");
 
-  const userList = () => {
-    navigate('/users');
-  };
+  const handleMouseEnter = () => setCollapsed(false);
+  const handleMouseLeave = () => setCollapsed(true);
 
-
-  const resetPassword = () => {
-    navigate('/reset-password');
-  };
+  const MenuTooltip = ({ title, children }) => (
+    <Tooltip title={collapsed ? title : ''} placement="right" enterDelay={300}>
+      {children}
+    </Tooltip>
+  );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="fixed" style={{ backgroundColor: "black" }} sx={{ zIndex: 1300 }}>
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={handleMenu}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-            PaperProps={{
-              style: {
-                marginTop: '40px',
-              },
-            }}
-          >
-            {SidebarData.map((item, index) => (
-              <MenuItem key={index} onClick={handleClose}>
-                <Link to={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  {item.title}
-                </Link>
-              </MenuItem>
-            ))}
-          </Menu>
-
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            EPSS - Hub 1 Software solutions
-          </Typography>
-          <Button
-            color="inherit"
-            component={Link}
-            to="/all-employee"
-            sx={{ marginLeft: 2 }}
-          >
-            Self Assessement
-          </Button>
-
-          <Button
-            color="inherit"
-            component={Link}
-            to="/viewContract"
-            sx={{ marginLeft: 2 }}
-          >
-            Contract
-          </Button>
-
-          <Button
-            color="inherit"
-            component={Link}
-            to="https://model19-b49f4.web.app/login"
-            sx={{ marginLeft: 2 }}
-          >
-            POD
-          </Button>
-
-          <Button
-            color="inherit"
-            onClick={(e) => handleDropdownMenu(e, 'orgProfile')}
-            sx={{ marginLeft: 2 }}
-          >
-            Org Profile
-          </Button>
-          <Menu
-            anchorEl={dropdownAnchorEl}
-            open={openMenuId === 'orgProfile'}
-            onClose={handleClose}
-            PaperProps={{
-              style: {
-                marginTop: '40px',
-                zIndex: 1301,
-              },
-            }}
-          >
-            <MenuItem onClick={handleClose}>
-              <Link to="/facility-profile" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Organization
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Link to="/viewWoreda" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Woreda
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Link to="/viewZone" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Zone
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Link to="/viewRegion" style={{ textDecoration: 'none', color: 'inherit' }}>
-                Region
-              </Link>
-            </MenuItem>
-          </Menu>
-
-          <IconButton
-            size="large"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={(e) => handleDropdownMenu(e, 'account')}
-            color="inherit"
-            sx={{ marginLeft: 2 }}
-          >
-            <AccountCircle />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            anchorEl={dropdownAnchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={openMenuId === 'account'}
-            onClose={handleClose}
-            PaperProps={{
-              style: {
-                marginTop: '40px',
-                zIndex: 1301,
-              },
-            }}
-          >
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <AccountCircle fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>{localStorage.getItem('FullName')}</ListItemText>
-            </MenuItem>
-            <Divider />
-            {localStorage.getItem("AccountType") === "Admin" && (
-              <>
-               <MenuItem onClick={userList}>
-                  <ListItemIcon>
-                    <AccountCircle fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Users</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={addUser}>
-                  <ListItemIcon>
-                    <AddCircleOutline fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Add User</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={resetPassword}>
-                  <ListItemIcon>
-                    <VpnKey fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Reset Password</ListItemText>
-                </MenuItem>
-                <Divider />
-              </>
-            )}
-
-    {localStorage.getItem("token") !== "guest" ?
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <Edit fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>
-                <Link to="/change-password" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  Change Password
-                </Link>
-              </ListItemText>
-            </MenuItem> : null
-              }
-
-        {localStorage.getItem("token") !== "guest" ?
-            <MenuItem onClick={signOut}>
-              <ListItemIcon>
-                <ExitToApp fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>
-                <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  Log Out
-                </Link>
-              </ListItemText>
-            </MenuItem> : 
-
-             <MenuItem onClick={signOut}>
-             <ListItemIcon>
-               <ExitToApp fontSize="small"/>
-             </ListItemIcon>
-             <ListItemText>
-               <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-                 Log In
-               </Link>
-             </ListItemText>
-           </MenuItem>
-            }
-          </Menu>
+    <Box sx={{ display: 'flex' }}>
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        sx={{
+          width: collapsed ? 70 : drawerWidth,
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+          boxSizing: 'border-box',
+          '& .MuiDrawer-paper': {
+            width: collapsed ? 70 : drawerWidth,
+            boxSizing: 'border-box',
+            bgcolor: '#1a1a1a',
+            color: 'white',
+            overflowX: 'hidden',
+            transition: 'width 0.3s ease-in-out',
+          },
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'center', bgcolor: '#121212' }}>
+          {!collapsed && (
+            <Typography variant="h6" fontWeight="bold">
+              EPSS - Hub 1
+            </Typography>
+          )}
         </Toolbar>
-      </AppBar>
-      <Toolbar /> {/* This Toolbar component creates space for the fixed AppBar */}
+
+        <List>
+          <MenuTooltip title="Self Assessment">
+            <ListItem button onClick={handleAssessmentMenuOpen}>
+              <ListItemIcon><Assignment sx={{ color: 'white' }} /></ListItemIcon>
+              {!collapsed && <ListItemText primary="Self Assessment" />}
+              {!collapsed && (assessmentAnchorEl ? <ExpandLess /> : <ExpandMore />)}
+            </ListItem>
+          </MenuTooltip>
+          <Menu
+            anchorEl={assessmentAnchorEl}
+            open={Boolean(assessmentAnchorEl)}
+            onClose={handleAssessmentMenuClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          >
+            <MenuItem component={Link} to="/all-employee" onClick={handleAssessmentMenuClose}>
+              <FormatListBulleted sx={{ mr: 1 }} /> All Assessment
+            </MenuItem>
+            <MenuItem component={Link} to="/assigned-task" onClick={handleAssessmentMenuClose}>
+              <Task sx={{ mr: 1 }} /> My Tasks
+            </MenuItem>
+            <MenuItem component={Link} to="/team-tasks" onClick={handleAssessmentMenuClose}>
+              <PlaylistAddCheckCircle sx={{ mr: 1 }} /> Team Tasks
+            </MenuItem>
+            <MenuItem component={Link} to="/assign-task" onClick={handleAssessmentMenuClose}>
+              <PlaylistAdd sx={{ mr: 1 }} /> Assign Tasks
+            </MenuItem>
+          </Menu>
+
+          <MenuTooltip title="Contract">
+            <ListItem button component={Link} to="/viewContract">
+              <ListItemIcon><Business sx={{ color: 'white' }} /></ListItemIcon>
+              {!collapsed && <ListItemText primary="Contract" />}
+            </ListItem>
+          </MenuTooltip>
+
+          <MenuTooltip title="POD">
+            <ListItem button component="a" href="https://model19-b49f4.web.app/login" target="_blank">
+              <ListItemIcon><Home sx={{ color: 'white' }} /></ListItemIcon>
+              {!collapsed && <ListItemText primary="POD" />}
+            </ListItem>
+          </MenuTooltip>
+
+          <MenuTooltip title="Org Profile">
+            <ListItem button onClick={handleOrgProfileToggle}>
+              <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
+              {!collapsed && <ListItemText primary="Org Profile" />}
+              {!collapsed && (orgProfileOpen ? <ExpandLess /> : <ExpandMore />)}
+            </ListItem>
+          </MenuTooltip>
+
+          <Collapse in={orgProfileOpen && !collapsed} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding sx={{ pl: 4 }}>
+              <ListItem button component={Link} to="/facility-profile">
+                <ListItemText primary="Facility Profile" />
+              </ListItem>
+              <ListItem button component={Link} to="/viewWoreda">
+                <ListItemText primary="Woreda" />
+              </ListItem>
+              <ListItem button component={Link} to="/viewZone">
+                <ListItemText primary="Zone" />
+              </ListItem>
+              <ListItem button component={Link} to="/viewRegion">
+                <ListItemText primary="Region" />
+              </ListItem>
+            </List>
+          </Collapse>
+        </List>
+
+        <Divider sx={{ my: 2, bgcolor: '#333' }} />
+
+        <List sx={{ mt: 'auto' }}>
+          <ListItem>
+            <ListItemIcon><AccountCircle sx={{ color: 'white' }} /></ListItemIcon>
+            {!collapsed && <ListItemText primary={fullName || 'Guest'} />}
+          </ListItem>
+
+          {accountType === "Admin" && !collapsed && (
+            <>
+              <ListItem button component={Link} to="/users">
+                <ListItemIcon><Group sx={{ color: 'white' }} /></ListItemIcon>
+                <ListItemText primary="Users" />
+              </ListItem>
+              <ListItem button component={Link} to="/add-users">
+                <ListItemIcon><AddCircleOutline sx={{ color: 'white' }} /></ListItemIcon>
+                <ListItemText primary="Add User" />
+              </ListItem>
+              <ListItem button component={Link} to="/reset-password">
+                <ListItemIcon><VpnKey sx={{ color: 'white' }} /></ListItemIcon>
+                <ListItemText primary="Reset Password" />
+              </ListItem>
+            </>
+          )}
+
+          {!collapsed && token !== "guest" && (
+            <ListItem button component={Link} to="/change-password">
+              <ListItemIcon><VpnKey sx={{ color: 'white' }} /></ListItemIcon>
+              <ListItemText primary="Change Password" />
+            </ListItem>
+          )}
+
+          <ListItem button onClick={signOut}>
+            <ListItemIcon><ExitToApp sx={{ color: 'white' }} /></ListItemIcon>
+            {!collapsed && <ListItemText primary={token !== "guest" ? "Log Out" : "Log In"} />}
+          </ListItem>
+        </List>
+      </Drawer>
+
+      <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: '#ffffff', minHeight: '1vh' }}>
+        <Toolbar />
+        {/* Your main content goes here */}
+      </Box>
     </Box>
   );
 };
 
-export default Navbar;
+export default Sidebar;

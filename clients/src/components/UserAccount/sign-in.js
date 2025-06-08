@@ -54,7 +54,7 @@ export default function SignIn() {
         
 
         // Redirect to a protected route
-        navigate('/viewContract');
+        navigate('/all-employee');
       }
     } catch (err) {
       toast.error('Invalid email or password.');
