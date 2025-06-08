@@ -101,10 +101,10 @@ const Navbar = () => {
           <Button
             color="inherit"
             component={Link}
-            to="/performance-tracking"
+            to="/all-employee"
             sx={{ marginLeft: 2 }}
           >
-            Performance tracking
+            Self Assessement
           </Button>
 
           <Button
