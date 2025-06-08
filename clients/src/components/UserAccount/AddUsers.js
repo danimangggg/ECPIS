@@ -23,10 +23,11 @@ const CreateUserForm = () => {
   const accountTypes = ['Admin', 'Credit Manager', 'Pod Manager', 'Self Assesment'];
   const departments = [
     'ICT Department', 'Finance', 'Human Resource',
-    'Transport Management', 'Demand', 'EWM'
+    'Transport Management', 'Demand', 'EWM', "Executive"
   ];
   const positions = ['Officer', 'Coordinator', 'Manager'];
-  const job_title = ['Camera man', 'Wearhouse manager', 'Oditor'];
+  const job_title = ['Camera man', 'Wearhouse manager', 'Oditor', "ICT Officer", "Database Adminstrator",
+   "Data Clerk", "Branch Manager", "Customer Service", "Other"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
