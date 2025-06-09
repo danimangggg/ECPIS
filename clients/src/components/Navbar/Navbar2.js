@@ -138,6 +138,9 @@ const Sidebar = () => {
             <MenuItem component={Link} to="/assign-task" onClick={handleAssessmentMenuClose}>
               <PlaylistAdd sx={{ mr: 1 }} /> Assign Tasks
             </MenuItem>
+            <MenuItem component={Link} to="/users" onClick={handleAssessmentMenuClose}>
+              <PlaylistAdd sx={{ mr: 1 }} /> Employee Profile
+            </MenuItem>
           </Menu>
 
           <MenuTooltip title="Contract">
