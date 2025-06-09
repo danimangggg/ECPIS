@@ -123,6 +123,9 @@ const Sidebar = () => {
             <MenuItem component={Link} to="/assigned-task" onClick={handleAssessmentMenuClose}>
               <Task sx={{ mr: 1 }} /> My Tasks
             </MenuItem>
+            <MenuItem component={Link} to="/add-task" onClick={handleAssessmentMenuClose}>
+              <Task sx={{ mr: 1 }} /> Add Tasks
+            </MenuItem>
             <MenuItem component={Link} to="/team-tasks" onClick={handleAssessmentMenuClose}>
               <PlaylistAddCheckCircle sx={{ mr: 1 }} /> Team Tasks
             </MenuItem>
