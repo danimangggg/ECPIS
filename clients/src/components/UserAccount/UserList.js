@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -67,12 +66,17 @@ const UserList = () => {
   };
 
   const handleAdd = () => {
-    
-        navigate('/add-users');
+    navigate('/add-users');
   };
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 70 },
+    {
+      field: 'serial',
+      headerName: 'No',
+      width: 70,
+      valueGetter: (params) =>
+        users.findIndex((user) => user.id === params.row.id) + 1,
+    },
     { field: 'first_name', headerName: 'First Name', flex: 1 },
     { field: 'last_name', headerName: 'Last Name', flex: 1 },
     { field: 'user_name', headerName: 'Username', flex: 1 },
@@ -110,7 +114,7 @@ const UserList = () => {
         <IconButton
           edge="end"
           onClick={handleAdd}
-          sx={{ position: 'absolute', top: 8, color: "green", }}
+          sx={{ position: 'absolute', top: 8, color: 'green' }}
         >
           <PlusIcon />
         </IconButton>
