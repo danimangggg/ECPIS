@@ -53,7 +53,7 @@ const AddTaskForm = () => {
     if (
       !department ||
       tasks.some(
-        (task) => !task.description.trim() || !task.target.trim()
+        (task) => !task.description.trim()
       )
     ) {
       alert('Please fill all fields for every task and select a department.');
@@ -118,34 +118,7 @@ const AddTaskForm = () => {
                 required
               />
             </Grid>
-            <Grid item xs={3}>
-              <TextField
-                select
-                label="Measurement"
-                fullWidth
-                value={task.measurement}
-                onChange={(e) =>
-                  handleTaskChange(index, 'measurement', e.target.value)
-                }
-              >
-                {measurementOptions.map((option, i) => (
-                  <MenuItem key={i} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                label="Target"
-                value={task.target}
-                onChange={(e) =>
-                  handleTaskChange(index, 'target', e.target.value)
-                }
-                required
-              />
-            </Grid>
+            
             <Grid item xs={1}>
               {tasks.length > 1 && (
                 <IconButton

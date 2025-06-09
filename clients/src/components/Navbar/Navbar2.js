@@ -13,7 +13,8 @@ import {
   Divider,
   Menu,
   MenuItem,
-  Tooltip
+  Tooltip,
+  IconButton
 } from '@mui/material';
 import {
   Home,
@@ -30,17 +31,22 @@ import {
   Task,
   FormatListBulleted,
   PlaylistAddCheckCircle,
-  PlaylistAdd
+  PlaylistAdd,
+  Menu as MenuIcon
 } from '@mui/icons-material';
 
 const drawerWidth = 260;
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const [orgProfileOpen, setOrgProfileOpen] = useState(false);
   const [assessmentAnchorEl, setAssessmentAnchorEl] = useState(null);
 
   const navigate = useNavigate();
+
+  const handleToggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
 
   const handleOrgProfileToggle = () => {
     setOrgProfileOpen(!orgProfileOpen);
@@ -63,9 +69,6 @@ const Sidebar = () => {
   const token = localStorage.getItem("token");
   const fullName = localStorage.getItem("FullName");
 
-  const handleMouseEnter = () => setCollapsed(false);
-  const handleMouseLeave = () => setCollapsed(true);
-
   const MenuTooltip = ({ title, children }) => (
     <Tooltip title={collapsed ? title : ''} placement="right" enterDelay={300}>
       {children}
@@ -77,8 +80,6 @@ const Sidebar = () => {
       <Drawer
         variant="permanent"
         anchor="left"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         sx={{
           width: collapsed ? 70 : drawerWidth,
           flexShrink: 0,
@@ -87,19 +88,24 @@ const Sidebar = () => {
           '& .MuiDrawer-paper': {
             width: collapsed ? 70 : drawerWidth,
             boxSizing: 'border-box',
-            bgcolor: '#1a1a1a',
+            bgcolor: 'black',
             color: 'white',
             overflowX: 'hidden',
             transition: 'width 0.3s ease-in-out',
+            position: 'fixed',
+            height: '100vh',
           },
         }}
       >
-        <Toolbar sx={{ justifyContent: 'center', bgcolor: '#121212' }}>
+        <Toolbar sx={{ justifyContent: collapsed ? 'center' : 'space-between', bgcolor: 'red', px: 2 }}>
           {!collapsed && (
             <Typography variant="h6" fontWeight="bold">
               EPSS - Hub 1
             </Typography>
           )}
+          <IconButton onClick={handleToggleSidebar} sx={{ color: 'white' }}>
+            <MenuIcon />
+          </IconButton>
         </Toolbar>
 
         <List>
@@ -212,7 +218,6 @@ const Sidebar = () => {
           </ListItem>
         </List>
       </Drawer>
-
     </Box>
   );
 };
