@@ -3,23 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
-  IconButton,
   Paper,
   Typography,
   Button,
+  LinearProgress,
 } from '@mui/material';
-import { Add as PlusIcon } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
+  const [assignedTasks, setAssignedTasks] = useState([]);
+  const [achievements, setAchievements] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userRes = await axios.get(`${process.env.REACT_APP_API_URL}/api/users`);
+        const [userRes, assignedTaskRes, achievementRes] = await Promise.all([
+          axios.get(`${process.env.REACT_APP_API_URL}/api/users`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/viewAssignedTask`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/get-achievements`),
+        ]);
 
         const selfAssessmentUsers = userRes.data.filter(
           (user) => user.account_type === 'Self Assesment'
@@ -27,47 +32,76 @@ const UserList = () => {
 
         const enhancedUsers = selfAssessmentUsers.map((user, index) => ({
           ...user,
-          userId: user.id,          // Keep original ID
-          id: index + 1,            // Use serial for DataGrid row ID
+          userId: user.id,
+          id: index + 1,
           serialId: index + 1,
         }));
 
         setUsers(enhancedUsers);
+        setAssignedTasks(assignedTaskRes.data);
+        setAchievements(achievementRes.data);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
   }, []);
 
-  const handleAdd = () => {
-    navigate('/add-users');
+  const calculateWeeklyProgress = (user) => {
+    const userAssignedTasks = assignedTasks.filter(task => task.userId === user.userId);
+    if (userAssignedTasks.length === 0) return 0;
+
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6); // 7-day range including today
+
+    const taskPercentages = userAssignedTasks.map(task => {
+      const relatedAchievements = achievements.filter(a => {
+        const date = new Date(a.savedDate);
+        return (
+          a.assignmentId === String(task.id) &&
+          date >= sevenDaysAgo &&
+          date <= today
+        );
+      });
+
+      const totalAchieved = relatedAchievements.reduce(
+        (sum, a) => sum + (parseInt(a.achieved, 10) || 0),
+        0
+      );
+      const dailyTarget = parseInt(task.target, 10) || 0;
+      const weeklyTarget = dailyTarget * 7;
+
+      if (weeklyTarget === 0) return 0;
+      return (totalAchieved / weeklyTarget) * 100;
+    });
+
+    const averageProgress =
+      taskPercentages.length === 0
+        ? 0
+        : Math.round(taskPercentages.reduce((sum, p) => sum + p, 0) / taskPercentages.length);
+
+    return averageProgress;
   };
 
   const handleView = (user) => {
-    navigate(`/employee-detail/${user.userId}`, { state: { user } }); // Use original ID
+    navigate(`/employee-detail/${user.userId}`, { state: { user } });
+  };
+
+  const getWeekRangeText = () => {
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6);
+
+    const options = { day: 'numeric', month: 'short' };
+    return `${sevenDaysAgo.toLocaleDateString('en-US', options)} - ${today.toLocaleDateString('en-US', options)}`;
   };
 
   const columns = [
-    {
-      field: 'serialId',
-      headerName: 'No',
-      width: 70,
-      headerClassName: 'bold-header',
-    },
-    {
-      field: 'first_name',
-      headerName: 'First Name',
-      flex: 1,
-      headerClassName: 'bold-header',
-    },
-    {
-      field: 'last_name',
-      headerName: 'Last Name',
-      flex: 1,
-      headerClassName: 'bold-header',
-    },
+    { field: 'serialId', headerName: 'No', width: 70, headerClassName: 'bold-header' },
+    { field: 'first_name', headerName: 'First Name', flex: 1, headerClassName: 'bold-header' },
+    { field: 'last_name', headerName: 'Last Name', flex: 1, headerClassName: 'bold-header' },
     {
       field: 'department',
       headerName: 'Department',
@@ -83,17 +117,32 @@ const UserList = () => {
       valueGetter: (params) => params.row.position || '-',
     },
     {
+      field: 'weeklyProgress',
+      headerName: `Weekly Progress (${getWeekRangeText()})`,
+      flex: 2,
+      headerClassName: 'bold-header',
+      renderCell: (params) => {
+        const progress = calculateWeeklyProgress(params.row);
+        return (
+          <Box width="100%">
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{ height: 10, borderRadius: 5 }}
+            />
+            <Typography variant="caption">{progress}%</Typography>
+          </Box>
+        );
+      },
+    },
+    {
       field: 'actions',
       headerName: 'Actions',
       width: 120,
       headerClassName: 'bold-header',
       sortable: false,
       renderCell: (params) => (
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => handleView(params.row)}
-        >
+        <Button variant="outlined" size="small" onClick={() => handleView(params.row)}>
           Detail
         </Button>
       ),
@@ -109,15 +158,7 @@ const UserList = () => {
           </Typography>
         </Box>
 
-        <Box
-          sx={{
-            height: 520,
-            width: '100%',
-            '& .bold-header': {
-              fontWeight: 'bold',
-            },
-          }}
-        >
+        <Box sx={{ height: 520, width: '100%', '& .bold-header': { fontWeight: 'bold' } }}>
           <DataGrid
             rows={users}
             columns={columns}
