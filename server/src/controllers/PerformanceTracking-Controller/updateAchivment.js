@@ -7,6 +7,7 @@ const updateFiles = async (req, res) => {
     const result = await Achievement.update(
       {
         achieved: req.body.achieved,
+        remark: req.body.remark,
       
       },
       {

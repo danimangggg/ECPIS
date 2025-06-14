@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Grid,
   Paper,
   Table,
   TableBody,
@@ -23,10 +22,11 @@ const ViewAssignedTask = () => {
   const [achievements, setAchievements] = useState({});
   const [editedAchievements, setEditedAchievements] = useState({});
   const [achievementIds, setAchievementIds] = useState({});
+  const [remarks, setRemarks] = useState({});
   const [loading, setLoading] = useState(true);
 
   const loggedInUserId = localStorage.getItem("UserId");
-  const today = new Date().toLocaleDateString('en-CA');
+  const today = new Date().toLocaleDateString("en-CA");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +49,7 @@ const ViewAssignedTask = () => {
 
         const achievementMap = {};
         const achievementIdMap = {};
+        const remarkMap = {};
 
         allAchievements.forEach((ach) => {
           if (
@@ -57,6 +58,7 @@ const ViewAssignedTask = () => {
           ) {
             achievementMap[ach.assignmentId] = ach.achieved;
             achievementIdMap[ach.assignmentId] = ach.id;
+            remarkMap[ach.assignmentId] = ach.remark || "";
           }
         });
 
@@ -65,6 +67,7 @@ const ViewAssignedTask = () => {
         setTasks(allTasks);
         setAchievements(achievementMap);
         setAchievementIds(achievementIdMap);
+        setRemarks(remarkMap);
 
         const initEdited = {};
         userAssignedTasks.forEach((task) => {
@@ -105,20 +108,30 @@ const ViewAssignedTask = () => {
     }
   };
 
+  const handleRemarkChange = (assignmentId, value) => {
+    setRemarks((prev) => ({
+      ...prev,
+      [assignmentId]: value,
+    }));
+  };
+
   const handleSave = async (assignmentId) => {
     try {
       const achievedValue = Number(editedAchievements[assignmentId]) || 0;
+      const remarkText = remarks[assignmentId] || "";
 
       if (achievementIds[assignmentId]) {
         await axios.put(`http://localhost:3001/api/update-achievement/${achievementIds[assignmentId]}`, {
           achieved: achievedValue,
           date: today,
+          remark: remarkText,
         });
       } else {
         const res = await axios.post("http://localhost:3001/api/add-achievement", {
           assignmentId,
           achieved: achievedValue,
           date: today,
+          remark: remarkText,
         });
 
         setAchievementIds((prev) => ({
@@ -168,6 +181,7 @@ const ViewAssignedTask = () => {
                 <TableCell>Task Description</TableCell>
                 <TableCell>Target</TableCell>
                 <TableCell>Achievement</TableCell>
+                <TableCell>Remark</TableCell>
                 <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -179,10 +193,23 @@ const ViewAssignedTask = () => {
                   <TableCell>{task.target}</TableCell>
                   <TableCell>
                     <TextField
-                      size="small"
+                      size="medium"
                       value={editedAchievements[task.id] ?? 0}
                       onChange={(e) => handleAchievementChange(task.id, e.target.value)}
                       inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                      sx={{ width: 100 }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      multiline
+                      minRows={2}
+                      maxRows={4}
+                      size="small"
+                      placeholder="Write your remark"
+                      value={remarks[task.id] || ""}
+                      onChange={(e) => handleRemarkChange(task.id, e.target.value)}
+                      sx={{ width: 200 }}
                     />
                   </TableCell>
                   <TableCell>

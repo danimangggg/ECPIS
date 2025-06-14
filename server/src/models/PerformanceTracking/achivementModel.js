@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    remark: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
   });
 
   return Achivement;
