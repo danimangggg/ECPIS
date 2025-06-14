@@ -33,7 +33,6 @@ const EmployeeDetail = () => {
   const [achievements, setAchievements] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [rangeStart, setRangeStart] = useState(dayjs().startOf('month'));
   const [rangeEnd, setRangeEnd] = useState(dayjs());
@@ -77,6 +76,15 @@ const EmployeeDetail = () => {
         );
       })
       .reduce((sum, a) => sum + parseInt(a.achieved || 0), 0);
+      const remark = achievements
+      .filter(a => {
+        const date = dayjs(a.savedDate);
+        return (
+          String(a.assignmentId) === String(task.id) &&
+          date.isSame(selectedDate, 'day')
+        );
+      })
+      .reduce((sum, a) => a.remark , "");
 
     const percent = task.target > 0 ? Math.round((achievementSum / task.target) * 100) : 0;
 
@@ -84,6 +92,7 @@ const EmployeeDetail = () => {
       ...task,
       achieved: achievementSum,
       target: task.target,
+      remark: remark,
       percent
     };
   });
@@ -162,6 +171,7 @@ const EmployeeDetail = () => {
               <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>Target</TableCell>
               <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>Achieved</TableCell>
               <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>% Achievement</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>Remark</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -174,6 +184,7 @@ const EmployeeDetail = () => {
                   {task.percent}%
                   <LinearProgress variant="determinate" value={task.percent} sx={{ height: 8, borderRadius: 5, mt: 1 }} color={task.percent < 50 ? "error" : task.percent < 80 ? "warning" : "success"} />
                 </TableCell>
+                <TableCell>{task.remark}</TableCell>
               </TableRow>
             ))}
           </TableBody>
