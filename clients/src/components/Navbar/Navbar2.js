@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Drawer,
   List,
@@ -14,7 +15,9 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-  IconButton
+  IconButton,
+  Select,
+  MenuItem as MuiMenuItem
 } from '@mui/material';
 import {
   Home,
@@ -40,25 +43,20 @@ const drawerWidth = 260;
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [orgProfileOpen, setOrgProfileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [assessmentAnchorEl, setAssessmentAnchorEl] = useState(null);
+  const { t, i18n } = useTranslation();
 
-  const navigate = useNavigate();
-
-  const handleToggleSidebar = () => {
-    setCollapsed(!collapsed);
+  const handleChangeLanguage = (lang) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('i18nextLng', lang); // Optional: persist
   };
 
-  const handleOrgProfileToggle = () => {
-    setOrgProfileOpen(!orgProfileOpen);
-  };
-
-  const handleAssessmentMenuOpen = (event) => {
-    setAssessmentAnchorEl(event.currentTarget);
-  };
-
-  const handleAssessmentMenuClose = () => {
-    setAssessmentAnchorEl(null);
-  };
+  const handleToggleSidebar = () => setCollapsed(!collapsed);
+  const handleOrgProfileToggle = () => setOrgProfileOpen(!orgProfileOpen);
+  const handleLangToggle = () => setLangOpen(!langOpen);
+  const handleAssessmentMenuOpen = (event) => setAssessmentAnchorEl(event.currentTarget);
+  const handleAssessmentMenuClose = () => setAssessmentAnchorEl(null);
 
   const signOut = () => {
     localStorage.clear();
@@ -109,10 +107,10 @@ const Sidebar = () => {
         </Toolbar>
 
         <List>
-          <MenuTooltip title="Self Assessment">
+          <MenuTooltip title={t("Self Assessment")}>
             <ListItem button onClick={handleAssessmentMenuOpen}>
               <ListItemIcon><Assignment sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary="Self Assessment" />}
+              {!collapsed && <ListItemText primary={t("Self Assessment")} />}
               {!collapsed && (assessmentAnchorEl ? <ExpandLess /> : <ExpandMore />)}
             </ListItem>
           </MenuTooltip>
@@ -124,43 +122,43 @@ const Sidebar = () => {
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
             <MenuItem component={Link} to="/all-employee" onClick={handleAssessmentMenuClose}>
-              <FormatListBulleted sx={{ mr: 1 }} /> All Assessment
+              <FormatListBulleted sx={{ mr: 1 }} /> {t("All Assessment")}
             </MenuItem>
             <MenuItem component={Link} to="/assigned-task" onClick={handleAssessmentMenuClose}>
-              <Task sx={{ mr: 1 }} /> My Tasks
+              <Task sx={{ mr: 1 }} /> {t("My Tasks")}
             </MenuItem>
             <MenuItem component={Link} to="/add-task" onClick={handleAssessmentMenuClose}>
-              <Task sx={{ mr: 1 }} /> Add Tasks
+              <Task sx={{ mr: 1 }} /> {t("Add Tasks")}
             </MenuItem>
             <MenuItem component={Link} to="/team-tasks" onClick={handleAssessmentMenuClose}>
-              <PlaylistAddCheckCircle sx={{ mr: 1 }} /> Team Tasks
+              <PlaylistAddCheckCircle sx={{ mr: 1 }} /> {t("Team Tasks")}
             </MenuItem>
             <MenuItem component={Link} to="/assign-task" onClick={handleAssessmentMenuClose}>
-              <PlaylistAdd sx={{ mr: 1 }} /> Assign Tasks
+              <PlaylistAdd sx={{ mr: 1 }} /> {t("Assign Tasks")}
             </MenuItem>
             <MenuItem component={Link} to="/users" onClick={handleAssessmentMenuClose}>
-              <PlaylistAdd sx={{ mr: 1 }} /> Employee Profile
+              <PlaylistAdd sx={{ mr: 1 }} /> {t("Employee Profile")}
             </MenuItem>
           </Menu>
 
-          <MenuTooltip title="Contract">
+          <MenuTooltip title={t("Contract")}>
             <ListItem button component={Link} to="/viewContract">
               <ListItemIcon><Business sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary="Contract" />}
+              {!collapsed && <ListItemText primary={t("Contract")} />}
             </ListItem>
           </MenuTooltip>
 
-          <MenuTooltip title="POD">
+          <MenuTooltip title={t("POD")}>
             <ListItem button component="a" href="https://model19-b49f4.web.app/login" target="_blank">
               <ListItemIcon><Home sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary="POD" />}
+              {!collapsed && <ListItemText primary={t("POD")} />}
             </ListItem>
           </MenuTooltip>
 
-          <MenuTooltip title="Org Profile">
+          <MenuTooltip title={t("Org Profile")}>
             <ListItem button onClick={handleOrgProfileToggle}>
               <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary="Org Profile" />}
+              {!collapsed && <ListItemText primary={t("Org Profile")} />}
               {!collapsed && (orgProfileOpen ? <ExpandLess /> : <ExpandMore />)}
             </ListItem>
           </MenuTooltip>
@@ -168,19 +166,42 @@ const Sidebar = () => {
           <Collapse in={orgProfileOpen && !collapsed} timeout="auto" unmountOnExit>
             <List component="div" disablePadding sx={{ pl: 4 }}>
               <ListItem button component={Link} to="/facility-profile">
-                <ListItemText primary="Facility Profile" />
+                <ListItemText primary={t("Facility Profile")} />
               </ListItem>
               <ListItem button component={Link} to="/viewWoreda">
-                <ListItemText primary="Woreda" />
+                <ListItemText primary={t("Woreda")} />
               </ListItem>
               <ListItem button component={Link} to="/viewZone">
-                <ListItemText primary="Zone" />
+                <ListItemText primary={t("Zone")} />
               </ListItem>
               <ListItem button component={Link} to="/viewRegion">
-                <ListItemText primary="Region" />
+                <ListItemText primary={t("Region")} />
               </ListItem>
             </List>
           </Collapse>
+
+            <MenuTooltip title={t("Language")}>
+          <ListItem>
+            <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
+            {!collapsed && (
+              <select
+                value={i18n.language}
+                onChange={(e) => handleChangeLanguage(e.target.value)}
+                style={{
+                  background: 'black',
+                  color: 'white',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '16px',
+                }}
+              >
+                <option value="en">English</option>
+                <option value="am">አማርኛ</option>
+              </select>
+            )}
+          </ListItem>
+        </MenuTooltip>
+
         </List>
 
         <Divider sx={{ my: 2, bgcolor: '#333' }} />
@@ -195,15 +216,15 @@ const Sidebar = () => {
             <>
               <ListItem button component={Link} to="/users">
                 <ListItemIcon><Group sx={{ color: 'white' }} /></ListItemIcon>
-                <ListItemText primary="Users" />
+                <ListItemText primary={t("Users")} />
               </ListItem>
               <ListItem button component={Link} to="/add-users">
                 <ListItemIcon><AddCircleOutline sx={{ color: 'white' }} /></ListItemIcon>
-                <ListItemText primary="Add User" />
+                <ListItemText primary={t("Add User")} />
               </ListItem>
               <ListItem button component={Link} to="/reset-password">
                 <ListItemIcon><VpnKey sx={{ color: 'white' }} /></ListItemIcon>
-                <ListItemText primary="Reset Password" />
+                <ListItemText primary={t("Reset Password")} />
               </ListItem>
             </>
           )}
@@ -211,13 +232,13 @@ const Sidebar = () => {
           {!collapsed && token !== "guest" && (
             <ListItem button component={Link} to="/change-password">
               <ListItemIcon><VpnKey sx={{ color: 'white' }} /></ListItemIcon>
-              <ListItemText primary="Change Password" />
+              <ListItemText primary={t("Change Password")} />
             </ListItem>
           )}
 
           <ListItem button onClick={signOut}>
             <ListItemIcon><ExitToApp sx={{ color: 'white' }} /></ListItemIcon>
-            {!collapsed && <ListItemText primary={token !== "guest" ? "Log Out" : "Log In"} />}
+            {!collapsed && <ListItemText primary={token !== "guest" ? t("Log Out") : t("Log In")} />}
           </ListItem>
         </List>
       </Drawer>

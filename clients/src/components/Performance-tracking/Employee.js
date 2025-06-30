@@ -9,6 +9,7 @@ import {
   LinearProgress,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
 const UserList = () => {
@@ -16,6 +17,7 @@ const UserList = () => {
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [achievements, setAchievements] = useState([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,7 +56,7 @@ const UserList = () => {
 
     const today = new Date();
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(today.getDate() - 6); // 7-day range including today
+    sevenDaysAgo.setDate(today.getDate() - 6);
 
     const taskPercentages = userAssignedTasks.map(task => {
       const relatedAchievements = achievements.filter(a => {
@@ -93,32 +95,31 @@ const UserList = () => {
     const today = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(today.getDate() - 6);
-
     const options = { day: 'numeric', month: 'short' };
     return `${sevenDaysAgo.toLocaleDateString('en-US', options)} - ${today.toLocaleDateString('en-US', options)}`;
   };
 
   const columns = [
-    { field: 'serialId', headerName: 'No', width: 70, headerClassName: 'bold-header' },
-    { field: 'first_name', headerName: 'First Name', flex: 1, headerClassName: 'bold-header' },
-    { field: 'last_name', headerName: 'Last Name', flex: 1, headerClassName: 'bold-header' },
+    { field: 'serialId', headerName: t('No'), width: 70, headerClassName: 'bold-header' },
+    { field: 'first_name', headerName: t('First Name'), flex: 1, headerClassName: 'bold-header' },
+    { field: 'last_name', headerName: t('Last Name'), flex: 1, headerClassName: 'bold-header' },
     {
       field: 'department',
-      headerName: 'Department',
+      headerName: t('Department'),
       flex: 1,
       headerClassName: 'bold-header',
       valueGetter: (params) => params.row.department || '-',
     },
     {
       field: 'position',
-      headerName: 'Position',
+      headerName: t('Position'),
       flex: 1,
       headerClassName: 'bold-header',
       valueGetter: (params) => params.row.position || '-',
     },
     {
       field: 'weeklyProgress',
-      headerName: `Weekly Progress (${getWeekRangeText()})`,
+      headerName: `${t('Weekly Progress')} (${getWeekRangeText()})`,
       flex: 2,
       headerClassName: 'bold-header',
       renderCell: (params) => {
@@ -137,13 +138,13 @@ const UserList = () => {
     },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t('Actions'),
       width: 120,
       headerClassName: 'bold-header',
       sortable: false,
       renderCell: (params) => (
         <Button variant="outlined" size="small" onClick={() => handleView(params.row)}>
-          Detail
+          {t('Detail')}
         </Button>
       ),
     },
@@ -154,7 +155,7 @@ const UserList = () => {
       <Paper elevation={3} sx={{ p: 3, borderRadius: 4, backgroundColor: '#fafafa' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h5" fontWeight="bold" color="primary">
-            Self Assessment Employee List
+            {t('Self Assessment Employee List')}
           </Typography>
         </Box>
 
