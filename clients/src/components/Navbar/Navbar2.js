@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 
 const drawerWidth = 260;
+// ...imports stay the same
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -49,7 +50,7 @@ const Sidebar = () => {
 
   const handleChangeLanguage = (lang) => {
     i18n.changeLanguage(lang);
-    localStorage.setItem('i18nextLng', lang); // Optional: persist
+    localStorage.setItem('i18nextLng', lang);
   };
 
   const handleToggleSidebar = () => setCollapsed(!collapsed);
@@ -107,10 +108,11 @@ const Sidebar = () => {
         </Toolbar>
 
         <List>
-          <MenuTooltip title={t("Self Assessment")}>
+          {/* Self Assessment */}
+          <MenuTooltip title={t("Self Assesment")}>
             <ListItem button onClick={handleAssessmentMenuOpen}>
               <ListItemIcon><Assignment sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary={t("Self Assessment")} />}
+              {!collapsed && <ListItemText primary={t("Self Assesment")} />}
               {!collapsed && (assessmentAnchorEl ? <ExpandLess /> : <ExpandMore />)}
             </ListItem>
           </MenuTooltip>
@@ -122,7 +124,7 @@ const Sidebar = () => {
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
             <MenuItem component={Link} to="/all-employee" onClick={handleAssessmentMenuClose}>
-              <FormatListBulleted sx={{ mr: 1 }} /> {t("All Assessment")}
+              <FormatListBulleted sx={{ mr: 1 }} /> {t("All Assesment")}
             </MenuItem>
             <MenuItem component={Link} to="/assigned-task" onClick={handleAssessmentMenuClose}>
               <Task sx={{ mr: 1 }} /> {t("My Tasks")}
@@ -141,20 +143,26 @@ const Sidebar = () => {
             </MenuItem>
           </Menu>
 
-          <MenuTooltip title={t("Contract")}>
-            <ListItem button component={Link} to="/viewContract">
-              <ListItemIcon><Business sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary={t("Contract")} />}
-            </ListItem>
-          </MenuTooltip>
+          {/* Contract & POD - Only if NOT Self Assessment */}
+          {accountType !== 'Self Assesment' && (
+            <>
+              <MenuTooltip title={t("Contract")}>
+                <ListItem button component={Link} to="/viewContract">
+                  <ListItemIcon><Business sx={{ color: 'white' }} /></ListItemIcon>
+                  {!collapsed && <ListItemText primary={t("Contract")} />}
+                </ListItem>
+              </MenuTooltip>
 
-          <MenuTooltip title={t("POD")}>
-            <ListItem button component="a" href="https://model19-b49f4.web.app/login" target="_blank">
-              <ListItemIcon><Home sx={{ color: 'white' }} /></ListItemIcon>
-              {!collapsed && <ListItemText primary={t("POD")} />}
-            </ListItem>
-          </MenuTooltip>
+              <MenuTooltip title={t("POD")}>
+                <ListItem button component="a" href="https://model19-b49f4.web.app/login" target="_blank">
+                  <ListItemIcon><Home sx={{ color: 'white' }} /></ListItemIcon>
+                  {!collapsed && <ListItemText primary={t("POD")} />}
+                </ListItem>
+              </MenuTooltip>
+            </>
+          )}
 
+          {/* Org Profile Section */}
           <MenuTooltip title={t("Org Profile")}>
             <ListItem button onClick={handleOrgProfileToggle}>
               <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
@@ -180,32 +188,33 @@ const Sidebar = () => {
             </List>
           </Collapse>
 
-            <MenuTooltip title={t("Language")}>
-          <ListItem>
-            <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
-            {!collapsed && (
-              <select
-                value={i18n.language}
-                onChange={(e) => handleChangeLanguage(e.target.value)}
-                style={{
-                  background: 'black',
-                  color: 'white',
-                  border: 'none',
-                  outline: 'none',
-                  fontSize: '16px',
-                }}
-              >
-                <option value="en">English</option>
-                <option value="am">አማርኛ</option>
-              </select>
-            )}
-          </ListItem>
-        </MenuTooltip>
-
+          {/* Language Switch */}
+          <MenuTooltip title={t("Language")}>
+            <ListItem>
+              <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
+              {!collapsed && (
+                <select
+                  value={i18n.language}
+                  onChange={(e) => handleChangeLanguage(e.target.value)}
+                  style={{
+                    background: 'black',
+                    color: 'white',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '16px',
+                  }}
+                >
+                  <option value="en">English</option>
+                  <option value="am">አማርኛ</option>
+                </select>
+              )}
+            </ListItem>
+          </MenuTooltip>
         </List>
 
         <Divider sx={{ my: 2, bgcolor: '#333' }} />
 
+        {/* Footer */}
         <List sx={{ mt: 'auto' }}>
           <ListItem>
             <ListItemIcon><AccountCircle sx={{ color: 'white' }} /></ListItemIcon>
@@ -247,3 +256,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
