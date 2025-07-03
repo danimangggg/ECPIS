@@ -32,8 +32,8 @@ const LandingPage = () => {
           <Button color="inherit" href="#features">
             Features
           </Button>
-          <Button color="inherit" href="#get-started">
-            Get Started
+          <Button color="inherit" onClick={()=> navigate('/login')}>
+            Sign In
           </Button>
         </Toolbar>
       </AppBar>

@@ -91,7 +91,7 @@ const Sidebar = () => {
           '& .MuiDrawer-paper': {
             width: collapsed ? 70 : drawerWidth,
             boxSizing: 'border-box',
-            bgcolor: 'black',
+            bgcolor: '#2596be',
             color: 'white',
             overflowX: 'hidden',
             transition: 'width 0.3s ease-in-out',
@@ -100,7 +100,7 @@ const Sidebar = () => {
           },
         }}
       >
-        <Toolbar sx={{ justifyContent: collapsed ? 'center' : 'space-between', bgcolor: 'red', px: 2 }}>
+        <Toolbar sx={{ justifyContent: collapsed ? 'center' : 'space-between', bgcolor: 'black', px: 2 }}>
           {!collapsed && (
             <Typography variant="h6" fontWeight="bold">
               EPSS - Hub 1
