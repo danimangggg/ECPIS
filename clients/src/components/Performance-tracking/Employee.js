@@ -62,7 +62,7 @@ const UserList = () => {
       const relatedAchievements = achievements.filter(a => {
         const date = new Date(a.savedDate);
         return (
-          a.assignmentId === String(task.id) &&
+          a.assignmentId === task.id &&
           date >= sevenDaysAgo &&
           date <= today
         );
