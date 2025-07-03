@@ -67,10 +67,10 @@ const Sidebar = () => {
   const accountType = rawAccountType.trim().toLowerCase();
   const position = rawPosition.trim().toLowerCase();
 
-  const isAdmin = accountType === "admin";
-  const isPodManager = accountType === "pod manager";
-  const isCreditManager = accountType === "credit manager";
-  const isSelfAssessment = accountType === "self assessment";
+  const isAdmin = accountType === "Admin";
+  const isPodManager = accountType === "Pod Manager";
+  const isCreditManager = accountType === "Credit Manager";
+  const isSelfAssessment = accountType === "Self Assesment";
 
   const MenuTooltip = ({ title, children }) => (
     <Tooltip title={collapsed ? title : ''} placement="right" enterDelay={300}>
