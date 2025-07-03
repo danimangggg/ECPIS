@@ -54,7 +54,15 @@ export default function SignIn() {
         
 
         // Redirect to a protected route
-        navigate('/all-employee');
+        if(response.data.Position == "Admin"){
+          navigate('/all-employee');
+        }else if(response.data.Position == "Officer"){
+          navigate(`/employee-detail/${response.data.UserId}`);
+        }else if(response.data.Position == "Coordinator"){
+          navigate(`/employee-detail/${response.data.UserId}`);
+        }else if(response.data.Position == "Manager"){
+          navigate('/all-employee');
+        }
       }
     } catch (err) {
       toast.error('Invalid email or password.');

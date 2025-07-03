@@ -31,7 +31,6 @@ import ResetPasswordPage from './pages/UserAccountPage/ResetPasswordPage';
 import UserListPage from './pages/UserAccountPage/UserListPage';
 import TaskTrackingPage from './pages/Performance-tracking/TaskTrackingPage';
 import AddTaskPage from './pages/Performance-tracking/AddTaskPage';
-import AddEmployeePage from './pages/Performance-tracking/AddEployeePage';
 import AssignTaskPage from './pages/Performance-tracking/TaskAssignPage';
 import AssignedTaskPage from './pages/Performance-tracking/viewAssignedTaskPage';
 import TeamTasksPage from './pages/Performance-tracking/ViewTeamAssignedTasks';
@@ -78,7 +77,6 @@ const App = () => {
             <Route path = '/users' Component={UserListPage} />
             <Route path = '/performance-tracking' Component={TaskTrackingPage} />
             <Route path = '/add-task' Component={AddTaskPage} />
-            <Route path = '/add-employee' Component={AddEmployeePage} />
             <Route path = '/assign-task' Component={AssignTaskPage} />
             <Route path = '/assigned-task' Component={AssignedTaskPage} />
             <Route path = '/team-tasks' Component={TeamTasksPage} />
