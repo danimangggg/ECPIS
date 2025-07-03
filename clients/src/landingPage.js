@@ -2,6 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Container, Box, Grid, Paper } from '@mui/material';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 // Styled Feature Card
 const FeatureCard = styled(Paper)(({ theme }) => ({
@@ -16,6 +17,8 @@ const FeatureCard = styled(Paper)(({ theme }) => ({
 
 const LandingPage = () => {
   const user = (localStorage.getItem('FullName')) || { name: 'Guest' };
+  const navigate = useNavigate();
+  
 
   return (
     <div>
@@ -54,7 +57,7 @@ const LandingPage = () => {
           <Button
             variant="contained"
             size="large"
-            href="#get-started"
+            onClick={()=> navigate('/all-employee')}
             sx={{
               backgroundColor: 'white',
               color: '#2196f3',
@@ -65,7 +68,7 @@ const LandingPage = () => {
               py: 1.5,
             }}
           >
-            Start Your Assessment
+            Explore Digital tools
           </Button>
         </Container>
       </Box>
@@ -73,7 +76,7 @@ const LandingPage = () => {
       {/* Features Section */}
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Typography variant="h4" align="center" gutterBottom>
-          Why Choose Us?
+          EPSS AA one Software Solutions
         </Typography>
         <Typography align="center" color="text.secondary" sx={{ mb: 6 }}>
           Our app empowers you to assess yourself in a simple, effective, and insightful way.
