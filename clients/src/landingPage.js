@@ -16,9 +16,15 @@ const FeatureCard = styled(Paper)(({ theme }) => ({
 }));
 
 const LandingPage = () => {
-  const user = (localStorage.getItem('FullName')) || { name: 'Guest' };
   const navigate = useNavigate();
-  
+  const isLoggedIn = localStorage.getItem('token') !== null;
+  const Explore = ()=> {
+      if(isLoggedIn){
+        navigate('/all-employee')
+      }else{
+        navigate('/login')
+      }
+  }
 
   return (
     <div>
@@ -27,7 +33,7 @@ const LandingPage = () => {
         <Toolbar>
           <AssessmentIcon sx={{ mr: 2 }} />
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Self-Assessment App
+            EPSS-AA1 Software Bundles
           </Typography>
           <Button color="inherit" href="#features">
             Features
@@ -49,15 +55,15 @@ const LandingPage = () => {
       >
         <Container maxWidth="md">
           <Typography variant="h3" component="h1" gutterBottom>
-            Welcome, {user}!
+            Welcome!!
           </Typography>
           <Typography variant="h5" sx={{ mb: 4 }}>
-            Unlock your potential with our Self-Assessment App.
+            Unlock your potential with our Bundle of Software Solutions
           </Typography>
           <Button
             variant="contained"
             size="large"
-            onClick={()=> navigate('/all-employee')}
+            onClick={()=> Explore()}
             sx={{
               backgroundColor: 'white',
               color: '#2196f3',
@@ -96,20 +102,20 @@ const LandingPage = () => {
           <Grid item xs={12} sm={4}>
             <FeatureCard elevation={3}>
               <Typography variant="h6" gutterBottom>
-                Visual Progress
+                Contract Managment
               </Typography>
               <Typography>
-                Track your growth and visualize achievements through beautiful charts and reports.
+                All Facilities Contract agreement is one click away from you 
               </Typography>
             </FeatureCard>
           </Grid>
           <Grid item xs={12} sm={4}>
             <FeatureCard elevation={3}>
               <Typography variant="h6" gutterBottom>
-                Personalized Insights
+                POD
               </Typography>
               <Typography>
-                Get customized tips and learning resources based on your assessment results.
+               Track Pharmacuiticals proof of delivery 
               </Typography>
             </FeatureCard>
           </Grid>

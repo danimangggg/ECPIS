@@ -91,7 +91,7 @@ const Sidebar = () => {
           '& .MuiDrawer-paper': {
             width: collapsed ? 70 : drawerWidth,
             boxSizing: 'border-box',
-            bgcolor: '#2596be',
+            bgcolor: '#2E2E3E',
             color: 'white',
             overflowX: 'hidden',
             transition: 'width 0.3s ease-in-out',
@@ -100,7 +100,7 @@ const Sidebar = () => {
           },
         }}
       >
-        <Toolbar sx={{ justifyContent: collapsed ? 'center' : 'space-between', bgcolor: 'black', px: 2 }}>
+        <Toolbar sx={{ justifyContent: collapsed ? 'center' : 'space-between', bgcolor: '#6B4226', px: 2 }}>
           {!collapsed && (
             <Typography variant="h6" fontWeight="bold">
               EPSS - Hub 1
@@ -135,6 +135,11 @@ const Sidebar = () => {
             {(isAdmin || position === "manager" || position === "coordinator" || position === "officer") && (
               <MenuItem component={Link} to="/assigned-task" onClick={handleAssessmentMenuClose}>
                 <Task sx={{ mr: 1 }} /> {t("My Tasks")}
+              </MenuItem>
+            )}
+            {(position === "Coordinator" || position === "Officer" || position === "coordinator" || position === "officer") && (
+              <MenuItem component={Link} to= {`/employee-detail/${localStorage.getItem("UserId")}`} onClick={handleAssessmentMenuClose}>
+                <Task sx={{ mr: 1 }} /> {t("My Achievement")}
               </MenuItem>
             )}
             {(isAdmin || position === "manager") && (
@@ -218,7 +223,7 @@ const Sidebar = () => {
                   }}
                 >
                   <option value="en">English</option>
-                  <option value="am">አማርንኣ</option>
+                  <option value="am">አማርኛ</option>
                 </select>
               )}
             </ListItem>

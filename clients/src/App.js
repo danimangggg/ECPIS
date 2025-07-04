@@ -45,7 +45,7 @@ const App = () => {
      <Router>
 
       <Routes>
-        <Route path = '/' Component={SignIn} />
+        <Route path = '/' Component={LandingPage2} />
         <Route path = '/login' Component={SignIn} />
 
         <Route element = {<ProtectedRoutes/>}>
