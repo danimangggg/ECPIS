@@ -63,8 +63,7 @@ const Sidebar = () => {
   const rawPosition = localStorage.getItem("Position") || "";
   const token = localStorage.getItem("token");
   const fullName = localStorage.getItem("FullName") || 'Guest';
-
-  const accountType = rawAccountType.trim().toLowerCase();
+  const accountType = rawAccountType;
   const position = rawPosition.trim().toLowerCase();
 
   const isAdmin = accountType === "Admin";

@@ -82,7 +82,7 @@ const LandingPage = () => {
       {/* Features Section */}
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Typography variant="h4" align="center" gutterBottom>
-          EPSS AA one Software Solutions
+          EPSS AA one Software Bundles
         </Typography>
         <Typography align="center" color="text.secondary" sx={{ mb: 6 }}>
           Our app empowers you to assess yourself in a simple, effective, and insightful way.

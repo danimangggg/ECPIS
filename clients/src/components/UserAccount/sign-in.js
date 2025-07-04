@@ -54,15 +54,19 @@ export default function SignIn() {
         
 
         // Redirect to a protected route
-        if(response.data.Position == "Admin"){
+          if(response.data.AccountType === "Self Assesment" || response.data.AccountType === "Admin"){
+        if(response.data.Position === "Admin"){
           navigate('/all-employee');
-        }else if(response.data.Position == "Officer"){
+        }else if(response.data.Position === "Officer"){
           navigate(`/employee-detail/${response.data.UserId}`);
-        }else if(response.data.Position == "Coordinator"){
+        }else if(response.data.Position === "Coordinator"){
           navigate(`/employee-detail/${response.data.UserId}`);
-        }else if(response.data.Position == "Manager"){
+        }else if(response.data.Position === "Manager"){
           navigate('/all-employee');
         }
+      }else if (response.data.AccountType === "Credit Manager" || response.data.AccountType === "Admin"){
+         navigate('/viewContract');
+      }
       }
     } catch (err) {
       toast.error('Invalid email or password.');
@@ -140,9 +144,14 @@ export default function SignIn() {
                 control={<Checkbox value="remember" color="primary" />}
                 label="Remember me"
               />
+             <Box 
+               sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
               <Button
                 type="submit"
-                fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 style={{
@@ -154,20 +163,7 @@ export default function SignIn() {
               >
                 Sign In
               </Button>
-              <Button
-                type="button"
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                onClick={guest}
-                style={{
-                  borderRadius: 35,
-                  backgroundColor: "#21b6ae",
-                  padding: "10px 20px",
-                  fontSize: "15px"
-                }}
-              >
-                Guest mode
-              </Button>
+              </Box>
               <ToastContainer />
             </Box>
           </Box>

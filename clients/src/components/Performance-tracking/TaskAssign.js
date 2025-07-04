@@ -11,6 +11,7 @@ import {
   InputLabel,
   FormControl,
   TextField,
+  Divider,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -29,6 +30,7 @@ const TaskAssign = () => {
   const [selectedTaskId, setSelectedTaskId] = useState('');
 
   const [dailyTarget, setDailyTarget] = useState('');
+  const [assignedTasks, setAssignedTasks] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -70,6 +72,22 @@ const TaskAssign = () => {
     setFilteredTasks(departmentTasks);
   }, [allTasks, Department]);
 
+  useEffect(() => {
+    const fetchAssignedTasks = async () => {
+      if (!selectedEmployeeId) return;
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/viewAssignedTask`, {
+          params: { userId: selectedEmployeeId },
+        });
+        setAssignedTasks(res.data);
+      } catch (err) {
+        console.error('Error fetching assigned tasks:', err);
+      }
+    };
+
+    fetchAssignedTasks();
+  }, [selectedEmployeeId]);
+
   const handleSubmit = async () => {
     if (!selectedEmployeeId || !selectedTaskId || !dailyTarget) {
       alert('Please select an employee, a task, and enter the daily target.');
@@ -87,9 +105,6 @@ const TaskAssign = () => {
       setDailyTarget('');
     } catch (err) {
       console.error('Error assigning task:', err);
-      alert(selectedEmployeeId  );
-      alert(selectedTaskId);
-      alert(dailyTarget);
       alert('Failed to assign task.');
     }
   };
@@ -99,29 +114,33 @@ const TaskAssign = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 3, position: 'relative' }}>
-        
+    <Container maxWidth="sm" sx={{ mt: 6 }}>
+      <Paper elevation={4} sx={{ p: 4, borderRadius: 4, position: 'relative', backgroundColor: '#fafafa' }}>
+        <IconButton
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+          onClick={handleBack}
+          color="primary"
+        >
+          <CloseIcon />
+        </IconButton>
 
-        <Typography variant="h5" align="center" gutterBottom>
+        <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
           Assign Task
         </Typography>
 
-        <Typography variant="subtitle1" align="center" gutterBottom>
+        <Typography variant="subtitle1" align="center" sx={{ mb: 3, color: '#666' }}>
           {FullName} | {Position} | {Department}
         </Typography>
 
+        <Divider sx={{ mb: 3 }} />
+
         {/* Select Employee */}
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Select Employee</InputLabel>
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel shrink>Select Employee</InputLabel>
           <Select
+            label="Select Employee"
             value={selectedEmployeeId}
             onChange={(e) => setSelectedEmployeeId(e.target.value)}
-            renderValue={(selected) =>
-              filteredEmployees.find(emp => emp.id === selected)
-                ? `${filteredEmployees.find(emp => emp.id === selected).first_name} ${filteredEmployees.find(emp => emp.id === selected).last_name}`
-                : ''
-            }
           >
             {filteredEmployees.map((emp) => (
               <MenuItem key={emp.id} value={emp.id}>
@@ -132,20 +151,21 @@ const TaskAssign = () => {
         </FormControl>
 
         {/* Select Task */}
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Select Task</InputLabel>
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel shrink>Select Task</InputLabel>
           <Select
+            label="Select Task"
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            renderValue={(selected) =>
-              filteredTasks.find(task => task.id === selected)?.description || ''
-            }
           >
-            {filteredTasks.map((task) => (
-              <MenuItem key={task.id} value={task.id}>
-                {task.description}
-              </MenuItem>
-            ))}
+            {filteredTasks.map((task) => {
+              const isAssigned = assignedTasks.some((assigned) => assigned.taskId === task.id);
+              return (
+                <MenuItem key={task.id} value={task.id} disabled={isAssigned}>
+                  {task.description} {isAssigned ? '(Already Assigned)' : ''}
+                </MenuItem>
+              );
+            })}
           </Select>
         </FormControl>
 
@@ -156,13 +176,26 @@ const TaskAssign = () => {
           type="number"
           value={dailyTarget}
           onChange={(e) => setDailyTarget(e.target.value)}
-          sx={{ mb: 2 }}
+          sx={{ mb: 3 }}
         />
 
-        <Button onClick={handleSubmit} variant="contained" color="primary" fullWidth sx={{ mb: 1 }}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          fullWidth
+          sx={{
+            py: 1.2,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontSize: '1rem',
+            backgroundColor: '#2F3C7E',  // Match Sidebar Here (change if needed)
+            '&:hover': {
+              backgroundColor: '#1f2a5c',
+            },
+          }}
+        >
           Assign Task
         </Button>
-
       </Paper>
     </Container>
   );
