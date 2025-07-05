@@ -158,8 +158,9 @@ const TaskAssign = () => {
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
           >
-            {filteredTasks.map((task) => {
-              const isAssigned = assignedTasks.some((assigned) => assigned.taskId === task.id);
+            {filteredTasks.map((task) => {const isAssigned = assignedTasks.some(
+            (assigned) => assigned.taskId === task.id && assigned.userId === selectedEmployeeId
+             );
               return (
                 <MenuItem key={task.id} value={task.id} disabled={isAssigned}>
                   {task.description} {isAssigned ? '(Already Assigned)' : ''}

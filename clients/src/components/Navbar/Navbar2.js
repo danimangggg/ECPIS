@@ -243,9 +243,9 @@ const Sidebar = () => {
                 <ListItemIcon><Group sx={{ color: 'white' }} /></ListItemIcon>
                 <ListItemText primary={t("Users")} />
               </ListItem>
-              <ListItem button component={Link} to="/add-users">
+              <ListItem button component={Link} to="/task-list">
                 <ListItemIcon><AddCircleOutline sx={{ color: 'white' }} /></ListItemIcon>
-                <ListItemText primary={t("Add User")} />
+                <ListItemText primary={t("Tasks")} />
               </ListItem>
               <ListItem button component={Link} to="/reset-password">
                 <ListItemIcon><VpnKey sx={{ color: 'white' }} /></ListItemIcon>

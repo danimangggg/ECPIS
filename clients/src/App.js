@@ -37,6 +37,7 @@ import TeamTasksPage from './pages/Performance-tracking/ViewTeamAssignedTasks';
 import EmployeePage from './pages/Performance-tracking/EmployeePage';
 import EmployeeDetailPage from './pages/Performance-tracking/EmployeeDetailPage';
 import LandingPage2 from './landingPage';
+import TaskListPage from './pages/Performance-tracking/TaskListPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -84,6 +85,7 @@ const App = () => {
             <Route path = '/all-employee' Component={EmployeePage} />
             <Route path = '/employee-detail/:id' Component={EmployeeDetailPage} />
             <Route path = '/home' Component={LandingPage2} />
+            <Route path = '/task-list' Component={TaskListPage} />
         </Route>
         
       </Routes>
