@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const DepartmentTasks = () => {
   const departmentOptions = [
@@ -36,6 +37,7 @@ const DepartmentTasks = () => {
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAllTasks = async () => {
@@ -63,7 +65,7 @@ const DepartmentTasks = () => {
   };
 
   const handleAddTask = () => {
-    alert('Add Task clicked');
+    navigate('/add-task');
   };
 
   const handleEdit = (task) => {
