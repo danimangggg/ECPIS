@@ -52,6 +52,10 @@ const getAchivment = require('../controllers/PerformanceTracking-Controller/view
 const updateAchivment = require('../controllers/PerformanceTracking-Controller/updateAchivment')
 
 
+//Plan
+const addOrgPlan = require('../controllers/PlanController/addOrgCatagory')
+const addBranchPlan = require('../controllers/PlanController/addBranchCatagory')
+
 const upload = require("../middleware/upload");
 
 
@@ -101,6 +105,9 @@ let routes =  (app) => {
   router.post("/api/add-achievement", AddAchivment.AddAchivment)
   router.get("/api/get-achievements", getAchivment.retriveAchievement)
   router.put('/api/update-achievement/:id', updateAchivment.updateFiles);
+
+  router.post("/api/add-Orgplan", addOrgPlan.AddOrgPlan)
+  router.post("/api/add-Branchplan", addBranchPlan.AddBranchPlan)
 
   return app.use("/", router);
 };

@@ -32,5 +32,7 @@ db.accountType = require("./UserAccount/accountType.js")(sequelize, Sequelize);
 db.task = require("./PerformanceTracking/taskModel.js")(sequelize, Sequelize);
 db.assignedTask = require("./PerformanceTracking/assignTaskModel.js")(sequelize, Sequelize);
 db.achivement = require("./PerformanceTracking/achivementModel.js")(sequelize, Sequelize);
+db.orgPlanCatagory = require("./Plan/planCatagoryModel.js")(sequelize, Sequelize);
+db.branchPlanCatagory = require("./Plan/planBranchCatagoryModel.js")(sequelize, Sequelize);
 
 module.exports = db;
