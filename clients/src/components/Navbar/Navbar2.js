@@ -126,7 +126,7 @@ const Sidebar = () => {
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
-            {(isAdmin || position === "manager") && (
+            {(isAdmin || position === "manager" || position === "coordinator") && (
               <MenuItem component={Link} to="/all-employee" onClick={handleAssessmentMenuClose}>
                 <FormatListBulleted sx={{ mr: 1 }} /> {t("All Assessment")}
               </MenuItem>
@@ -181,6 +181,7 @@ const Sidebar = () => {
             </MenuTooltip>
           )}
 
+          {(isPodManager || isAdmin || isCreditManager) && (
           <MenuTooltip title={t("Org Profile")}>
             <ListItem button onClick={handleOrgProfileToggle}>
               <ListItemIcon><Settings sx={{ color: 'white' }} /></ListItemIcon>
@@ -188,6 +189,7 @@ const Sidebar = () => {
               {!collapsed && (orgProfileOpen ? <ExpandLess /> : <ExpandMore />)}
             </ListItem>
           </MenuTooltip>
+          )}
 
           <Collapse in={orgProfileOpen && !collapsed} timeout="auto" unmountOnExit>
             <List component="div" disablePadding sx={{ pl: 4 }}>

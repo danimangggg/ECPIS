@@ -28,14 +28,25 @@ const UserList = () => {
           axios.get(`${process.env.REACT_APP_API_URL}/api/get-achievements`),
         ]);
 
-        const selfAssessmentUsers = userRes.data.filter(
+        let selfAssessmentUsers = userRes.data.filter(
           (user) => user.account_type === 'Self Assesment'
         );
+
+        const position = localStorage.getItem("Position");
+        const department = localStorage.getItem("Department");
+
+        // Filter by department for coordinators
+        if (position?.toLowerCase() === 'coordinator') {
+          selfAssessmentUsers = selfAssessmentUsers.filter(
+            (user) =>
+              user.department?.trim().toLowerCase() === department?.trim().toLowerCase()
+          );
+        }
 
         const enhancedUsers = selfAssessmentUsers.map((user, index) => ({
           ...user,
           userId: user.id,
-          id: index + 1,
+          id: index + 1, // Assign ID after filtering
           serialId: index + 1,
         }));
 
