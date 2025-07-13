@@ -2,7 +2,7 @@
 const bcrypt = require('bcryptjs');
 const db = require("../../models");
 const jwt = require('jsonwebtoken');
-const User = db.user;
+const User = db.employee;
 
 const login =  async (req, res) => {
 
@@ -18,7 +18,7 @@ const login =  async (req, res) => {
           return res.status(400).json({ error: 'Invalid username or password' });
         }
         const token = jwt.sign({ id: user.id }, 'your_jwt_secret', { expiresIn: '1h' });
-        res.json({ message: 'Login successful', token , UserId: user.id, FullName: user.first_name+" "+ user.last_name, AccountType: user.account_type, Department : user.department, Position : user.position });
+        res.json({ message: 'Login successful', token , UserId: user.id, FullName: user.full_name, AccountType: user.account_type, Department : user.department, Position : user.position });
      
 }
 

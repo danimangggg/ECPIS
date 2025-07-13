@@ -196,7 +196,6 @@ const ViewAssignedTask = () => {
                       size="medium"
                       value={editedAchievements[task.id] ?? 0}
                       onChange={(e) => handleAchievementChange(task.id, e.target.value)}
-                      inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
                       sx={{ width: 100 }}
                     />
                   </TableCell>

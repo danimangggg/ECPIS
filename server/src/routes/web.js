@@ -50,11 +50,14 @@ const viewAssignedTask = require('../controllers/PerformanceTracking-Controller/
 const AddAchivment = require('../controllers/PerformanceTracking-Controller/Achivment')
 const getAchivment = require('../controllers/PerformanceTracking-Controller/viewAchivment')
 const updateAchivment = require('../controllers/PerformanceTracking-Controller/updateAchivment')
+const getEmployee = require('../controllers/PerformanceTracking-Controller/Employee')
 
 
 //Plan
 const addOrgPlan = require('../controllers/PlanController/addOrgCatagory')
 const addBranchPlan = require('../controllers/PlanController/addBranchCatagory')
+const addmeasure = require('../controllers/PlanController/planMeasurement')
+const getmeasure = require('../controllers/PlanController/getMeasurement')
 
 const upload = require("../middleware/upload");
 
@@ -105,9 +108,12 @@ let routes =  (app) => {
   router.post("/api/add-achievement", AddAchivment.AddAchivment)
   router.get("/api/get-achievements", getAchivment.retriveAchievement)
   router.put('/api/update-achievement/:id', updateAchivment.updateFiles);
+  router.get('/api/get-employee', getEmployee.getEmployees);
 
   router.post("/api/add-Orgplan", addOrgPlan.AddOrgPlan)
   router.post("/api/add-Branchplan", addBranchPlan.AddBranchPlan)
+  router.post("/api/add-measure", addmeasure.AddMeasurement)
+  router.get("/api/get-measure", getmeasure.retriveMeasurements)
 
   return app.use("/", router);
 };

@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 const DepartmentTasks = () => {
   const departmentOptions = [
-    'ICT Department',
+    'ICT',
     'Finance',
     'Human Resource',
     'Transport Management',

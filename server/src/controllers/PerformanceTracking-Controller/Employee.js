@@ -1,11 +1,20 @@
-const { Employee } = require('../../models/PerformanceTracking/employeeModel');
+const db = require('../../models');
+const Employee = db.employee;
 
 // Create a new employee
 const CreateEmployee = async (req, res) => {
   try {
-    const { fullName, jobTitle, department } = req.body;
 
-    const employee = await Employee.create({ fullName, jobTitle, department });
+    const  employee = await Employee.create(
+      {
+        full_name: req.body.full_name, 
+        user_name: req.body.user_name,	
+        password: req.body.password,	
+        jobTitle: req.body.jobTitle,	
+        account_type: req.body.account_type,	
+        position: req.body.position,	
+        department: req.body.department,	
+        account_status: req.body.account_status });
 
     res.status(201).json(employee);
   } catch (error) {
@@ -17,7 +26,7 @@ module.exports = {
 }
 
 // Get all employees
-exports.getEmployees = async (req, res) => {
+  const getEmployees = async (req, res) => {
   try {
     const employees = await Employee.findAll();
     res.json(employees);
@@ -25,6 +34,9 @@ exports.getEmployees = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch employees', error });
   }
 };
+module.exports = {
+  getEmployees
+}
 
 // Get a single employee by ID
 exports.getEmployeeById = async (req, res) => {

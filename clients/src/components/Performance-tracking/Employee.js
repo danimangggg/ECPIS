@@ -23,7 +23,7 @@ const UserList = () => {
     const fetchData = async () => {
       try {
         const [userRes, assignedTaskRes, achievementRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL}/api/users`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/get-employee`),
           axios.get(`${process.env.REACT_APP_API_URL}/api/viewAssignedTask`),
           axios.get(`${process.env.REACT_APP_API_URL}/api/get-achievements`),
         ]);
@@ -112,8 +112,7 @@ const UserList = () => {
 
   const columns = [
     { field: 'serialId', headerName: t('No'), width: 70, headerClassName: 'bold-header' },
-    { field: 'first_name', headerName: t('First Name'), flex: 1, headerClassName: 'bold-header' },
-    { field: 'last_name', headerName: t('Last Name'), flex: 1, headerClassName: 'bold-header' },
+    { field: 'full_name', headerName: t('Full Name'), flex: 1, headerClassName: 'bold-header' },
     {
       field: 'department',
       headerName: t('Department'),
@@ -174,8 +173,8 @@ const UserList = () => {
           <DataGrid
             rows={users}
             columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[5, 10, 20]}
+            pageSize={50}
+            rowsPerPageOptions={[ 10, 50, 100]}
             disableSelectionOnClick
           />
         </Box>

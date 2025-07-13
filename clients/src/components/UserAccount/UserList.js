@@ -30,7 +30,7 @@ const UserList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/users`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/get-employee`);
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -77,8 +77,7 @@ const UserList = () => {
       valueGetter: (params) =>
         users.findIndex((user) => user.id === params.row.id) + 1,
     },
-    { field: 'first_name', headerName: 'First Name', flex: 1 },
-    { field: 'last_name', headerName: 'Last Name', flex: 1 },
+    { field: 'full_name', headerName: 'Full Name', flex: 1 },
     { field: 'user_name', headerName: 'Username', flex: 1 },
     { field: 'account_type', headerName: 'Account Type', flex: 1 },
     { field: 'department', headerName: 'Department', flex: 1, valueGetter: (params) => params.row.department || '-' },

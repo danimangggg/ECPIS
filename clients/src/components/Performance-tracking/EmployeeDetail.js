@@ -40,7 +40,7 @@ const EmployeeDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userRes = await axios.get('http://localhost:3001/api/users');
+        const userRes = await axios.get('http://localhost:3001/api/get-employee');
         const foundUser = userRes.data.find(u => u.id === parseInt(id));
         setUser(foundUser);
 
@@ -142,7 +142,7 @@ const EmployeeDetail = () => {
         <Typography variant="h6">Personal Info</Typography>
         <Divider sx={{ my: 2 }} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><b>Name:</b> <span style={{ fontWeight: 'bold', color: '#1565c0' }}>{user.first_name} {user.last_name}</span></Grid>
+          <Grid item xs={6}><b>Name:</b> <span style={{ fontWeight: 'bold', color: '#1565c0' }}>{user.full_name} </span></Grid>
           <Grid item xs={6}><b>Position:</b> <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>{user.position}</span></Grid>
           <Grid item xs={6}><b>Department:</b> <span style={{ fontWeight: 'bold', color: '#6a1b9a' }}>{user.department}</span></Grid>
         </Grid>

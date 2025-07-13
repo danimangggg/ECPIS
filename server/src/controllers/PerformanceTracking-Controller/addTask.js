@@ -1,4 +1,4 @@
-const db = require('../../models');
+ const db = require('../../models');
 const Task = db.task;
 
 const AddTask = async (req, res) => {

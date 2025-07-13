@@ -5,7 +5,6 @@ const AddBranchPlan = async (req, res) => {
   try {
     const result = await BranchPlan.create({
       branchCatagory: req.body.branchCatagorry,
-      departmentId: req.body.departmentId,
       OrgCatagoryId: req.body.OrgCatagoryId,
       anualTarget: req.body.anualTarget
     });

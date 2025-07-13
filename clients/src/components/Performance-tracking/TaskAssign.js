@@ -35,7 +35,7 @@ const TaskAssign = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/users`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/get-employee`);
         setAllUsers(res.data);
       } catch (err) {
         console.error('Error fetching users:', err);
@@ -144,7 +144,7 @@ const TaskAssign = () => {
           >
             {filteredEmployees.map((emp) => (
               <MenuItem key={emp.id} value={emp.id}>
-                {emp.first_name} {emp.last_name}
+                {emp.full_name} 
               </MenuItem>
             ))}
           </Select>

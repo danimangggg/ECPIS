@@ -6,18 +6,37 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true
     },
-    fullName: {
+    full_name: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    user_name: {
+      type: DataTypes.STRING,
+      unique: true
+    },
+    password: {
+      type: DataTypes.STRING,
     },
     jobTitle: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
+    },
+    account_type: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+     position: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     department: {
       type: DataTypes.STRING,
-      allowNull: false
-    }
+      allowNull: true
+    }, 
+    account_status: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
   });
 
   return Employee;
