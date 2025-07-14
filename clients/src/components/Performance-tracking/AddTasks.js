@@ -137,7 +137,7 @@ const AddTaskForm = () => {
             ))}
           </TextField>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 1 }} />
 
           {tasks.map((task, index) => (
             <Box key={index} sx={{ position: 'relative', mb: 3, pb: 2 }}>

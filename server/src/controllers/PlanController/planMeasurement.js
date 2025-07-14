@@ -7,7 +7,8 @@ const AddMeasurement = async (req, res) => {
         measurement: req.body.measurement,
         department: req.body.department,
         branchCatagoryId: req.body.branchCatagoryId,
-        anualTarget: req.body.anualTarget
+        anualTarget: req.body.anualTarget,
+        scoreType: req.body.scoreType
     });
 
     res.status(200).send({ message: "Organization plan created successfully", task: result });

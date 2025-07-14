@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
       },
+      scoreType: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       anualTarget: {
         type: DataTypes.DECIMAL,
         allowNull: false
