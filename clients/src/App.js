@@ -38,6 +38,7 @@ import EmployeePage from './pages/Performance-tracking/EmployeePage';
 import EmployeeDetailPage from './pages/Performance-tracking/EmployeeDetailPage';
 import LandingPage2 from './landingPage';
 import TaskListPage from './pages/Performance-tracking/TaskListPage';
+import RegisterCustomer from './pages/Customer-Service/RegisterCustomerPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -86,6 +87,7 @@ const App = () => {
             <Route path = '/employee-detail/:id' Component={EmployeeDetailPage} />
             <Route path = '/home' Component={LandingPage2} />
             <Route path = '/task-list' Component={TaskListPage} />
+            <Route path = '/register-customer' Component={RegisterCustomer} />
         </Route>
         
       </Routes>
@@ -94,7 +96,7 @@ const App = () => {
      <br/><br/><br/>
 
      <footer className="footer" style={{
-          "background-color": "red",
+          "background-color": "blue",
           "text-align": "center",
           "position": "fixed",
           "left": "0",
@@ -103,7 +105,7 @@ const App = () => {
           "color": "white",
           "fontWeight" : "lighter",
         }}>
-      <h6>© 2024 EPSS AA1.</h6>
+      <h6>© 2025 EPSS AA1.</h6>
     </footer>
 
    </>
