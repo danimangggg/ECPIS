@@ -1,39 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
   TableHead,
   TableRow,
+  TableCell,
+  TableBody,
+  TableContainer,
+  Paper,
   CircularProgress,
 } from '@mui/material';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-
-dayjs.extend(relativeTime);
-
-const api_url = process.env.REACT_APP_API_URL;
 
 const CustomerRegistrationList = () => {
   const [customers, setCustomers] = useState([]);
+  const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch customer registrations and facilities
   useEffect(() => {
-    axios.get(`${api_url}/api/customer-queue`)
-      .then(res => {
-        setCustomers(res.data);
+    const fetchData = async () => {
+      try {
+        const [customerRes, facilityRes] = await Promise.all([
+          axios.get('/api/customer-queue'),
+          axios.get('/api/facilities')
+        ]);
+
+        setCustomers(customerRes.data);
+        setFacilities(facilityRes.data);
         setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch customers:", err);
+      } catch (error) {
+        console.error('Error fetching data:', error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
+
+  const getFacilityInfo = (facilityId, field) => {
+    const facility = facilities.find(f => f.id === facilityId);
+    return facility ? facility[field] : 'N/A';
+  };
 
   const calculateWaitingHours = (startedAt) => {
     const now = dayjs();
@@ -44,7 +54,7 @@ const CustomerRegistrationList = () => {
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h5" gutterBottom fontWeight={600}>
-        Registered Customer List
+        Registered Customers
       </Typography>
 
       {loading ? (
@@ -52,7 +62,7 @@ const CustomerRegistrationList = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer component={Paper} elevation={3}>
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -61,26 +71,26 @@ const CustomerRegistrationList = () => {
                 <TableCell><strong>Zone</strong></TableCell>
                 <TableCell><strong>Region</strong></TableCell>
                 <TableCell><strong>Customer Type</strong></TableCell>
-                <TableCell><strong>Arrived At</strong></TableCell>
-                <TableCell><strong>Waiting (hrs)</strong></TableCell>
+                <TableCell><strong>Arrived Date & Time</strong></TableCell>
+                <TableCell><strong>Waiting Time (hrs)</strong></TableCell>
                 <TableCell><strong>Current Service Point</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {customers.map((cust, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>{cust.facility?.facility_name || 'N/A'}</TableCell>
-                  <TableCell>{cust.facility?.woreda_name || 'N/A'}</TableCell>
-                  <TableCell>{cust.facility?.zone_name || 'N/A'}</TableCell>
-                  <TableCell>{cust.facility?.region_name || 'N/A'}</TableCell>
+              {customers.map((cust, index) => (
+                <TableRow key={index}>
+                  <TableCell>{getFacilityInfo(cust.facility_id, 'facility_name')}</TableCell>
+                  <TableCell>{getFacilityInfo(cust.facility_id, 'woreda')}</TableCell>
+                  <TableCell>{getFacilityInfo(cust.facility_id, 'zone')}</TableCell>
+                  <TableCell>{getFacilityInfo(cust.facility_id, 'region')}</TableCell>
                   <TableCell>{cust.customer_type}</TableCell>
                   <TableCell>{dayjs(cust.started_at).format('YYYY-MM-DD HH:mm')}</TableCell>
                   <TableCell>{calculateWaitingHours(cust.started_at)}</TableCell>
-                  <TableCell>{cust.current_service_point}</TableCell>
+                  <TableCell>{cust.next_service_point}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
-          </Table> 
+          </Table>
         </TableContainer>
       )}
     </Box>
