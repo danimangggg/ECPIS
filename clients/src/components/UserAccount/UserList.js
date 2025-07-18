@@ -82,7 +82,7 @@ const UserList = () => {
     { field: 'account_type', headerName: 'Account Type', flex: 1 },
     { field: 'department', headerName: 'Department', flex: 1, valueGetter: (params) => params.row.department || '-' },
     { field: 'position', headerName: 'Position', flex: 1, valueGetter: (params) => params.row.position || '-' },
-    { field: 'job_title', headerName: 'Job Title', flex: 1, valueGetter: (params) => params.row.job_title || '-' },
+    { field: 'jobTitle', headerName: 'Job Title', flex: 1, valueGetter: (params) => params.row.jobTitle || '-' },
     {
       field: 'actions',
       headerName: 'Actions',
