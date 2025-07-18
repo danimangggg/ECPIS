@@ -27,7 +27,7 @@ const CustomerRegistrationList = () => {
     const fetchAllData = async () => {
       try {
         const [customerRes, facilityRes, regionRes, zoneRes, woredaRes] = await Promise.all([
-          axios.get(`${api_url}/api/customer-queue`),
+          axios.get(`${api_url}/api/serviceList`),
           axios.get(`${api_url}/api/facilities`),
           axios.get(`${api_url}/api/regions`),
           axios.get(`${api_url}/api/zones`),
@@ -50,7 +50,11 @@ const CustomerRegistrationList = () => {
   }, []);
 
   const getFacility = (id) => facilities.find(f => f.id === id);
-  const getNameById = (list, id) => list.find(item => item.id === id)?.facility_name || 'N/A';
+
+  const getWoredaName = (woreda_id) => woredas.find(w => w.id === woreda_id)?.woreda_name || 'N/A';
+  const getZoneName = (zone_id) => zones.find(z => z.id === zone_id)?.zone_name || 'N/A';
+  const getRegionName = (region_id) => regions.find(r => r.id === region_id)?.region_name || 'N/A';
+
   const calculateWaitingHours = (startedAt) => {
     const now = dayjs();
     const start = dayjs(startedAt);
@@ -88,9 +92,9 @@ const CustomerRegistrationList = () => {
                 return (
                   <TableRow key={i}>
                     <TableCell>{facility?.facility_name || 'N/A'}</TableCell>
-                    <TableCell>{getNameById(woredas, facility?.woreda_id)}</TableCell>
-                    <TableCell>{getNameById(zones, facility?.zone_id)}</TableCell>
-                    <TableCell>{getNameById(regions, facility?.region_id)}</TableCell>
+                    <TableCell>{getWoredaName(facility?.woreda_id)}</TableCell>
+                    <TableCell>{getZoneName(facility?.zone_id)}</TableCell>
+                    <TableCell>{getRegionName(facility?.region_id)}</TableCell>
                     <TableCell>{cust.customer_type}</TableCell>
                     <TableCell>{dayjs(cust.started_at).format('YYYY-MM-DD HH:mm')}</TableCell>
                     <TableCell>{calculateWaitingHours(cust.started_at)}</TableCell>
