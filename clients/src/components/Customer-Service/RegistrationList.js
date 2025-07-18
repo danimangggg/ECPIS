@@ -80,7 +80,7 @@ const CustomerRegistrationList = () => {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </Table> 
         </TableContainer>
       )}
     </Box>
