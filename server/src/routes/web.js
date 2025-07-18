@@ -59,6 +59,10 @@ const addBranchPlan = require('../controllers/PlanController/addBranchCatagory')
 const addmeasure = require('../controllers/PlanController/planMeasurement')
 const getmeasure = require('../controllers/PlanController/getMeasurement')
 
+//customer service
+
+const addCustomerQueue = require('../controllers/CustomerService/customerQueueController')
+
 const upload = require("../middleware/upload");
 
 
@@ -114,6 +118,9 @@ let routes =  (app) => {
   router.post("/api/add-Branchplan", addBranchPlan.AddBranchPlan)
   router.post("/api/add-measure", addmeasure.AddMeasurement)
   router.get("/api/get-measure", getmeasure.retriveMeasurements)
+
+  
+  router.post("/api/customer-queue", addCustomerQueue.AddCustomerQueue)
 
   return app.use("/", router);
 };

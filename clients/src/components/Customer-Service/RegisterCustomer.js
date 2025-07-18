@@ -6,16 +6,19 @@ import {
   Button,
   Typography,
   Grid,
+  Paper,
 } from '@mui/material';
 import axios from 'axios';
+
+const api_url = process.env.REACT_APP_API_URL;
 
 const RegisterCustomer = () => {
   const [regions, setRegions] = useState([]);
   const [zones, setZones] = useState([]);
   const [woredas, setWoredas] = useState([]);
   const [facilities, setFacilities] = useState([]);
-  const [officers, setOfficers] = useState([]);  
-  const api_url = process.env.REACT_APP_API_URL;
+  const [officers, setOfficers] = useState([]);
+  const [filteredOfficers, setFilteredOfficers] = useState([]);
 
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedZone, setSelectedZone] = useState('');
@@ -23,61 +26,85 @@ const RegisterCustomer = () => {
   const [selectedFacility, setSelectedFacility] = useState('');
   const [customerType, setCustomerType] = useState('');
   const [selectedOfficer, setSelectedOfficer] = useState('');
-
   const [firstServicePoint, setFirstServicePoint] = useState('');
-  const [processStatus, setProcessStatus] = useState('onprogress');
+  const [nextServicePoint, setNextServicePoint] = useState('');
+  const [startedAt, setStartedAt] = useState('');
 
-  // Load regions
   useEffect(() => {
     axios.get(`${api_url}/api/regions`).then(res => setRegions(res.data));
   }, []);
 
-  // Load zones when region changes
   useEffect(() => {
     if (selectedRegion) {
-      axios.get(`${api_url}/api/zones?region_id=${selectedRegion}`).then(res => setZones(res.data));
+      axios.get(`${api_url}/api/zones`).then(res => {
+        const filtered = res.data.filter(z => z.region_name === selectedRegion);
+        setZones(filtered);
+        setSelectedZone('');
+        setSelectedWoreda('');
+        setSelectedFacility('');
+        setWoredas([]);
+        setFacilities([]);
+      });
     }
   }, [selectedRegion]);
 
-  // Load woredas when zone changes
   useEffect(() => {
     if (selectedZone) {
-      axios.get(`${api_url}/api/woredas?zone_id=${selectedZone}`).then(res => setWoredas(res.data));
+      axios.get(`${api_url}/api/woredas`).then(res => {
+        const filtered = res.data.filter(w => w.zone_name === selectedZone);
+        setWoredas(filtered);
+        setSelectedWoreda('');
+        setSelectedFacility('');
+        setFacilities([]);
+      });
     }
   }, [selectedZone]);
 
-  // Load facilities when woreda changes
   useEffect(() => {
     if (selectedWoreda) {
-      axios.get(`${api_url}/api/facilities?woreda_id=${selectedWoreda}`).then(res => setFacilities(res.data));
+      axios.get(`${api_url}/api/facilities`).then(res => {
+        const filtered = res.data.filter(f => f.woreda_name === selectedWoreda);
+        setFacilities(filtered);
+        setSelectedFacility('');
+      });
     }
   }, [selectedWoreda]);
 
-  // Determine service point and load officers if needed
+  useEffect(() => {
+    axios.get(`${api_url}/api/get-employee`)
+      .then(res => setOfficers(res.data))
+      .catch(err => console.error('Failed to fetch officers:', err));
+  }, []);
+
   useEffect(() => {
     if (customerType === 'Cash') {
-      setFirstServicePoint('O2C');
-      axios.get(`${api_url}/api/employees?department=O2C`).then(res => setOfficers(res.data));
+      setFirstServicePoint('O2C Officer');
+      setFilteredOfficers(officers.filter(o => o.jobTitle === 'O2C Officer'));
     } else if (customerType === 'Credit') {
       setFirstServicePoint('Finance');
-      setOfficers([]); // Not needed for Credit initially
+      setFilteredOfficers([]);
     } else {
       setFirstServicePoint('');
+      setFilteredOfficers([]);
     }
-  }, [customerType]);
+  }, [customerType, officers]);
 
   const handleSubmit = () => {
+    const now = new Date().toISOString();
+    setStartedAt(now);
+
     const payload = {
       facility_id: selectedFacility,
       customer_type: customerType,
       current_service_point: firstServicePoint,
+      next_service_point: nextServicePoint,
       assigned_officer_id: customerType === 'Cash' ? selectedOfficer : null,
-      status: processStatus,
+      status: 'started',
+      started_at: now,
     };
 
     axios.post(`${api_url}/api/customer-queue`, payload).then(res => {
       alert('Customer registered and sent to service point!');
-      // Reset form
       setSelectedRegion('');
       setSelectedZone('');
       setSelectedWoreda('');
@@ -85,73 +112,86 @@ const RegisterCustomer = () => {
       setCustomerType('');
       setSelectedOfficer('');
       setFirstServicePoint('');
+      setNextServicePoint('');
     });
   };
 
   return (
-    <Box sx={{ p: 4, maxWidth: 600, mx: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Customer Registration
-      </Typography>
+    <Box sx={{ py: 6, px: 2, fontFamily: 'Roboto' }}>
+      <Paper elevation={3} sx={{ maxWidth: 600, mx: 'auto', p: 4, borderRadius: 3 }}>
+        <Typography variant="h4" align="center" fontWeight={600} gutterBottom>
+          Register Customer
+        </Typography>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TextField select fullWidth label="Region" value={selectedRegion} onChange={e => setSelectedRegion(e.target.value)}>
-            {regions.map(r => (
-              <MenuItem key={r.id} value={r.id}>{r.region_name}</MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField select fullWidth label="Zone" value={selectedZone} onChange={e => setSelectedZone(e.target.value)}>
-            {zones.map(z => (
-              <MenuItem key={z.id} value={z.id}>{z.zone_name}</MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField select fullWidth label="Woreda" value={selectedWoreda} onChange={e => setSelectedWoreda(e.target.value)}>
-            {woredas.map(w => (
-              <MenuItem key={w.id} value={w.id}>{w.woreda_name}</MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField select fullWidth label="Facility" value={selectedFacility} onChange={e => setSelectedFacility(e.target.value)}>
-            {facilities.map(f => (
-              <MenuItem key={f.id} value={f.id}>{f.facility_name}</MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField select fullWidth label="Customer Type" value={customerType} onChange={e => setCustomerType(e.target.value)}>
-            <MenuItem value="Cash">Cash Sale</MenuItem>
-            <MenuItem value="Credit">Credit Sale</MenuItem>
-          </TextField>
-        </Grid>
-
-        {customerType === 'Cash' && (
+        <Grid container spacing={3}>
           <Grid item xs={12}>
-            <TextField select fullWidth label="Assign Officer" value={selectedOfficer} onChange={e => setSelectedOfficer(e.target.value)}>
-              {officers.map(officer => (
-                <MenuItem key={officer.id} value={officer.id}>
-                  {officer.first_name} {officer.last_name}
-                </MenuItem>
+            <TextField select fullWidth label="Region" value={selectedRegion} onChange={e => setSelectedRegion(e.target.value)}>
+              {regions.map(r => (
+                <MenuItem key={r.id} value={r.region_name}>{r.region_name}</MenuItem>
               ))}
             </TextField>
           </Grid>
-        )}
 
-        <Grid item xs={12}>
-          <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-            Register and Forward to {firstServicePoint}
-          </Button>
+          <Grid item xs={12}>
+            <TextField select fullWidth label="Zone" value={selectedZone} onChange={e => setSelectedZone(e.target.value)}>
+              {zones.map(z => (
+                <MenuItem key={z.id} value={z.zone_name}>{z.zone_name}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField select fullWidth label="Woreda" value={selectedWoreda} onChange={e => setSelectedWoreda(e.target.value)}>
+              {woredas.map(w => (
+                <MenuItem key={w.id} value={w.woreda_name}>{w.woreda_name}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField select fullWidth label="Facility" value={selectedFacility} onChange={e => setSelectedFacility(e.target.value)}>
+              {facilities.map(f => (
+                <MenuItem key={f.id} value={f.id}>{f.facility_name}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField select fullWidth label="Customer Type" value={customerType} onChange={e => setCustomerType(e.target.value)}>
+              <MenuItem value="Cash">Cash Sale</MenuItem>
+              <MenuItem value="Credit">Credit Sale</MenuItem>
+            </TextField>
+          </Grid>
+
+          {customerType && (
+            <Grid item xs={12}>
+              <TextField select fullWidth label="Next Service Point" value={nextServicePoint} onChange={e => setNextServicePoint(e.target.value)}>
+                {['Finance', 'O2C', 'EWM', 'Manager', 'Customer Service'].map(point => (
+                  <MenuItem key={point} value={point}>{point}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
+
+          {customerType === 'Cash' && (
+            <Grid item xs={12}>
+              <TextField select fullWidth label="Assign Officer" value={selectedOfficer} onChange={e => setSelectedOfficer(e.target.value)}>
+                {filteredOfficers.map(officer => (
+                  <MenuItem key={officer.id} value={officer.id}>
+                    {officer.full_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
+
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} size="large">
+              Register & Forward to {firstServicePoint || 'Service Point'}
+            </Button>
+          </Grid>
         </Grid>
-      </Grid>
+      </Paper>
     </Box>
   );
 };

@@ -36,5 +36,6 @@ db.employee = require("./PerformanceTracking/employeeModel.js")(sequelize, Seque
 db.orgPlanCatagory = require("./Plan/planCatagoryModel.js")(sequelize, Sequelize);
 db.branchPlanCatagory = require("./Plan/planBranchCatagoryModel.js")(sequelize, Sequelize);
 db.measurement = require("./Plan/measurementModel.js")(sequelize, Sequelize);
+db.customerService = require("./CustomerService/customerQueue.js")(sequelize, Sequelize);
 
 module.exports = db;
