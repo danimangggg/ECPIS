@@ -17,34 +17,40 @@ import dayjs from 'dayjs';
 const CustomerRegistrationList = () => {
   const [customers, setCustomers] = useState([]);
   const [facilities, setFacilities] = useState([]);
+  const [regions, setRegions] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [woredas, setWoredas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const api_url = process.env.REACT_APP_API_URL;
 
-  // Fetch customer registrations and facilities
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       try {
-        const [customerRes, facilityRes] = await Promise.all([
-          axios.get('/api/customer-queue'),
-          axios.get('/api/facilities')
+        const [customerRes, facilityRes, regionRes, zoneRes, woredaRes] = await Promise.all([
+          axios.get(`${api_url}/api/customer-queue`),
+          axios.get(`${api_url}/api/facilities`),
+          axios.get(`${api_url}/api/regions`),
+          axios.get(`${api_url}/api/zones`),
+          axios.get(`${api_url}/api/woredas`)
         ]);
 
         setCustomers(customerRes.data);
         setFacilities(facilityRes.data);
+        setRegions(regionRes.data);
+        setZones(zoneRes.data);
+        setWoredas(woredaRes.data);
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      } catch (err) {
+        console.error('Data fetch error:', err);
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchAllData();
   }, []);
 
-  const getFacilityInfo = (facilityId, field) => {
-    const facility = facilities.find(f => f.id === facilityId);
-    return facility ? facility[field] : 'N/A';
-  };
-
+  const getFacility = (id) => facilities.find(f => f.id === id);
+  const getNameById = (list, id) => list.find(item => item.id === id)?.facility_name || 'N/A';
   const calculateWaitingHours = (startedAt) => {
     const now = dayjs();
     const start = dayjs(startedAt);
@@ -71,24 +77,27 @@ const CustomerRegistrationList = () => {
                 <TableCell><strong>Zone</strong></TableCell>
                 <TableCell><strong>Region</strong></TableCell>
                 <TableCell><strong>Customer Type</strong></TableCell>
-                <TableCell><strong>Arrived Date & Time</strong></TableCell>
-                <TableCell><strong>Waiting Time (hrs)</strong></TableCell>
+                <TableCell><strong>Arrived Time</strong></TableCell>
+                <TableCell><strong>Waiting (hrs)</strong></TableCell>
                 <TableCell><strong>Current Service Point</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {customers.map((cust, index) => (
-                <TableRow key={index}>
-                  <TableCell>{getFacilityInfo(cust.facility_id, 'facility_name')}</TableCell>
-                  <TableCell>{getFacilityInfo(cust.facility_id, 'woreda')}</TableCell>
-                  <TableCell>{getFacilityInfo(cust.facility_id, 'zone')}</TableCell>
-                  <TableCell>{getFacilityInfo(cust.facility_id, 'region')}</TableCell>
-                  <TableCell>{cust.customer_type}</TableCell>
-                  <TableCell>{dayjs(cust.started_at).format('YYYY-MM-DD HH:mm')}</TableCell>
-                  <TableCell>{calculateWaitingHours(cust.started_at)}</TableCell>
-                  <TableCell>{cust.next_service_point}</TableCell>
-                </TableRow>
-              ))}
+              {customers.map((cust, i) => {
+                const facility = getFacility(cust.facility_id);
+                return (
+                  <TableRow key={i}>
+                    <TableCell>{facility?.facility_name || 'N/A'}</TableCell>
+                    <TableCell>{getNameById(woredas, facility?.woreda_id)}</TableCell>
+                    <TableCell>{getNameById(zones, facility?.zone_id)}</TableCell>
+                    <TableCell>{getNameById(regions, facility?.region_id)}</TableCell>
+                    <TableCell>{cust.customer_type}</TableCell>
+                    <TableCell>{dayjs(cust.started_at).format('YYYY-MM-DD HH:mm')}</TableCell>
+                    <TableCell>{calculateWaitingHours(cust.started_at)}</TableCell>
+                    <TableCell>{cust.next_service_point}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
