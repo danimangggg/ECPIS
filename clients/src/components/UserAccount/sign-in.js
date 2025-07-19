@@ -50,6 +50,7 @@ export default function SignIn() {
         localStorage.setItem("AccountType", response.data.AccountType);
         localStorage.setItem("Department", response.data.Department);
         localStorage.setItem("Position", response.data.Position);
+        localStorage.setItem("JobTitle", response.data.JobTitle);
         localStorage.setItem("UserId", response.data.UserId);
         
 

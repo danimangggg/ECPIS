@@ -63,6 +63,7 @@ const getmeasure = require('../controllers/PlanController/getMeasurement')
 
 const addCustomerQueue = require('../controllers/CustomerService/customerQueueController')
 const viewCustomerQueue = require('../controllers/CustomerService/getQueue')
+const updateQueue = require('../controllers/CustomerService/firstUpdate')
 
 const upload = require("../middleware/upload");
 
@@ -121,7 +122,9 @@ let routes =  (app) => {
   router.get("/api/get-measure", getmeasure.retriveMeasurements)
 
   
+  router.post("/api/customer-queue", addCustomerQueue.AddCustomerQueue)
   router.get("/api/serviceList", viewCustomerQueue.retriveQueue)
+  router.put('/api/update-service-point', updateQueue.updateQueue);
 
   return app.use("/", router);
 };

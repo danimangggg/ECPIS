@@ -17,28 +17,19 @@ import dayjs from 'dayjs';
 const CustomerRegistrationList = () => {
   const [customers, setCustomers] = useState([]);
   const [facilities, setFacilities] = useState([]);
-  const [regions, setRegions] = useState([]);
-  const [zones, setZones] = useState([]);
-  const [woredas, setWoredas] = useState([]);
   const [loading, setLoading] = useState(true);
   const api_url = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const [customerRes, facilityRes, regionRes, zoneRes, woredaRes] = await Promise.all([
+        const [customerRes, facilityRes] = await Promise.all([
           axios.get(`${api_url}/api/serviceList`),
-          axios.get(`${api_url}/api/facilities`),
-          axios.get(`${api_url}/api/regions`),
-          axios.get(`${api_url}/api/zones`),
-          axios.get(`${api_url}/api/woredas`)
+          axios.get(`${api_url}/api/facilities`)
         ]);
 
         setCustomers(customerRes.data);
         setFacilities(facilityRes.data);
-        setRegions(regionRes.data);
-        setZones(zoneRes.data);
-        setWoredas(woredaRes.data);
         setLoading(false);
       } catch (err) {
         console.error('Data fetch error:', err);
@@ -51,14 +42,11 @@ const CustomerRegistrationList = () => {
 
   const getFacility = (id) => facilities.find(f => f.id === id);
 
-  const getWoredaName = (woreda_id) => woredas.find(w => w.id === woreda_id)?.woreda_name || 'N/A';
-  const getZoneName = (zone_id) => zones.find(z => z.id === zone_id)?.zone_name || 'N/A';
-  const getRegionName = (region_id) => regions.find(r => r.id === region_id)?.region_name || 'N/A';
-
   const calculateWaitingHours = (startedAt) => {
     const now = dayjs();
     const start = dayjs(startedAt);
-    return now.diff(start, 'hour', true).toFixed(2);
+    const diffMinutes = now.diff(start, 'minute');
+    return (diffMinutes / 60).toFixed(2);
   };
 
   return (
@@ -92,13 +80,13 @@ const CustomerRegistrationList = () => {
                 return (
                   <TableRow key={i}>
                     <TableCell>{facility?.facility_name || 'N/A'}</TableCell>
-                    <TableCell>{getWoredaName(facility?.woreda_id)}</TableCell>
-                    <TableCell>{getZoneName(facility?.zone_id)}</TableCell>
-                    <TableCell>{getRegionName(facility?.region_id)}</TableCell>
+                    <TableCell>{facility?.woreda_name || 'N/A'}</TableCell>
+                    <TableCell>{facility?.zone_name || 'N/A'}</TableCell>
+                    <TableCell>{facility?.region_name || 'N/A'}</TableCell>
                     <TableCell>{cust.customer_type}</TableCell>
                     <TableCell>{dayjs(cust.started_at).format('YYYY-MM-DD HH:mm')}</TableCell>
                     <TableCell>{calculateWaitingHours(cust.started_at)}</TableCell>
-                    <TableCell>{cust.next_service_point}</TableCell>
+                    <TableCell>{cust.next_service_point || 'N/A'}</TableCell>
                   </TableRow>
                 );
               })}
