@@ -6,7 +6,9 @@ const updateQueue = async (req, res) => {
     const result = await UpdateQueue.update(
       {
         next_service_point: req.body.next_service_point,
-        assigned_officer_id: req.body.assigned_officer_id
+        assigned_officer_id: req.body.assigned_officer_id,
+        status:req.body.status,
+        completed_at: req.body.completed_at
          // ✅ Only this field is updated
       },
       {

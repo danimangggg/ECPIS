@@ -9,6 +9,7 @@ import {
   Paper,
 } from '@mui/material';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const api_url = process.env.REACT_APP_API_URL;
 
@@ -79,13 +80,19 @@ const RegisterCustomer = () => {
   useEffect(() => {
     if (customerType === 'Cash') {
       setFirstServicePoint('O2C Officer');
-      setFilteredOfficers(officers.filter(o => o.jobTitle === 'O2C Officer'));
+      setNextServicePoint('O2C');
+      const filtered = officers.filter(o => o.jobTitle === 'O2C Officer');
+      setFilteredOfficers(filtered);
     } else if (customerType === 'Credit') {
       setFirstServicePoint('Finance');
+      setNextServicePoint('Finance');
       setFilteredOfficers([]);
+      setSelectedOfficer('');
     } else {
       setFirstServicePoint('');
+      setNextServicePoint('');
       setFilteredOfficers([]);
+      setSelectedOfficer('');
     }
   }, [customerType, officers]);
 
@@ -104,7 +111,13 @@ const RegisterCustomer = () => {
     };
 
     axios.post(`${api_url}/api/customer-queue`, payload).then(res => {
-      alert('Customer registered and sent to service point!');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Customer registered and sent to service point.',
+        confirmButtonColor: '#1976d2'
+      });
+
       setSelectedRegion('');
       setSelectedZone('');
       setSelectedWoreda('');
@@ -162,16 +175,6 @@ const RegisterCustomer = () => {
               <MenuItem value="Credit">Credit Sale</MenuItem>
             </TextField>
           </Grid>
-
-          {customerType && (
-            <Grid item xs={12}>
-              <TextField select fullWidth label="Next Service Point" value={nextServicePoint} onChange={e => setNextServicePoint(e.target.value)}>
-                {['Finance', 'O2C', 'EWM', 'Manager', 'Customer Service'].map(point => (
-                  <MenuItem key={point} value={point}>{point}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          )}
 
           {customerType === 'Cash' && (
             <Grid item xs={12}>

@@ -111,7 +111,7 @@ const OutstandingCustomers = () => {
       // Finance flow same as before: choose next service point with assigned user if O2C
       const nextOptions = {
         O2C: 'O2C',
-        EWM: 'EWM',
+        Manager: 'Manager',
         'Customer Service': 'Customer Service'
       };
 
@@ -219,12 +219,15 @@ const OutstandingCustomers = () => {
     } else if (jobTitle === 'EWM Officer') {
       // For EWM Officer: add return button (see below) and completed changes next service point to Customer, status to Completed
       // Here handle completed button:
+
+      const now = new Date().toISOString();
       try {
         await axios.put('http://localhost:3001/api/update-service-point', {
           id: customer.id,
           next_service_point: 'Customer',
-          service_points_status: 'Completed',
+          status: 'Completed',
           assigned_officer_id: null,
+          completed_at:now
         });
         Swal.fire('Updated!', 'Service completed and moved to Customer.', 'success');
         fetchData();

@@ -42,6 +42,7 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [orgProfileOpen, setOrgProfileOpen] = useState(false);
   const [assessmentAnchorEl, setAssessmentAnchorEl] = useState(null);
+  const [customerAnchorEl, setCustomerAnchorEl] = useState(null);
   const { t, i18n } = useTranslation();
 
   const handleChangeLanguage = (lang) => {
@@ -53,6 +54,8 @@ const Sidebar = () => {
   const handleOrgProfileToggle = () => setOrgProfileOpen(!orgProfileOpen);
   const handleAssessmentMenuOpen = (event) => setAssessmentAnchorEl(event.currentTarget);
   const handleAssessmentMenuClose = () => setAssessmentAnchorEl(null);
+  const handleCustomerMenuOpen = (event) => setCustomerAnchorEl(event.currentTarget);
+  const handleCustomerMenuClose = () => setCustomerAnchorEl(null);
 
   const signOut = () => {
     localStorage.clear();
@@ -65,6 +68,7 @@ const Sidebar = () => {
   const fullName = localStorage.getItem("FullName") || 'Guest';
   const accountType = rawAccountType;
   const position = rawPosition.trim().toLowerCase();
+  const jobTitle = localStorage.getItem("JobTitle");
 
   const isAdmin = accountType === "Admin";
   const isPodManager = accountType === "Pod Manager";
@@ -160,6 +164,38 @@ const Sidebar = () => {
               <MenuItem component={Link} to="/users" onClick={handleAssessmentMenuClose}>
                 <PlaylistAdd sx={{ mr: 1 }} /> {t("Employee Profile")}
               </MenuItem>
+            )}
+          </Menu>
+
+          <MenuTooltip title={t("Customer Service")}> 
+            <ListItem button onClick={handleCustomerMenuOpen}>
+              <ListItemIcon><Assignment sx={{ color: 'white' }} /></ListItemIcon>
+              {!collapsed && <ListItemText primary={t("Customer Service")} />}
+              {!collapsed && (assessmentAnchorEl ? <ExpandLess /> : <ExpandMore />)}
+            </ListItem>
+          </MenuTooltip>
+
+          <Menu
+            anchorEl={customerAnchorEl}
+            open={Boolean(customerAnchorEl)}
+            onClose={handleCustomerMenuClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          >
+            
+              <MenuItem component={Link} to="/register-list" onClick={handleCustomerMenuClose}>
+                <FormatListBulleted sx={{ mr: 1 }} /> {t("Customer Process")}
+              </MenuItem>
+            
+            {(isAdmin || position === "manager" || position === "coordinator" || jobTitle === "O2C Officer" || jobTitle === "EWM Officer" || jobTitle === "Customer Service Officer" || jobTitle === "Finance") && (
+              <MenuItem component={Link} to="/outstanding" onClick={handleCustomerMenuClose}>
+                <Task sx={{ mr: 1 }} /> {t("Outstanding Process")}
+              </MenuItem>
+            )}
+            {(isAdmin || jobTitle === "Customer Service Officer") && (
+              <MenuItem component={Link} to="/register-customer" onClick={handleCustomerMenuClose}>
+              <Task sx={{ mr: 1 }} /> {t("Customer Registration")}
+            </MenuItem>
             )}
           </Menu>
 
