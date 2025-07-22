@@ -123,7 +123,7 @@ const CustomerRegistrationList = () => {
 
       {/* Title */}
       <Typography variant="h3" sx={{ mb: 5, fontWeight: 'bold', color: '#0ff' }}>
-        Live Customer Registration — In Progress
+        Live Customer Progress Follow-up
       </Typography>
 
       {/* Animated slide */}
@@ -145,11 +145,11 @@ const CustomerRegistrationList = () => {
           }}
         >
           <Typography variant="h4" sx={{ mb: 3, color: '#0ff' }}>
-            {currentCustomer.customer_name || 'Customer Name N/A'}
+             Facility: {facility?.facility_name || 'N/A'}
           </Typography>
 
           <Typography variant="h5" sx={{ mb: 2 }}>
-            Facility: {facility?.facility_name || 'N/A'}
+            Delegate: {currentCustomer?.delegate || 'N/A'}
           </Typography>
 
           <Typography variant="h5" sx={{ mb: 2 }}>
