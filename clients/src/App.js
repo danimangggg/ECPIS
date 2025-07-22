@@ -93,15 +93,16 @@ const App = () => {
             <Route path = '/register-customer' Component={RegisterCustomer} />
             <Route path = '/register-list' Component={RegisterList} />
             <Route path = '/customer-slide' Component={TvRegisterList} />
+            <Route path = '/outstanding' Component={Outstanding} />
         </Route>
         
       </Routes>
      </Router>
 
-     <br/><br/><br/>
+     <br/> 
 
      <footer className="footer" style={{
-          "background-color": "blue",
+          "background-color": "black",
           "text-align": "center",
           "position": "fixed",
           "left": "0",

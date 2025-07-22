@@ -192,6 +192,11 @@ const Sidebar = () => {
                 <Task sx={{ mr: 1 }} /> {t("Outstanding Process")}
               </MenuItem>
             )}
+            {(isAdmin || position === "manager" || position === "coordinator" || jobTitle === "O2C Officer" || jobTitle === "EWM Officer" || jobTitle === "Customer Service Officer" || jobTitle === "Finance") && (
+              <MenuItem component={Link} to="/customer-slide" onClick={handleCustomerMenuClose}>
+                <Task sx={{ mr: 1 }} /> {t("TV Slide")}
+              </MenuItem>
+            )}
             {(isAdmin || jobTitle === "Customer Service Officer") && (
               <MenuItem component={Link} to="/register-customer" onClick={handleCustomerMenuClose}>
               <Task sx={{ mr: 1 }} /> {t("Customer Registration")}

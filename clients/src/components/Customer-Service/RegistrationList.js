@@ -188,7 +188,7 @@ const CustomerRegistrationList = () => {
                     sx={{
                       backgroundColor: isCompleted
                         ? '#d0f0c0'
-                        : waitingHours > 12
+                        : waitingHours > 24
                         ? '#f8d7da'
                         : 'inherit',
                     }}
