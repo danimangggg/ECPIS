@@ -102,6 +102,16 @@ const LandingPage = () => {
           <Grid item xs={12} sm={4}>
             <FeatureCard elevation={3}>
               <Typography variant="h6" gutterBottom>
+                Customer service managment
+              </Typography>
+              <Typography>
+                Optimize communication, enhance customer satisfaction, and drive sustainable growth.
+              </Typography>
+            </FeatureCard>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <FeatureCard elevation={3}>
+              <Typography variant="h6" gutterBottom>
                 Contract Managment
               </Typography>
               <Typography>

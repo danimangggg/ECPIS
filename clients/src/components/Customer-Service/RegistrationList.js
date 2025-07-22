@@ -57,6 +57,12 @@ const CustomerRegistrationList = () => {
     return diffMinutes / 60;
   };
 
+  const formatWaitingTime = (decimalHours) => {
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    return `${hours} hr ${minutes} min`;
+  };
+
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -115,7 +121,7 @@ const CustomerRegistrationList = () => {
         Region: facility?.region_name || 'N/A',
         CustomerType: cust.customer_type,
         CompletedAt: cust.completed_at || '',
-        WaitingHours: waitingHours.toFixed(2),
+        Waiting: formatWaitingTime(waitingHours),
         ServicePoint: cust.next_service_point || 'N/A',
         ProcessStatus: cust.status?.toLowerCase() === 'started' ? 'In Progress' : cust.status,
       };
@@ -153,7 +159,7 @@ const CustomerRegistrationList = () => {
                   { id: 'zone', label: 'Zone' },
                   { id: 'region', label: 'Region' },
                   { id: 'customer_type', label: 'Customer Type' },
-                  { id: 'waiting_hours', label: 'Waiting (hrs)' },
+                  { id: 'waiting_hours', label: 'Waiting' }, // Label changed
                   { id: 'next_service_point', label: 'Current Service Point' },
                   { id: 'status', label: 'Process Status' },
                 ].map((headCell) => (
@@ -192,7 +198,7 @@ const CustomerRegistrationList = () => {
                     <TableCell>{facility?.zone_name || 'N/A'}</TableCell>
                     <TableCell>{facility?.region_name || 'N/A'}</TableCell>
                     <TableCell>{cust.customer_type}</TableCell>
-                    <TableCell>{waitingHours.toFixed(2)}</TableCell>
+                    <TableCell>{formatWaitingTime(waitingHours)}</TableCell>
                     <TableCell>{cust.next_service_point || 'N/A'}</TableCell>
                     <TableCell>{cust.status?.toLowerCase() === 'started' ? 'In Progress' : cust.status}</TableCell>
                   </TableRow>
