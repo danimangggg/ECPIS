@@ -40,6 +40,7 @@ import LandingPage2 from './landingPage';
 import TaskListPage from './pages/Performance-tracking/TaskListPage';
 import RegisterCustomer from './pages/Customer-Service/RegisterCustomerPage';
 import RegisterList from './pages/Customer-Service/RegistrationList';
+import TvRegisterList from './pages/Customer-Service/TvRegistrationListPage';
 import Outstanding from './pages/Customer-Service/OustandingPage';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
@@ -91,7 +92,7 @@ const App = () => {
             <Route path = '/task-list' Component={TaskListPage} />
             <Route path = '/register-customer' Component={RegisterCustomer} />
             <Route path = '/register-list' Component={RegisterList} />
-            <Route path = '/outstanding' Component={Outstanding} />
+            <Route path = '/customer-slide' Component={TvRegisterList} />
         </Route>
         
       </Routes>

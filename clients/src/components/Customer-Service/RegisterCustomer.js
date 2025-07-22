@@ -31,6 +31,12 @@ const RegisterCustomer = () => {
   const [nextServicePoint, setNextServicePoint] = useState('');
   const [startedAt, setStartedAt] = useState('');
 
+  // NEW fields
+  const [delegate, setDelegate] = useState('');
+  const [delegatePhone, setDelegatePhone] = useState('');
+  const [letterNumber, setLetterNumber] = useState('');
+
+  /* ---------------- fetch cascade data ---------------- */
   useEffect(() => {
     axios.get(`${api_url}/api/regions`).then(res => setRegions(res.data));
   }, []);
@@ -72,11 +78,13 @@ const RegisterCustomer = () => {
   }, [selectedWoreda]);
 
   useEffect(() => {
-    axios.get(`${api_url}/api/get-employee`)
+    axios
+      .get(`${api_url}/api/get-employee`)
       .then(res => setOfficers(res.data))
       .catch(err => console.error('Failed to fetch officers:', err));
   }, []);
 
+  /* ---------------- customer‑type‑driven logic ---------------- */
   useEffect(() => {
     if (customerType === 'Cash') {
       setFirstServicePoint('O2C Officer');
@@ -96,6 +104,7 @@ const RegisterCustomer = () => {
     }
   }, [customerType, officers]);
 
+  /* ---------------- submit ---------------- */
   const handleSubmit = () => {
     const now = new Date().toISOString();
     setStartedAt(now);
@@ -108,16 +117,20 @@ const RegisterCustomer = () => {
       assigned_officer_id: customerType === 'Cash' ? selectedOfficer : null,
       status: 'started',
       started_at: now,
+      delegate: delegate,
+      delegate_phone: delegatePhone,
+      letter_number: letterNumber,
     };
 
-    axios.post(`${api_url}/api/customer-queue`, payload).then(res => {
+    axios.post(`${api_url}/api/customer-queue`, payload).then(() => {
       Swal.fire({
         icon: 'success',
         title: 'Success!',
         text: 'Customer registered and sent to service point.',
-        confirmButtonColor: '#1976d2'
+        confirmButtonColor: '#1976d2',
       });
 
+      // reset
       setSelectedRegion('');
       setSelectedZone('');
       setSelectedWoreda('');
@@ -126,59 +139,147 @@ const RegisterCustomer = () => {
       setSelectedOfficer('');
       setFirstServicePoint('');
       setNextServicePoint('');
+      setDelegate('');
+      setDelegatePhone('');
+      setLetterNumber('');
     });
   };
 
   return (
-    <Box sx={{ py: 6, px: 2, fontFamily: 'Roboto' }}>
-      <Paper elevation={3} sx={{ maxWidth: 600, mx: 'auto', p: 4, borderRadius: 3 }}>
+    <Box sx={{ py: 5, px: 2 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          maxWidth: 700,
+          mx: 'auto',
+          p: 4,
+          borderRadius: 3,
+        }}
+      >
         <Typography variant="h4" align="center" fontWeight={600} gutterBottom>
           Register Customer
         </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TextField select fullWidth label="Region" value={selectedRegion} onChange={e => setSelectedRegion(e.target.value)}>
+        {/* All fields exactly as before – now with responsive two‑column layout */}
+        <Grid container spacing={2}>
+          {/* Region / Zone */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="Region"
+              value={selectedRegion}
+              onChange={e => setSelectedRegion(e.target.value)}
+            >
               {regions.map(r => (
-                <MenuItem key={r.id} value={r.region_name}>{r.region_name}</MenuItem>
+                <MenuItem key={r.id} value={r.region_name}>
+                  {r.region_name}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
-
-          <Grid item xs={12}>
-            <TextField select fullWidth label="Zone" value={selectedZone} onChange={e => setSelectedZone(e.target.value)}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="Zone"
+              value={selectedZone}
+              onChange={e => setSelectedZone(e.target.value)}
+            >
               {zones.map(z => (
-                <MenuItem key={z.id} value={z.zone_name}>{z.zone_name}</MenuItem>
+                <MenuItem key={z.id} value={z.zone_name}>
+                  {z.zone_name}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
 
-          <Grid item xs={12}>
-            <TextField select fullWidth label="Woreda" value={selectedWoreda} onChange={e => setSelectedWoreda(e.target.value)}>
+          {/* Woreda / Facility */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="Woreda"
+              value={selectedWoreda}
+              onChange={e => setSelectedWoreda(e.target.value)}
+            >
               {woredas.map(w => (
-                <MenuItem key={w.id} value={w.woreda_name}>{w.woreda_name}</MenuItem>
+                <MenuItem key={w.id} value={w.woreda_name}>
+                  {w.woreda_name}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
-
-          <Grid item xs={12}>
-            <TextField select fullWidth label="Facility" value={selectedFacility} onChange={e => setSelectedFacility(e.target.value)}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="Facility"
+              value={selectedFacility}
+              onChange={e => setSelectedFacility(e.target.value)}
+            >
               {facilities.map(f => (
-                <MenuItem key={f.id} value={f.id}>{f.facility_name}</MenuItem>
+                <MenuItem key={f.id} value={f.id}>
+                  {f.facility_name}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
 
+          
+
+          {/* Delegate / Delegate Phone */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Delegate Name"
+              value={delegate}
+              onChange={e => setDelegate(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Delegate Phone"
+              value={delegatePhone}
+              onChange={e => setDelegatePhone(e.target.value)}
+            />
+          </Grid>
+
+          {/* Letter Number */}
           <Grid item xs={12}>
-            <TextField select fullWidth label="Customer Type" value={customerType} onChange={e => setCustomerType(e.target.value)}>
+            <TextField
+              fullWidth
+              label="Letter Number"
+              value={letterNumber}
+              onChange={e => setLetterNumber(e.target.value)}
+            />
+          </Grid>
+
+          {/* Customer Type (spans full) */}
+          <Grid item xs={12}>
+            <TextField
+              select
+              fullWidth
+              label="Customer Type"
+              value={customerType}
+              onChange={e => setCustomerType(e.target.value)}
+            >
               <MenuItem value="Cash">Cash Sale</MenuItem>
               <MenuItem value="Credit">Credit Sale</MenuItem>
             </TextField>
           </Grid>
 
+          {/* Assign Officer (only for Cash) */}
           {customerType === 'Cash' && (
             <Grid item xs={12}>
-              <TextField select fullWidth label="Assign Officer" value={selectedOfficer} onChange={e => setSelectedOfficer(e.target.value)}>
+              <TextField
+                select
+                fullWidth
+                label="Assign Officer"
+                value={selectedOfficer}
+                onChange={e => setSelectedOfficer(e.target.value)}
+              >
                 {filteredOfficers.map(officer => (
                   <MenuItem key={officer.id} value={officer.id}>
                     {officer.full_name}
@@ -188,9 +289,17 @@ const RegisterCustomer = () => {
             </Grid>
           )}
 
+          {/* Submit */}
           <Grid item xs={12}>
-            <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} size="large">
-              Register & Forward to {firstServicePoint || 'Service Point'}
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              onClick={handleSubmit}
+            >
+              Register&nbsp;
+              {firstServicePoint && `& Forward to ${firstServicePoint}`}
             </Button>
           </Grid>
         </Grid>

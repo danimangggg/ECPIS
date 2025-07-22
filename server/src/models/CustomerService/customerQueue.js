@@ -26,6 +26,18 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'started',
     },
+    delegate: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    delegate_phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    letter_number: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     started_at: {
       type: DataTypes.DATE,
       allowNull: false,
