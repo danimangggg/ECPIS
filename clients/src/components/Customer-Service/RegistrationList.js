@@ -23,7 +23,7 @@ const CustomerRegistrationList = () => {
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const rowsPerPage = 10;
+  const rowsPerPage = 30;
 
   const [orderBy, setOrderBy] = useState('facility');
   const [order, setOrder] = useState('asc');
