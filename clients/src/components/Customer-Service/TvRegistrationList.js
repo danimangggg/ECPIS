@@ -36,7 +36,7 @@ const CustomerRegistrationList = () => {
     const speaker = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance();
 
-    // Define the desired language for the voice
+    // --- REINSTATED: Logic to find and use Amharic voice ---
     const desiredLang = 'am-ET'; // Amharic language code
 
     const setAmharicVoice = () => {
@@ -48,10 +48,12 @@ const CustomerRegistrationList = () => {
             utterance.lang = desiredLang; // Set lang too, as it's good practice
             console.log(`Amharic voice found and set: "${amharicVoice.name}" (${amharicVoice.lang})`);
         } else {
+            // No specific Amharic voice found. Set lang and hope for browser's best effort.
             utterance.lang = desiredLang; // Still set lang, browser might try best effort
             console.warn(`No specific Amharic voice (${desiredLang}) found in this browser.`);
             console.warn("Available voices:", voices.map(v => ({ name: v.name, lang: v.lang })));
             console.warn("Speech might default to another language or fail.");
+            console.warn("To enable Amharic voice, you might need to install a language pack on your operating system or adjust browser speech settings.");
         }
     };
 
@@ -62,6 +64,8 @@ const CustomerRegistrationList = () => {
     if (speaker.getVoices().length > 0) {
         setAmharicVoice();
     }
+    // --- END REINSTATED LOGIC ---
+
 
     // Event listeners for debugging and sequencing
     utterance.onstart = () => {
@@ -207,35 +211,39 @@ const CustomerRegistrationList = () => {
 
     const now = Date.now();
 
-    const currentNotifyingIds = new Set(filteredCustomers
-      .filter(c => c.status?.toLowerCase() === 'notifying')
-      .map(c => c.id));
+    const currentNotifyingCustomers = filteredCustomers.filter(
+      c => c.status?.toLowerCase() === 'notifying'
+    );
+    const currentNotifyingIds = new Set(currentNotifyingCustomers.map(c => c.id));
 
-    // Cleanup lastCallTimes for customers no longer notifying
+    // --- Step 1: Clean up lastCallTimes for customers no longer notifying ---
     for (let customerId of lastCallTimes.current.keys()) {
-        if (!currentNotifyingIds.has(customerId)) {
-            console.log(`Cleaning up lastCallTimes: Customer ID ${customerId} is no longer notifying.`);
-            lastCallTimes.current.delete(customerId);
-        }
+      if (!currentNotifyingIds.has(customerId)) {
+        console.log(`Cleaning up lastCallTimes: Customer ID ${customerId} is no longer notifying.`);
+        lastCallTimes.current.delete(customerId);
+      }
     }
 
-    // Add new or re-announceable customers to the speech queue
-    filteredCustomers.forEach(cust => {
-      if (cust.status?.toLowerCase() === 'notifying') {
-        const lastCalled = lastCallTimes.current.get(cust.id);
-        const shouldAnnounce = !lastCalled || (now - lastCalled > ANNOUNCEMENT_REPEAT_INTERVAL_MS);
+    // --- Step 2: Ensure the queue only contains IDs that are *still* notifying ---
+    speechRef.current.queue = speechRef.current.queue.filter(queuedId => currentNotifyingIds.has(queuedId));
 
-        if (shouldAnnounce) {
-          console.log(`Adding Customer ID ${cust.id} to speech queue.`);
-          speechRef.current.queue.push(cust.id);
-          lastCallTimes.current.set(cust.id, now); // Update last called time
-        }
+
+    // --- Step 3: Add new or re-announceable customers to the speech queue ---
+    currentNotifyingCustomers.forEach(cust => {
+      const lastCalled = lastCallTimes.current.get(cust.id);
+      const shouldAnnounce = !lastCalled || (now - lastCalled > ANNOUNCEMENT_REPEAT_INTERVAL_MS);
+
+      // Only add if shouldAnnounce and not already in the queue (after filtering in step 2)
+      if (shouldAnnounce && !speechRef.current.queue.includes(cust.id)) {
+        console.log(`Adding Customer ID ${cust.id} to speech queue.`);
+        speechRef.current.queue.push(cust.id);
+        lastCallTimes.current.set(cust.id, now); // Update last called time immediately upon queuing
       }
     });
 
-    // Start processing the queue if speaker is idle
+    // --- Step 4: Process the queue ---
     if (speechRef.current.processSpeechQueue) {
-        speechRef.current.processSpeechQueue();
+      speechRef.current.processSpeechQueue();
     }
 
   }, [filteredCustomers]);
@@ -315,7 +323,7 @@ const CustomerRegistrationList = () => {
               return (
                 <Box
                   key={`${cust.id}-${index}`}
-                  className={isNotifying ? 'zoom-container' : ''} // Class for overall zoom
+                  className={isNotifying ? 'zoom-container' : ''}
                   sx={{
                     backgroundColor: isNotifying ? '#FFFACD' : '#1e1e1e', // Vibrant background
                     borderRadius: 3,
