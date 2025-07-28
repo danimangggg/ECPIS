@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import dayjs from 'dayjs';
@@ -10,8 +10,103 @@ const CustomerRegistrationList = () => {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(dayjs().format('dddd, MMMM D, YYYY — hh:mm:ss A'));
 
+  const lastCallTimes = useRef(new Map());
+  const ANNOUNCEMENT_REPEAT_INTERVAL_MS = 3 * 1000; // Re-announce every 3 seconds if status is still 'notifying'
+
+  // Ref to hold the speech synthesis object and a queue
+  const speechRef = useRef({
+    speaker: null,
+    utterance: null,
+    queue: [], // Array of customer IDs to announce
+    isSpeaking: false,
+    init: false // Flag to ensure initialization only happens once
+  });
+
   const api_url = process.env.REACT_APP_API_URL;
 
+  // --- Initialize SpeechSynthesis API (run once) ---
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      console.warn("Web Speech API is not supported in this browser. Voice announcements will not work.");
+      return;
+    }
+
+    if (speechRef.current.init) return; // Already initialized
+
+    const speaker = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance();
+    utterance.lang = 'en-US';
+
+    // Event listeners for debugging and sequencing
+    utterance.onstart = () => {
+      speechRef.current.isSpeaking = true;
+      console.log('Speech started for:', utterance.text);
+    };
+    utterance.onend = () => {
+      speechRef.current.isSpeaking = false;
+      console.log('Speech ended for:', utterance.text);
+      // Speak next in queue if available
+      if (speechRef.current.processSpeechQueue) { // Ensure the function is available
+          speechRef.current.processSpeechQueue();
+      }
+    };
+    utterance.onerror = (event) => {
+      speechRef.current.isSpeaking = false;
+      console.error('Speech synthesis error:', event.error);
+      // Attempt to process next in queue even on error
+      if (speechRef.current.processSpeechQueue) { // Ensure the function is available
+          speechRef.current.processSpeechQueue();
+      }
+    };
+    utterance.onpause = () => console.log('Speech paused for:', utterance.text);
+    utterance.onresume = () => console.log('Speech resumed for:', utterance.text);
+
+    speechRef.current.speaker = speaker;
+    speechRef.current.utterance = utterance;
+    speechRef.current.init = true;
+
+    // Function to process the queue
+    const processSpeechQueue = () => {
+      if (!speechRef.current.speaker || !speechRef.current.utterance) {
+          console.warn("Speech API not fully initialized for queue processing.");
+          return;
+      }
+      if (speechRef.current.queue.length > 0 && !speechRef.current.isSpeaking) {
+        const nextIdToSpeak = speechRef.current.queue.shift(); // Get next ID from queue
+        speechRef.current.utterance.text = String(nextIdToSpeak);
+        console.log(`--- Speaking from queue: "${speechRef.current.utterance.text}" ---`);
+        speechRef.current.speaker.speak(speechRef.current.utterance);
+      } else if (speechRef.current.queue.length === 0) {
+        console.log("Speech queue is empty.");
+      }
+    };
+
+    // Store the processing function in ref so it can be called elsewhere
+    speechRef.current.processSpeechQueue = processSpeechQueue;
+
+    // Cleanup for unmount
+    return () => {
+      console.log("Cleanup: Unmounting. Cancelling all speech.");
+      if (speaker.speaking) {
+        speaker.cancel();
+      }
+      // Clear all listeners explicitly to avoid memory leaks
+      utterance.onstart = null;
+      utterance.onend = null;
+      utterance.onerror = null;
+      utterance.onpause = null;
+      utterance.onresume = null;
+      speechRef.current.init = false;
+      speechRef.current.speaker = null;
+      speechRef.current.utterance = null;
+      speechRef.current.queue = [];
+      speechRef.current.isSpeaking = false;
+      speechRef.current.processSpeechQueue = null;
+    };
+  }, []); // Empty dependency array means this runs only once on mount
+
+
+  // --- Data Fetching ---
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,6 +130,7 @@ const CustomerRegistrationList = () => {
     return () => clearInterval(interval);
   }, [api_url]);
 
+  // --- Real-time Clock Update ---
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(dayjs().format('dddd, MMMM D, YYYY — hh:mm:ss A'));
@@ -42,21 +138,85 @@ const CustomerRegistrationList = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // --- Helper Functions ---
   const getFacility = (id) => facilities.find((f) => f.id === id);
   const getOfficerName = (officerId) => {
     const user = employees.find(u => u.id === officerId);
     return user ? user.full_name : 'N/A';
   };
 
+  // --- EDITED: getDisplayStatus to show 'Calling' for 'notifying' ---
+  const getDisplayStatus = (status) => {
+    const lowerStatus = status?.toLowerCase();
+    if (lowerStatus === 'started') {
+      return 'Waiting';
+    } else if (lowerStatus === 'notifying') { // Specifically for 'notifying'
+      return 'Calling'; // Change to 'Calling'
+    } else if (lowerStatus === 'o2c_started') { // Keep 'o2c_started' as 'In Progress'
+      return 'In Progress';
+    }
+    return status || 'N/A';
+  };
+  // --- END EDIT ---
+
+  // --- Filtering Customers for Display ---
   const today = dayjs().startOf('day');
   const filteredCustomers = customers
-    .filter(cust =>
-      cust.status?.toLowerCase() === 'started' &&
-      cust.next_service_point?.toLowerCase() === 'o2c' &&
-      dayjs(cust.started_at).isAfter(today)
-    )
+    .filter(cust => {
+      const status = cust.status?.toLowerCase();
+      const nextServicePoint = cust.next_service_point?.toLowerCase();
+      return (
+        (status === 'started' || status === 'notifying' || status === 'o2c_started') &&
+        nextServicePoint === 'o2c' &&
+        dayjs(cust.started_at).isAfter(today)
+      );
+    })
     .sort((a, b) => new Date(a.started_at) - new Date(b.started_at));
 
+  // --- Voice Announcement Queueing Logic ---
+  useEffect(() => {
+    if (!speechRef.current.init) {
+      console.warn("Speech synthesis not initialized yet.");
+      return;
+    }
+
+    const now = Date.now();
+
+    const currentNotifyingIds = new Set(filteredCustomers
+      .filter(c => c.status?.toLowerCase() === 'notifying')
+      .map(c => c.id));
+
+    // Cleanup lastCallTimes for customers no longer notifying
+    for (let customerId of lastCallTimes.current.keys()) {
+        if (!currentNotifyingIds.has(customerId)) {
+            console.log(`Cleaning up lastCallTimes: Customer ID ${customerId} is no longer notifying.`);
+            lastCallTimes.current.delete(customerId);
+        }
+    }
+
+    // Add new or re-announceable customers to the speech queue
+    filteredCustomers.forEach(cust => {
+      if (cust.status?.toLowerCase() === 'notifying') {
+        const lastCalled = lastCallTimes.current.get(cust.id);
+        const shouldAnnounce = !lastCalled || (now - lastCalled > ANNOUNCEMENT_REPEAT_INTERVAL_MS);
+
+        if (shouldAnnounce) {
+          console.log(`Adding Customer ID ${cust.id} to speech queue.`);
+          speechRef.current.queue.push(cust.id);
+          lastCallTimes.current.set(cust.id, now); // Update last called time
+        }
+      }
+    });
+
+    // Start processing the queue if speaker is idle
+    if (speechRef.current.processSpeechQueue) { // Ensure the function is available
+        speechRef.current.processSpeechQueue();
+    }
+
+  }, [filteredCustomers]); // This effect still depends on filteredCustomers
+
+
+  // --- Loading State ---
   if (loading) {
     return (
       <Box sx={{ height: '100vh', bgcolor: '#000', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -65,6 +225,7 @@ const CustomerRegistrationList = () => {
     );
   }
 
+  // --- Rendered Component ---
   return (
     <Box
       sx={{
@@ -93,7 +254,7 @@ const CustomerRegistrationList = () => {
       </Typography>
 
       <Typography variant="h3" sx={{ mb: 3, fontWeight: 'bold', color: '#00e5ff' }}>
-        Live Customer Progress Follow-up
+        Live Progress Follow-up
       </Typography>
 
       {filteredCustomers.length === 0 ? (
@@ -124,9 +285,11 @@ const CustomerRegistrationList = () => {
           >
             {[...filteredCustomers, ...filteredCustomers].map((cust, index) => {
               const facility = getFacility(cust.facility_id);
+              const isNotifying = cust.status?.toLowerCase() === 'notifying';
+
               return (
                 <Box
-                  key={index}
+                  key={`${cust.id}-${index}`}
                   sx={{
                     backgroundColor: '#1e1e1e',
                     borderRadius: 3,
@@ -137,10 +300,11 @@ const CustomerRegistrationList = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     px: 4,
+                    animation: isNotifying ? 'zoomPulse 1.5s infinite alternate' : 'none',
                   }}
                 >
                   <Typography variant="h5" sx={{ color: '#00e5ff', width: '10%' }}>
-                    #{(index % filteredCustomers.length) + 1}
+                    {cust.id}
                   </Typography>
                   <Typography variant="h6" sx={{ width: '30%' }}>
                     Facility: {facility?.facility_name || 'N/A'}
@@ -149,7 +313,7 @@ const CustomerRegistrationList = () => {
                     Assigned Officer: {getOfficerName(cust.assigned_officer_id)}
                   </Typography>
                   <Typography variant="h6" sx={{ width: '20%', color: '#76ff03' }}>
-                    Status: In Progress
+                    Status: {getDisplayStatus(cust.status)}
                   </Typography>
                 </Box>
               );
@@ -166,6 +330,21 @@ const CustomerRegistrationList = () => {
             }
             100% {
               transform: translateY(-50%);
+            }
+          }
+
+          @keyframes zoomPulse {
+            0% {
+              transform: scale(1);
+              box-shadow: 0 0 15px #FFD700; /* Vibrant Gold/Yellow */
+            }
+            50% {
+              transform: scale(1.03); /* Slightly larger */
+              box-shadow: 0 0 25px 5px #FFD700; /* More prominent, vibrant shadow */
+            }
+            100% {
+              transform: scale(1);
+              box-shadow: 0 0 15px #FFD700; /* Vibrant Gold/Yellow */
             }
           }
         `}
