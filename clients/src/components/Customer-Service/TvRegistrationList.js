@@ -35,7 +35,33 @@ const CustomerRegistrationList = () => {
 
     const speaker = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance();
-    utterance.lang = 'en-US';
+
+    // Define the desired language for the voice
+    const desiredLang = 'am-ET'; // Amharic language code
+
+    const setAmharicVoice = () => {
+        const voices = speaker.getVoices();
+        const amharicVoice = voices.find(voice => voice.lang === desiredLang);
+
+        if (amharicVoice) {
+            utterance.voice = amharicVoice;
+            utterance.lang = desiredLang; // Set lang too, as it's good practice
+            console.log(`Amharic voice found and set: "${amharicVoice.name}" (${amharicVoice.lang})`);
+        } else {
+            utterance.lang = desiredLang; // Still set lang, browser might try best effort
+            console.warn(`No specific Amharic voice (${desiredLang}) found in this browser.`);
+            console.warn("Available voices:", voices.map(v => ({ name: v.name, lang: v.lang })));
+            console.warn("Speech might default to another language or fail.");
+        }
+    };
+
+    // Listen for voices to be loaded (can happen asynchronously)
+    speaker.onvoiceschanged = setAmharicVoice;
+
+    // Also try to set it immediately if voices are already loaded
+    if (speaker.getVoices().length > 0) {
+        setAmharicVoice();
+    }
 
     // Event listeners for debugging and sequencing
     utterance.onstart = () => {
@@ -46,7 +72,7 @@ const CustomerRegistrationList = () => {
       speechRef.current.isSpeaking = false;
       console.log('Speech ended for:', utterance.text);
       // Speak next in queue if available
-      if (speechRef.current.processSpeechQueue) { // Ensure the function is available
+      if (speechRef.current.processSpeechQueue) {
           speechRef.current.processSpeechQueue();
       }
     };
@@ -54,7 +80,7 @@ const CustomerRegistrationList = () => {
       speechRef.current.isSpeaking = false;
       console.error('Speech synthesis error:', event.error);
       // Attempt to process next in queue even on error
-      if (speechRef.current.processSpeechQueue) { // Ensure the function is available
+      if (speechRef.current.processSpeechQueue) {
           speechRef.current.processSpeechQueue();
       }
     };
@@ -96,6 +122,7 @@ const CustomerRegistrationList = () => {
       utterance.onerror = null;
       utterance.onpause = null;
       utterance.onresume = null;
+      speaker.onvoiceschanged = null; // Clear this listener too
       speechRef.current.init = false;
       speechRef.current.speaker = null;
       speechRef.current.utterance = null;
@@ -126,7 +153,7 @@ const CustomerRegistrationList = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 3000); // Fetch data every 3 seconds
     return () => clearInterval(interval);
   }, [api_url]);
 
@@ -145,19 +172,17 @@ const CustomerRegistrationList = () => {
     return user ? user.full_name : 'N/A';
   };
 
-  // --- EDITED: getDisplayStatus to show 'Calling' for 'notifying' ---
   const getDisplayStatus = (status) => {
     const lowerStatus = status?.toLowerCase();
     if (lowerStatus === 'started') {
       return 'Waiting';
-    } else if (lowerStatus === 'notifying') { // Specifically for 'notifying'
-      return 'Calling'; // Change to 'Calling'
-    } else if (lowerStatus === 'o2c_started') { // Keep 'o2c_started' as 'In Progress'
+    } else if (lowerStatus === 'notifying') {
+      return 'Calling';
+    } else if (lowerStatus === 'o2c_started') {
       return 'In Progress';
     }
     return status || 'N/A';
   };
-  // --- END EDIT ---
 
   // --- Filtering Customers for Display ---
   const today = dayjs().startOf('day');
@@ -209,11 +234,11 @@ const CustomerRegistrationList = () => {
     });
 
     // Start processing the queue if speaker is idle
-    if (speechRef.current.processSpeechQueue) { // Ensure the function is available
+    if (speechRef.current.processSpeechQueue) {
         speechRef.current.processSpeechQueue();
     }
 
-  }, [filteredCustomers]); // This effect still depends on filteredCustomers
+  }, [filteredCustomers]);
 
 
   // --- Loading State ---
@@ -290,8 +315,9 @@ const CustomerRegistrationList = () => {
               return (
                 <Box
                   key={`${cust.id}-${index}`}
+                  className={isNotifying ? 'zoom-container' : ''} // Class for overall zoom
                   sx={{
-                    backgroundColor: '#1e1e1e',
+                    backgroundColor: isNotifying ? '#FFFACD' : '#1e1e1e', // Vibrant background
                     borderRadius: 3,
                     padding: 2,
                     boxShadow: '0 0 15px #00e5ff',
@@ -303,16 +329,16 @@ const CustomerRegistrationList = () => {
                     animation: isNotifying ? 'zoomPulse 1.5s infinite alternate' : 'none',
                   }}
                 >
-                  <Typography variant="h5" sx={{ color: '#00e5ff', width: '10%' }}>
+                  <Typography variant="h5" sx={{ color: isNotifying ? '#333333' : '#00e5ff', width: '10%' }}>
                     {cust.id}
                   </Typography>
-                  <Typography variant="h6" sx={{ width: '30%' }}>
+                  <Typography variant="h6" sx={{ color: isNotifying ? '#333333' : '#fff', width: '30%' }}>
                     Facility: {facility?.facility_name || 'N/A'}
                   </Typography>
-                  <Typography variant="h6" sx={{ width: '40%' }}>
+                  <Typography variant="h6" sx={{ color: isNotifying ? '#333333' : '#fff', width: '40%' }}>
                     Assigned Officer: {getOfficerName(cust.assigned_officer_id)}
                   </Typography>
-                  <Typography variant="h6" sx={{ width: '20%', color: '#76ff03' }}>
+                  <Typography variant="h6" sx={{ color: isNotifying ? '#8B0000' : '#76ff03', width: '20%' }}>
                     Status: {getDisplayStatus(cust.status)}
                   </Typography>
                 </Box>
@@ -345,6 +371,23 @@ const CustomerRegistrationList = () => {
             100% {
               transform: scale(1);
               box-shadow: 0 0 15px #FFD700; /* Vibrant Gold/Yellow */
+            }
+          }
+
+          /* New animation for text within the pulsing box */
+          .zoom-container .MuiTypography-root {
+            animation: textZoom 1.5s infinite alternate;
+          }
+
+          @keyframes textZoom {
+            0% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05); /* Text zooms slightly more than the box */
+            }
+            100% {
+              transform: scale(1);
             }
           }
         `}
