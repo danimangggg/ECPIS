@@ -36,7 +36,9 @@ const CustomerRegistrationList = () => {
     const speaker = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance();
 
-    // --- REINSTATED: Logic to find and use Amharic voice ---
+    utterance.rate = 0.8; // Adjusted: 1.0 is normal, <1.0 is slower. Try 0.5 for even slower.
+
+    // Logic to find and use Amharic voice (am-ET) if available
     const desiredLang = 'am-ET'; // Amharic language code
 
     const setAmharicVoice = () => {
@@ -64,7 +66,6 @@ const CustomerRegistrationList = () => {
     if (speaker.getVoices().length > 0) {
         setAmharicVoice();
     }
-    // --- END REINSTATED LOGIC ---
 
 
     // Event listeners for debugging and sequencing
@@ -72,14 +73,19 @@ const CustomerRegistrationList = () => {
       speechRef.current.isSpeaking = true;
       console.log('Speech started for:', utterance.text);
     };
+
+    // Introduce a delay between calls here
     utterance.onend = () => {
       speechRef.current.isSpeaking = false;
       console.log('Speech ended for:', utterance.text);
-      // Speak next in queue if available
-      if (speechRef.current.processSpeechQueue) {
-          speechRef.current.processSpeechQueue();
-      }
+      // Introduce a pause (e.g., 1500ms = 1.5 seconds) before processing the next item in the queue
+      setTimeout(() => {
+        if (speechRef.current.processSpeechQueue) {
+            speechRef.current.processSpeechQueue();
+        }
+      }, 2500); // Adjust this value to control the pause duration between announcements
     };
+
     utterance.onerror = (event) => {
       speechRef.current.isSpeaking = false;
       console.error('Speech synthesis error:', event.error);
@@ -200,6 +206,8 @@ const CustomerRegistrationList = () => {
         dayjs(cust.started_at).isAfter(today)
       );
     })
+    // Sort by waiting time (longer to shorter)
+    // This sorts by 'started_at' in ascending order, meaning earlier start times (longer waits) come first.
     .sort((a, b) => new Date(a.started_at) - new Date(b.started_at));
 
   // --- Voice Announcement Queueing Logic ---
@@ -313,7 +321,8 @@ const CustomerRegistrationList = () => {
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
-              animation: `slideUp ${filteredCustomers.length * 6}s linear infinite`,
+              // --- EDITED: Increased multiplier to slow down scroll animation ---
+              animation: `slideUp ${filteredCustomers.length * 10}s linear infinite`,
             }}
           >
             {[...filteredCustomers, ...filteredCustomers].map((cust, index) => {
