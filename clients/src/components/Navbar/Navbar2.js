@@ -186,7 +186,11 @@ const Sidebar = () => {
               <MenuItem component={Link} to="/register-list" onClick={handleCustomerMenuClose}>
                 <FormatListBulleted sx={{ mr: 1 }} /> {t("Customer Process")}
               </MenuItem>
-            
+              {(isAdmin || position === "manager" || position === "coordinator" || jobTitle === "O2C Officer" || jobTitle === "EWM Officer" || jobTitle === "Customer Service Officer" || jobTitle === "Finance") && (
+              <MenuItem component={Link} to="/customer-dashboard" onClick={handleCustomerMenuClose}>
+                <Task sx={{ mr: 1 }} /> {t("Dashboard")}
+              </MenuItem>
+            )}
             {(isAdmin || position === "manager" || position === "coordinator" || jobTitle === "O2C Officer" || jobTitle === "EWM Officer" || jobTitle === "Customer Service Officer" || jobTitle === "Finance") && (
               <MenuItem component={Link} to="/outstanding" onClick={handleCustomerMenuClose}>
                 <Task sx={{ mr: 1 }} /> {t("Outstanding Process")}
