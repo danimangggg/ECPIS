@@ -83,7 +83,7 @@ const CustomerRegistrationList = () => {
         if (speechRef.current.processSpeechQueue) {
             speechRef.current.processSpeechQueue();
         }
-      }, 2500); // Adjust this value to control the pause duration between announcements
+      }, 9500); // Adjust this value to control the pause duration between announcements
     };
 
     utterance.onerror = (event) => {

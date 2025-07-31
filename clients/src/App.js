@@ -42,6 +42,7 @@ import RegisterCustomer from './pages/Customer-Service/RegisterCustomerPage';
 import RegisterList from './pages/Customer-Service/RegistrationList';
 import TvRegisterList from './pages/Customer-Service/TvRegistrationListPage';
 import Outstanding from './pages/Customer-Service/OustandingPage';
+import DashboardCustomer from './pages/Customer-Service/DashboardCS';
 
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 const App = () => {
@@ -94,6 +95,7 @@ const App = () => {
             <Route path = '/register-list' Component={RegisterList} />
             <Route path = '/customer-slide' Component={TvRegisterList} />
             <Route path = '/outstanding' Component={Outstanding} />
+            <Route path = '/customer-dashboard' Component={DashboardCustomer} />
         </Route>
         
       </Routes>
