@@ -3,7 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Button, Typography, CircularProgress, Box
+  Button, Typography, CircularProgress, Box, Chip
 } from '@mui/material';
 
 const OutstandingCustomers = () => {
@@ -15,10 +15,13 @@ const OutstandingCustomers = () => {
   const jobTitle = localStorage.getItem("JobTitle");
   const userId = localStorage.getItem("UserId");
 
+  // API URL is now handled with a fallback for consistency
+  const api_url = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const customerRes = await axios.get('http://localhost:3001/api/serviceList');
+      const customerRes = await axios.get(`${api_url}/api/serviceList`);
       setCustomers(customerRes.data);
     } catch (error) {
       console.error("Error fetching customer data:", error.response ? error.response.data : error.message);
@@ -31,8 +34,8 @@ const OutstandingCustomers = () => {
   const fetchStaticData = async () => {
     try {
       const [facilityRes, employeeRes] = await Promise.all([
-        axios.get('http://localhost:3001/api/facilities'),
-        axios.get('http://localhost:3001/api/get-employee'),
+        axios.get(`${api_url}/api/facilities`),
+        axios.get(`${api_url}/api/get-employee`),
       ]);
       setFacilities(facilityRes.data);
       setEmployees(employeeRes.data);
@@ -45,6 +48,8 @@ const OutstandingCustomers = () => {
   useEffect(() => {
     fetchStaticData();
     fetchData();
+    const interval = setInterval(fetchData, 5000); // Poll for new data every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const getFacilityDetails = (facilityId) => {
@@ -76,12 +81,12 @@ const OutstandingCustomers = () => {
 
   const updateServiceStatus = async (customer, newStatus, startedAt = null, assignedOfficerId = null, nextServicePoint = null, completedAt = null) => {
     try {
-      await axios.put('http://localhost:3001/api/update-service-point', {
+      await axios.put(`${api_url}/api/update-service-point`, {
         id: customer.id,
         status: newStatus,
         started_at: (startedAt !== null) ? startedAt : customer.started_at,
         next_service_point: (nextServicePoint !== null) ? nextServicePoint : customer.next_service_point,
-        assigned_officer_id: assignedOfficerId, // Directly use provided assignedOfficerId
+        assigned_officer_id: assignedOfficerId,
         completed_at: (completedAt !== null) ? completedAt : customer.completed_at
       });
       setCustomers(prevCustomers =>
@@ -91,7 +96,7 @@ const OutstandingCustomers = () => {
             status: newStatus,
             started_at: (startedAt !== null) ? startedAt : c.started_at,
             next_service_point: (nextServicePoint !== null) ? nextServicePoint : c.next_service_point,
-            assigned_officer_id: assignedOfficerId, // Directly use provided assignedOfficerId
+            assigned_officer_id: assignedOfficerId,
             completed_at: (completedAt !== null) ? completedAt : c.completed_at
           } : c
         )
@@ -108,7 +113,7 @@ const OutstandingCustomers = () => {
   const handleO2CStatusFlow = async (customer, action) => {
     let newStatus = customer.status;
     let startedAt = customer.started_at;
-    let assignedOfficerToKeep = customer.assigned_officer_id; // Preserve assigned officer
+    let assignedOfficerToKeep = customer.assigned_officer_id;
 
     if (action === 'notify') {
       newStatus = 'notifying';
@@ -118,14 +123,80 @@ const OutstandingCustomers = () => {
         startedAt = new Date().toISOString();
       }
     } else if (action === 'stop') {
-      newStatus = 'started'; // Revert status back to 'started'
-      startedAt = null; // Clear started_at when reverting
+      newStatus = 'started';
+      startedAt = null;
     }
 
     await updateServiceStatus(customer, newStatus, startedAt, assignedOfficerToKeep);
   };
 
+  // --- NEW: Manager-specific handleApprove function ---
+  const handleApprove = async (customer) => {
+    const { isConfirmed } = await Swal.fire({
+      title: 'Confirm Approval',
+      text: 'Are you sure you want to approve this customer and send to Customer Service?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, approve it!',
+      cancelButtonText: 'No, cancel',
+    });
+
+    if (!isConfirmed) {
+      Swal.fire('Cancelled', 'Approval action cancelled.', 'info');
+      return;
+    }
+
+    try {
+      await updateServiceStatus(
+        customer,
+        'approved', // New status for approved customers
+        customer.started_at,
+        customer.assigned_officer_id,
+        'Customer Service' // Next service point
+      );
+      Swal.fire('Updated!', 'Customer approved and sent to Customer Service.', 'success');
+      fetchData();
+    } catch (error) {
+      console.error("Error approving customer:", error.response ? error.response.data : error.message);
+      Swal.fire('Error', 'Failed to approve customer.', 'error');
+    }
+  };
+
+  // --- NEW: Manager-specific handleReject function ---
+  const handleReject = async (customer) => {
+    const { isConfirmed } = await Swal.fire({
+      title: 'Confirm Rejection',
+      text: 'Are you sure you want to reject this customer? This action is permanent.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, reject it!',
+      cancelButtonText: 'No, cancel',
+    });
+
+    if (!isConfirmed) {
+      Swal.fire('Cancelled', 'Rejection action cancelled.', 'info');
+      return;
+    }
+
+    try {
+      await updateServiceStatus(
+        customer,
+        'rejected', // New status for rejected customers
+        customer.started_at,
+        customer.assigned_officer_id,
+        customer.next_service_point // Keep the next service point the same
+      );
+      Swal.fire('Updated!', 'Customer has been rejected.', 'success');
+      fetchData();
+    } catch (error) {
+      console.error("Error rejecting customer:", error.response ? error.response.data : error.message);
+      Swal.fire('Error', 'Failed to reject customer.', 'error');
+    }
+  };
+
+
   const handleComplete = async (customer) => {
+    // This function handles completion for all roles other than Manager
     const getUserSelectOptions = () => {
       return employees
         .filter((emp) => emp.jobTitle === "O2C Officer")
@@ -136,7 +207,6 @@ const OutstandingCustomers = () => {
     };
 
     if (jobTitle === 'O2C Officer') {
-      // 1. Prompt for next service point first
       const { value: selectedRole, isConfirmed } = await Swal.fire({
         title: 'Complete Service',
         text: 'Select next service point',
@@ -146,20 +216,17 @@ const OutstandingCustomers = () => {
         showCancelButton: true,
         confirmButtonText: 'Submit',
       });
-
-      // If user cancels, stop here
       if (!isConfirmed) {
         Swal.fire('Cancelled', 'Service completion cancelled.', 'info');
         return;
       }
 
       try {
-        // 2. Perform the update *after* confirmation
-        await axios.put('http://localhost:3001/api/update-service-point', {
+        await axios.put(`${api_url}/api/update-service-point`, {
           id: customer.id,
-          status: 'o2c_completed', // Set status here
+          status: 'o2c_completed',
           next_service_point: selectedRole,
-          assigned_officer_id: customer.assigned_officer_id // Preserve assigned_officer_id
+          assigned_officer_id: customer.assigned_officer_id
         });
         Swal.fire('Success', 'Service point updated', 'success');
         fetchData();
@@ -169,9 +236,7 @@ const OutstandingCustomers = () => {
       }
 
     } else if (jobTitle === 'Finance') {
-      const nextOptions = { O2C: 'O2C', Manager: 'Manager', 'Customer Service': 'Customer Service' }; // Declared here
-
-      // 1. Prompt for next service point
+      const nextOptions = { O2C: 'O2C', Manager: 'Manager', 'Customer Service': 'Customer Service' };
       const { value: selectedRole, isConfirmed } = await Swal.fire({
         title: 'Select next service point',
         input: 'select',
@@ -179,13 +244,12 @@ const OutstandingCustomers = () => {
         inputPlaceholder: 'Select',
         showCancelButton: true,
       });
-      if (!isConfirmed) return; // If user cancels, stop here
+      if (!isConfirmed) return;
 
-      let assignedOfficerId = customer.assigned_officer_id; // Start with existing assigned officer
+      let assignedOfficerId = customer.assigned_officer_id;
       let newStatus = customer.status;
 
       if (selectedRole === 'O2C') {
-        // Only prompt for assignment if no O2C officer is currently assigned
         if (!customer.assigned_officer_id) {
           const { value: selectedUserId, isConfirmed: userConfirmedAssignment } = await Swal.fire({
             title: 'Assign O2C Officer',
@@ -193,7 +257,7 @@ const OutstandingCustomers = () => {
             inputPlaceholder: 'Select an O2C Officer',
             showCancelButton: true,
           });
-          if (!userConfirmedAssignment) { // If user cancels assignment, stop here
+          if (!userConfirmedAssignment) {
             Swal.fire('Cancelled', 'No O2C Officer assigned. Action cancelled.', 'info');
             return;
           }
@@ -209,7 +273,7 @@ const OutstandingCustomers = () => {
           customer,
           newStatus,
           customer.started_at,
-          assignedOfficerId, // Will preserve existing, set new if assigned, or remain null if never assigned
+          assignedOfficerId,
           selectedRole
         );
         Swal.fire('Updated!', `Service point updated to ${selectedRole}.`, 'success');
@@ -218,11 +282,8 @@ const OutstandingCustomers = () => {
         console.error("Error updating service point:", error.response ? error.response.data : error.message);
         Swal.fire('Error', 'Failed to update service', 'error');
       }
-
     } else if (jobTitle === 'Customer Service Officer') {
-      const nextOptions = { O2C: 'O2C', Finance: 'Finance' }; // Declared here
-
-      // 1. Prompt for next service point
+      const nextOptions = { O2C: 'O2C', Finance: 'Finance' };
       const { value: selectedRole, isConfirmed } = await Swal.fire({
         title: 'Select next service point',
         input: 'select',
@@ -230,13 +291,12 @@ const OutstandingCustomers = () => {
         inputPlaceholder: 'Select',
         showCancelButton: true,
       });
-      if (!isConfirmed) return; // If user cancels, stop here
+      if (!isConfirmed) return;
 
-      let assignedOfficerId = customer.assigned_officer_id; // Start with existing assigned officer
+      let assignedOfficerId = customer.assigned_officer_id;
       let newStatus = customer.status;
 
       if (selectedRole === 'O2C') {
-        // Only prompt for assignment if no O2C officer is currently assigned
         if (!customer.assigned_officer_id) {
           const { value: selectedUserId, isConfirmed: userConfirmedAssignment } = await Swal.fire({
             title: 'Assign O2C Officer',
@@ -244,7 +304,7 @@ const OutstandingCustomers = () => {
             inputPlaceholder: 'Select an O2C Officer',
             showCancelButton: true,
           });
-          if (!userConfirmedAssignment) { // If user cancels assignment, stop here
+          if (!userConfirmedAssignment) {
             Swal.fire('Cancelled', 'No O2C Officer assigned. Action cancelled.', 'info');
             return;
           }
@@ -260,47 +320,16 @@ const OutstandingCustomers = () => {
           customer,
           newStatus,
           customer.started_at,
-          assignedOfficerId, // Will preserve existing, set new if assigned, or remain null if never assigned
+          assignedOfficerId,
           selectedRole
         );
         Swal.fire('Updated!', `Service point updated to ${selectedRole}.`, 'success');
-        fetchData();
-      } catch (error) {
-        console.error("Error updating service point:", error.response ? error.response.data : error.message);
-        Swal.fire('Error', 'Failed to update service', 'error');
-      }
-
-    } else if (jobTitle === 'Manager') {
-      // 1. Add a confirmation dialog before proceeding
-      const { isConfirmed } = await Swal.fire({
-        title: 'Confirm Completion',
-        text: 'Are you sure you want to send this customer to Customer Service?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, complete it!',
-        cancelButtonText: 'No, cancel',
-      });
-
-      // If user cancels, stop here
-      if (!isConfirmed) {
-        Swal.fire('Cancelled', 'Completion action cancelled.', 'info');
-        return;
-      }
-
-      try {
-        await axios.put('http://localhost:3001/api/update-service-point', {
-          id: customer.id,
-          next_service_point: 'Customer Service',
-          assigned_officer_id: customer.assigned_officer_id, // Preserve assigned_officer_id
-        });
-        Swal.fire('Updated!', 'Service point updated to Customer Service.', 'success');
         fetchData();
       } catch (error) {
         console.error("Error updating service point:", error.response ? error.response.data : error.message);
         Swal.fire('Error', 'Failed to update service', 'error');
       }
     } else if (jobTitle === 'EWM Officer') {
-      // 1. Add a confirmation dialog before proceeding
       const { isConfirmed } = await Swal.fire({
         title: 'Confirm Completion',
         text: 'Are you sure you want to complete this service and send to Customer?',
@@ -309,8 +338,6 @@ const OutstandingCustomers = () => {
         confirmButtonText: 'Yes, complete it!',
         cancelButtonText: 'No, cancel',
       });
-
-      // If user cancels, stop here
       if (!isConfirmed) {
         Swal.fire('Cancelled', 'Service completion cancelled.', 'info');
         return;
@@ -318,11 +345,11 @@ const OutstandingCustomers = () => {
 
       const now = new Date().toISOString();
       try {
-        await axios.put('http://localhost:3001/api/update-service-point', {
+        await axios.put(`${api_url}/api/update-service-point`, {
           id: customer.id,
           next_service_point: 'Customer',
           status: 'Completed',
-          assigned_officer_id: customer.assigned_officer_id, // Preserve assigned_officer_id
+          assigned_officer_id: customer.assigned_officer_id,
           completed_at: now
         });
         Swal.fire('Updated!', 'Service completed and moved to Customer.', 'success');
@@ -340,17 +367,17 @@ const OutstandingCustomers = () => {
     if (jobTitle !== 'EWM Officer') return;
     const getUserSelectOptions = () => employees.filter((emp) => emp.jobTitle === "O2C Officer").reduce((acc, emp) => { acc[emp.id] = emp.full_name; return acc; }, {});
 
-    let assignedOfficerIdForReturn = customer.assigned_officer_id; // Keep existing assigned ID by default
+    let assignedOfficerIdForReturn = customer.assigned_officer_id;
 
     if (!assignedOfficerIdForReturn) {
-        const { value: selectedUserId, isConfirmed } = await Swal.fire({ // Added isConfirmed
+        const { value: selectedUserId, isConfirmed } = await Swal.fire({
             title: 'Assign O2C Officer for return',
             input: 'select',
             inputOptions: getUserSelectOptions(),
             inputPlaceholder: 'Select an O2C Officer',
             showCancelButton: true,
         });
-        if (!isConfirmed) { Swal.fire('Cancelled', 'No O2C Officer assigned. Return cancelled.', 'info'); return; } // Check isConfirmed
+        if (!isConfirmed) { Swal.fire('Cancelled', 'No O2C Officer assigned. Return cancelled.', 'info'); return; }
         assignedOfficerIdForReturn = selectedUserId;
     } else {
         Swal.fire('Info', `Customer will be returned to previously assigned O2C Officer: ${getAssignedUserFullName(assignedOfficerIdForReturn)}.`, 'info');
@@ -359,10 +386,10 @@ const OutstandingCustomers = () => {
     try {
       await updateServiceStatus(
         customer,
-        'started', // Set status to 'started' for O2C to pick it up
-        null, // No new started_at for return
-        assignedOfficerIdForReturn, // Use assigned or newly selected ID
-        'O2C' // Next service point is O2C
+        'started',
+        null,
+        assignedOfficerIdForReturn,
+        'O2C'
       );
       Swal.fire('Returned!', 'Customer returned to O2C.', 'success');
       fetchData();
@@ -383,9 +410,17 @@ const OutstandingCustomers = () => {
         c.status !== 'Completed'
       );
     }
+    // Filter for manager, showing all customers that require their action.
+    if (jobTitle === 'Manager') {
+        return customers.filter(c =>
+            c.next_service_point?.toLowerCase() === 'manager' &&
+            c.status?.toLowerCase() !== 'rejected' &&
+            c.status?.toLowerCase() !== 'approved'
+        );
+    }
 
     const jobTitleToServicePointMap = {
-      "Customer Service Officer": "customer service", "EWM Officer": "ewm", "Manager": "manager"
+      "Customer Service Officer": "customer service", "EWM Officer": "ewm"
     };
     const normalizedJobTitle = jobTitleToServicePointMap[jobTitle] || jobTitle.toLowerCase();
     return customers.filter(c => c.next_service_point?.toLowerCase() === normalizedJobTitle);
@@ -446,7 +481,13 @@ const OutstandingCustomers = () => {
                     <TableCell>{getWaitingHours(customer.started_at)}</TableCell>
                     <TableCell>{customer.next_service_point || "N/A"}</TableCell>
                     <TableCell>{assignedUser}</TableCell>
-                    <TableCell>{customer.status || 'pending'}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={customer.status || 'pending'}
+                        color={customer.status === 'rejected' ? 'error' : customer.status === 'approved' ? 'success' : 'default'}
+                        size="small"
+                      />
+                    </TableCell>
                     {jobTitle === 'EWM Officer' && (
                       <TableCell>
                         <Button
@@ -503,13 +544,37 @@ const OutstandingCustomers = () => {
                           )}
                         </Box>
                       ) : (
-                        <Button
-                          variant="contained"
-                          color="success"
-                          onClick={() => handleComplete(customer)}
-                        >
-                          Completed
-                        </Button>
+                        // NEW: Manager-specific buttons, otherwise show generic 'Completed'
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          {jobTitle === 'Manager' ? (
+                            <>
+                              <Button
+                                variant="contained"
+                                color="success"
+                                onClick={() => handleApprove(customer)}
+                                size="small"
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color="error"
+                                onClick={() => handleReject(customer)}
+                                size="small"
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="contained"
+                              color="success"
+                              onClick={() => handleComplete(customer)}
+                            >
+                              Completed
+                            </Button>
+                          )}
+                        </Box>
                       )}
                     </TableCell>
                   </TableRow>

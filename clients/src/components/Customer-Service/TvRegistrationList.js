@@ -11,7 +11,7 @@ const CustomerRegistrationList = () => {
   const [currentTime, setCurrentTime] = useState(dayjs().format('dddd, MMMM D, YYYY — hh:mm:ss A'));
 
   const lastCallTimes = useRef(new Map());
-  const ANNOUNCEMENT_REPEAT_INTERVAL_MS = 3 * 1000; // Re-announce every 3 seconds if status is still 'notifying'
+  const ANNOUNCEMENT_REPEAT_INTERVAL_MS = 10 * 1000; // Re-announce every 3 seconds if status is still 'notifying'
 
   // Ref to hold the speech synthesis object and a queue
   const speechRef = useRef({
@@ -83,7 +83,7 @@ const CustomerRegistrationList = () => {
         if (speechRef.current.processSpeechQueue) {
             speechRef.current.processSpeechQueue();
         }
-      }, 9500); // Adjust this value to control the pause duration between announcements
+      }, 20000); // Adjust this value to control the pause duration between announcements
     };
 
     utterance.onerror = (event) => {
