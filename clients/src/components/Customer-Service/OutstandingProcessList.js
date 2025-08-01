@@ -48,7 +48,7 @@ const OutstandingCustomers = () => {
   useEffect(() => {
     fetchStaticData();
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Poll for new data every 5 seconds
+    const interval = setInterval(fetchData, 60000); // Poll for new data every 60 seconds
     return () => clearInterval(interval);
   }, []);
 
