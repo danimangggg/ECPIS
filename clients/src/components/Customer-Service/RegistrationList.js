@@ -15,16 +15,22 @@ import {
   TableSortLabel,
   Chip,
   Fade,
-  Slide, // ADDED: For more dynamic entry
-  Zoom, // ADDED: For a subtle zoom effect on cards
+  Slide,
+  Zoom,
   useTheme,
-  alpha, // <-- ADDED: Import alpha utility for color manipulation
+  alpha,
 } from '@mui/material';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import * as XLSX from 'xlsx';
 import PeopleIcon from '@mui/icons-material/People';
-import FileDownloadIcon from '@mui/icons-material/FileDownload'; // More specific icon for export
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+
+// Extend dayjs with the necessary plugins
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
 
 const CustomerRegistrationList = () => {
   const [customers, setCustomers] = useState([]);
@@ -33,13 +39,15 @@ const CustomerRegistrationList = () => {
   const [page, setPage] = useState(0);
   const rowsPerPage = 30;
 
-  const [orderBy, setOrderBy] = useState('facility');
-  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('registered_date');
+  const [order, setOrder] = useState('desc');
 
   const theme = useTheme();
 
+  // The environment variable for the API URL
   const api_url = process.env.REACT_APP_API_URL;
 
+  // Fetch data from the APIs on component mount
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
@@ -52,7 +60,6 @@ const CustomerRegistrationList = () => {
         setFacilities(facilityRes.data);
       } catch (err) {
         console.error('Data fetch error:', err);
-        // Consider setting an error message for the user here
       } finally {
         setLoading(false);
       }
@@ -60,15 +67,19 @@ const CustomerRegistrationList = () => {
     fetchAllData();
   }, [api_url]);
 
+  // Helper function to find a facility by its ID
   const getFacility = (id) => facilities.find(f => f.id === id);
 
+  // Calculates the waiting time in hours
   const calculateWaitingHours = (startedAt, completedAt, status) => {
-    const start = dayjs(startedAt);
-    const end = (status?.toLowerCase() === 'completed' && completedAt) ? dayjs(completedAt) : dayjs();
+    // Parse the date as UTC to ensure correct time zone handling
+    const start = dayjs.utc(startedAt);
+    const end = (status?.toLowerCase() === 'completed' && completedAt) ? dayjs.utc(completedAt) : dayjs.utc();
     const diffMinutes = end.diff(start, 'minute');
     return diffMinutes / 60;
   };
 
+  // Formats the waiting time into a readable string
   const formatWaitingTime = (decimalHours) => {
     if (isNaN(decimalHours) || decimalHours < 0) return 'N/A';
     const hours = Math.floor(decimalHours);
@@ -76,12 +87,33 @@ const CustomerRegistrationList = () => {
     return `${hours} hr ${minutes} min`;
   };
 
+  // Handles column sorting
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
+  // Formats the date using the Gregorian calendar
+  const formatDate = (dateString) => {
+    if (!dateString) {
+      return 'N/A';
+    }
+    
+    // Correctly parse the UTC date string from the API
+    const gregorianDate = dayjs.utc(dateString);
+
+    if (!gregorianDate.isValid()) {
+      return 'N/A';
+    }
+
+    // Convert the UTC time to the user's local time for display
+    const localDate = gregorianDate.local();
+
+    return localDate.format('YYYY-MM-DD hh:mm A');
+  };
+
+  // Sort customers based on the selected column and order
   const sortedCustomers = [...customers].sort((a, b) => {
     const getValue = (cust, key) => {
       const facility = getFacility(cust.facility_id);
@@ -90,10 +122,6 @@ const CustomerRegistrationList = () => {
           return facility?.facility_name || '';
         case 'woreda':
           return facility?.woreda_name || '';
-        case 'zone':
-          return facility?.zone_name || '';
-        case 'region':
-          return facility?.region_name || '';
         case 'customer_type':
           return cust.customer_type || '';
         case 'waiting_hours':
@@ -102,6 +130,12 @@ const CustomerRegistrationList = () => {
           return cust.next_service_point || '';
         case 'status':
           return cust.status?.toLowerCase() === 'started' ? 'in progress' : (cust.status?.toLowerCase() || '');
+        case 'registered_date':
+            return dayjs.utc(cust.started_at).unix();
+        case 'delegate':
+            return cust.delegate || '';
+        case 'delegate_phone':
+            return cust.delegate_phone || '';
         default:
           return '';
       }
@@ -119,8 +153,10 @@ const CustomerRegistrationList = () => {
     }
   });
 
+  // Paginate the sorted customers
   const paginatedCustomers = sortedCustomers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // Function to export table data to an Excel file
   const exportToExcel = () => {
     const data = customers.map((cust) => {
       const facility = getFacility(cust.facility_id);
@@ -128,9 +164,10 @@ const CustomerRegistrationList = () => {
       return {
         Facility: facility?.facility_name || 'N/A',
         Woreda: facility?.woreda_name || 'N/A',
-        Zone: facility?.zone_name || 'N/A',
-        Region: facility?.region_name || 'N/A',
         CustomerType: cust.customer_type,
+        'Registered Date': formatDate(cust.started_at),
+        'Delegate Person': cust.delegate || 'N/A',
+        'Delegate Phone': cust.delegate_phone || 'N/A',
         CompletedAt: cust.completed_at || '',
         Waiting: formatWaitingTime(waitingHours),
         ServicePoint: cust.next_service_point || 'N/A',
@@ -143,42 +180,56 @@ const CustomerRegistrationList = () => {
     XLSX.writeFile(workbook, "Customer_Registration_List.xlsx");
   };
 
+  // Define table columns with shortened labels for a cleaner look
+  const columns = [
+    { id: 'facility', label: 'Facility' },
+    { id: 'woreda', label: 'Woreda' },
+    { id: 'registered_date', label: 'Reg. Date' },
+    { id: 'delegate', label: 'Delegate' },
+    { id: 'delegate_phone', label: 'Delegate Phone' },
+    { id: 'customer_type', label: 'Type' },
+    { id: 'waiting_hours', label: 'Wait Time', align: 'right' },
+    { id: 'next_service_point', label: 'Service Point' },
+    { id: 'status', label: 'Status' },
+  ];
+  
   return (
-    // Slide in the entire page content
     <Slide direction="right" in={true} mountOnEnter unmountOnExit timeout={500}>
       <Box sx={{ p: 4, backgroundColor: theme.palette.background.default, minHeight: '100vh' }}>
         <Box sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 4, // More space below header
-          pb: 2, // Padding at bottom of header box
-          borderBottom: `2px solid ${alpha(theme.palette.primary.light, 0.4)}`, // A vibrant underline
+          mb: 4,
+          pb: 2,
+          borderBottom: `2px solid ${alpha(theme.palette.primary.light, 0.4)}`,
         }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}> {/* Increased gap */}
-            <PeopleIcon color="primary" sx={{ fontSize: 50 }} /> {/* Larger icon */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <PeopleIcon color="primary" sx={{ fontSize: 50 }} />
             <Typography variant="h4" color="text.primary">
               Registered Customers
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={exportToExcel}
-            startIcon={<FileDownloadIcon />} 
-            sx={{
-              px: 4, // More horizontal padding
-              py: 1.5, // More vertical padding
-              boxShadow: theme.shadows[6], // Stronger default shadow
-              '&:hover': {
-                boxShadow: theme.shadows[10], // Even stronger on hover
-                transform: 'translateY(-3px) scale(1.02)', // More pronounced lift and slight scale
-                transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out', // Smoother transition
-              },
-            }}
-          >
-            Export to Excel
-          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={exportToExcel}
+              startIcon={<FileDownloadIcon />}
+              sx={{
+                px: 4,
+                py: 1.5,
+                boxShadow: theme.shadows[6],
+                '&:hover': {
+                  boxShadow: theme.shadows[10],
+                  transform: 'translateY(-3px) scale(1.02)',
+                  transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out',
+                },
+              }}
+            >
+              Export to Excel
+            </Button>
+          </Box>
         </Box>
 
         {loading ? (
@@ -189,24 +240,29 @@ const CustomerRegistrationList = () => {
           </Fade>
         ) : (
           <Zoom in={!loading} timeout={600}>
-            <TableContainer component={Paper} elevation={8} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-              <Table stickyHeader aria-label="customer registration table">
+            <TableContainer component={Paper} elevation={8} sx={{ borderRadius: 3, overflowX: 'auto' }}>
+              <Table
+                stickyHeader
+                aria-label="customer registration table"
+              >
                 <TableHead>
                   <TableRow>
-                    {[
-                      { id: 'facility', label: 'Facility' },
-                      { id: 'woreda', label: 'Woreda' },
-                      { id: 'zone', label: 'Zone' },
-                      { id: 'region', label: 'Region' },
-                      { id: 'customer_type', label: 'Customer Type' },
-                      { id: 'waiting_hours', label: 'Waiting Time', align: 'right' },
-                      { id: 'next_service_point', label: 'Current Service Point' },
-                      { id: 'status', label: 'Process Status' },
-                    ].map((headCell) => (
+                    {columns.map((headCell) => (
                       <TableCell
                         key={headCell.id}
                         align={headCell.align || 'left'}
                         sortDirection={orderBy === headCell.id ? order : false}
+                        sx={{
+                          fontSize: '0.8rem',
+                          // Prevent word wrapping for a cleaner header
+                          whiteSpace: 'nowrap',
+                          fontWeight: 'bold',
+                          // Set a minimum width for important columns to prevent squishing
+                          minWidth: 
+                            headCell.id === 'delegate' ? '120px' :
+                            headCell.id === 'delegate_phone' ? '120px' :
+                            headCell.id === 'status' ? '150px' : '100px',
+                        }}
                       >
                         <TableSortLabel
                           active={orderBy === headCell.id}
@@ -224,7 +280,7 @@ const CustomerRegistrationList = () => {
                 <TableBody>
                   {paginatedCustomers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} sx={{ textAlign: 'center', py: 5, color: theme.palette.text.secondary }}>
+                      <TableCell colSpan={9} sx={{ textAlign: 'center', py: 5, color: theme.palette.text.secondary }}>
                         <Typography variant="h6" sx={{ mb: 1 }}>No customer registrations found.</Typography>
                         <Typography variant="body2">Try refreshing or check your filters.</Typography>
                       </TableCell>
@@ -252,7 +308,6 @@ const CustomerRegistrationList = () => {
                         statusChipColor = 'info';
                       }
 
-
                       return (
                         <TableRow
                           key={i}
@@ -261,7 +316,7 @@ const CustomerRegistrationList = () => {
                               backgroundColor: alpha(theme.palette.background.paper, 0.9),
                             },
                             '&:nth-of-type(even)': {
-                                backgroundColor: theme.palette.background.paper,
+                              backgroundColor: theme.palette.background.paper,
                             },
                             '&:hover': {
                               backgroundColor: alpha(theme.palette.primary.light, 0.1) + ' !important',
@@ -271,22 +326,47 @@ const CustomerRegistrationList = () => {
                             borderBottom: `1px solid ${theme.palette.divider}`,
                           }}
                         >
-                          <TableCell>{facility?.facility_name || 'N/A'}</TableCell>
-                          <TableCell>{facility?.woreda_name || 'N/A'}</TableCell>
-                          <TableCell>{facility?.zone_name || 'N/A'}</TableCell>
-                          <TableCell>{facility?.region_name || 'N/A'}</TableCell>
-                          <TableCell>{cust.customer_type || 'N/A'}</TableCell>
-                          <TableCell align="right">{formatWaitingTime(waitingHours)}</TableCell>
-                          <TableCell>{cust.next_service_point || 'N/A'}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={isInProgress ? 'IN PROGRESS' : (cust.status || 'N/A').toUpperCase()}
-                              size="small"
-                              color={statusChipColor}
-                              variant={statusChipVariant}
-                              sx={{ minWidth: 100 }}
-                            />
-                          </TableCell>
+                          {columns.map((column) => (
+                            <TableCell
+                              key={column.id}
+                              align={column.align || 'left'}
+                              sx={{
+                                fontSize: '0.8rem',
+                                whiteSpace: 'normal',
+                                wordBreak: 'break-word',
+                                minWidth: 
+                                  column.id === 'delegate' ? '120px' :
+                                  column.id === 'delegate_phone' ? '120px' :
+                                  column.id === 'status' ? '150px' : '100px',
+                              }}
+                            >
+                              {column.id === 'facility' && (facility?.facility_name || 'N/A')}
+                              {column.id === 'woreda' && (facility?.woreda_name || 'N/A')}
+                              {column.id === 'registered_date' && formatDate(cust.started_at)}
+                              {column.id === 'delegate' && (cust.delegate || 'N/A')}
+                              {column.id === 'delegate_phone' && (cust.delegate_phone || 'N/A')}
+                              {column.id === 'customer_type' && (cust.customer_type || 'N/A')}
+                              {column.id === 'waiting_hours' && formatWaitingTime(waitingHours)}
+                              {column.id === 'next_service_point' && (cust.next_service_point || 'N/A')}
+                              {column.id === 'status' && (
+                                <Chip
+                                  label={isInProgress ? 'IN PROGRESS' : (cust.status || 'N/A').toUpperCase()}
+                                  size="small"
+                                  color={statusChipColor}
+                                  variant={statusChipVariant}
+                                  sx={{
+                                    whiteSpace: 'normal',
+                                    height: 'auto',
+                                    '& .MuiChip-label': {
+                                      fontSize: '0.6rem',
+                                      whiteSpace: 'normal',
+                                      wordBreak: 'break-word',
+                                    }
+                                  }}
+                                />
+                              )}
+                            </TableCell>
+                          ))}
                         </TableRow>
                       );
                     })

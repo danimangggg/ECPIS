@@ -47,6 +47,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
     },
+     outbound_delivery_number: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     tableName: 'customer_queue',
     timestamps: false,

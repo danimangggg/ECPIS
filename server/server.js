@@ -21,6 +21,6 @@ db.sequelize.sync().then(() => {
 
 
 let port = "3001";
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, 'localhost', () => {
   console.log(`Running at localhost:${port}`);
 });

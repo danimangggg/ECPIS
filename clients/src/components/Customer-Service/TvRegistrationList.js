@@ -186,7 +186,7 @@ const CustomerRegistrationList = () => {
     const lowerStatus = status?.toLowerCase();
     if (lowerStatus === 'started') {
       return 'Waiting';
-    } else if (lowerStatus === 'notifying') {
+    } else if (lowerStatus === 'o2c notifying') {
       return 'Calling';
     } else if (lowerStatus === 'o2c_started') {
       return 'In Progress';
@@ -201,7 +201,7 @@ const CustomerRegistrationList = () => {
       const status = cust.status?.toLowerCase();
       const nextServicePoint = cust.next_service_point?.toLowerCase();
       return (
-        (status === 'started' || status === 'notifying' || status === 'o2c_started') &&
+        (status === 'started' || status === 'o2c notifying' || status === 'o2c_started') &&
         nextServicePoint === 'o2c' &&
         dayjs(cust.started_at).isAfter(today)
       );
@@ -220,7 +220,7 @@ const CustomerRegistrationList = () => {
     const now = Date.now();
 
     const currentNotifyingCustomers = filteredCustomers.filter(
-      c => c.status?.toLowerCase() === 'notifying'
+      c => c.status?.toLowerCase() === 'o2c notifying'
     );
     const currentNotifyingIds = new Set(currentNotifyingCustomers.map(c => c.id));
 
@@ -327,7 +327,7 @@ const CustomerRegistrationList = () => {
           >
             {[...filteredCustomers, ...filteredCustomers].map((cust, index) => {
               const facility = getFacility(cust.facility_id);
-              const isNotifying = cust.status?.toLowerCase() === 'notifying';
+              const isNotifying = cust.status?.toLowerCase() === 'o2c notifying';
 
               return (
                 <Box
