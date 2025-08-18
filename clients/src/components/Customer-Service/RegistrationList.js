@@ -19,18 +19,24 @@ import {
   Zoom,
   useTheme,
   alpha,
+  TextField,
+  MenuItem,
 } from '@mui/material';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import * as XLSX from 'xlsx';
+import isBetween from 'dayjs/plugin/isBetween';
 import PeopleIcon from '@mui/icons-material/People';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+
+// Load XLSX library from CDN to resolve compilation issues in the environment
+const XLSX_SCRIPT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 
 // Extend dayjs with the necessary plugins
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
+dayjs.extend(isBetween);
 
 const CustomerRegistrationList = () => {
   const [customers, setCustomers] = useState([]);
@@ -47,8 +53,38 @@ const CustomerRegistrationList = () => {
   // The environment variable for the API URL
   const api_url = process.env.REACT_APP_API_URL;
 
+  // Use a state to track when the XLSX library is loaded
+  const [xlsxLoaded, setXlsxLoaded] = useState(false);
+
+  // State for date filters
+  const [filterByDay, setFilterByDay] = useState('all');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+
+  // Load the XLSX library from CDN
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = XLSX_SCRIPT_URL;
+    script.onload = () => {
+      setXlsxLoaded(true);
+      console.log('XLSX library loaded successfully.');
+    };
+    script.onerror = () => {
+      console.error('Failed to load XLSX script.');
+      // Handle the error gracefully, maybe show a message to the user
+    };
+    document.head.appendChild(script);
+
+    // Cleanup script on component unmount
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+
   // Fetch data from the APIs on component mount
   useEffect(() => {
+    // Only fetch data if the component is ready
     const fetchAllData = async () => {
       setLoading(true);
       try {
@@ -113,8 +149,53 @@ const CustomerRegistrationList = () => {
     return localDate.format('YYYY-MM-DD hh:mm A');
   };
 
+  // Filter customers based on the selected date range
+  const filteredCustomers = customers.filter(customer => {
+    const registeredDate = dayjs.utc(customer.started_at);
+    if (!registeredDate.isValid()) {
+      return false;
+    }
+
+    // Define UTC-based reference dates
+    const todayUtc = dayjs.utc().startOf('day');
+    const last7DaysUtc = todayUtc.subtract(7, 'day');
+    const thisMonthUtc = todayUtc.startOf('month');
+    const lastMonthUtc = thisMonthUtc.subtract(1, 'month');
+
+    switch (filterByDay) {
+      case 'today':
+        if (!registeredDate.isSame(todayUtc, 'day')) return false;
+        break;
+      case 'last7days':
+        // Check if registered date is within the last 7 days (including today)
+        if (!registeredDate.isBetween(last7DaysUtc, todayUtc, 'day', '[]')) return false;
+        break;
+      case 'thismonth':
+        if (!registeredDate.isSame(thisMonthUtc, 'month')) return false;
+        break;
+      case 'lastmonth':
+        if (!registeredDate.isSame(lastMonthUtc, 'month')) return false;
+        break;
+      default:
+        // No pre-defined filter, so check custom range
+        break;
+    }
+
+    // Handle custom date range if "filter by day" is 'all' or not selected
+    if (filterStartDate) {
+      const start = dayjs.utc(filterStartDate).startOf('day');
+      if (registeredDate.isBefore(start)) return false;
+    }
+    if (filterEndDate) {
+      const end = dayjs.utc(filterEndDate).endOf('day');
+      if (registeredDate.isAfter(end)) return false;
+    }
+
+    return true;
+  });
+
   // Sort customers based on the selected column and order
-  const sortedCustomers = [...customers].sort((a, b) => {
+  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
     const getValue = (cust, key) => {
       const facility = getFacility(cust.facility_id);
       switch (key) {
@@ -158,6 +239,13 @@ const CustomerRegistrationList = () => {
 
   // Function to export table data to an Excel file
   const exportToExcel = () => {
+    // Check if the XLSX library is loaded before attempting to use it
+    if (typeof window.XLSX === 'undefined') {
+        console.error('XLSX library not loaded yet.');
+        // Optionally, show a message to the user that the library is still loading
+        return;
+    }
+
     const data = customers.map((cust) => {
       const facility = getFacility(cust.facility_id);
       const waitingHours = calculateWaitingHours(cust.started_at, cust.completed_at, cust.status);
@@ -174,14 +262,15 @@ const CustomerRegistrationList = () => {
         ProcessStatus: cust.status?.toLowerCase() === 'started' ? 'In Progress' : (cust.status || 'N/A'),
       };
     });
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
-    XLSX.writeFile(workbook, "Customer_Registration_List.xlsx");
+    const worksheet = window.XLSX.utils.json_to_sheet(data);
+    const workbook = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+    window.XLSX.writeFile(workbook, "Customer_Registration_List.xlsx");
   };
 
   // Define table columns with shortened labels for a cleaner look
   const columns = [
+    { id: 'serial', label: 'No.' },
     { id: 'facility', label: 'Facility' },
     { id: 'woreda', label: 'Woreda' },
     { id: 'registered_date', label: 'Reg. Date' },
@@ -203,6 +292,8 @@ const CustomerRegistrationList = () => {
           mb: 4,
           pb: 2,
           borderBottom: `2px solid ${alpha(theme.palette.primary.light, 0.4)}`,
+          flexWrap: 'wrap', // Allow wrapping on small screens
+          gap: 2,
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <PeopleIcon color="primary" sx={{ fontSize: 50 }} />
@@ -210,12 +301,54 @@ const CustomerRegistrationList = () => {
               Registered Customers
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <TextField
+              select
+              size="small"
+              label="Filter by Day"
+              value={filterByDay}
+              onChange={(e) => {
+                setFilterByDay(e.target.value);
+                setFilterStartDate('');
+                setFilterEndDate('');
+              }}
+              sx={{ minWidth: 150 }}
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="today">Today</MenuItem>
+              <MenuItem value="last7days">Last 7 Days</MenuItem>
+              <MenuItem value="thismonth">This Month</MenuItem>
+              <MenuItem value="lastmonth">Last Month</MenuItem>
+            </TextField>
+            <TextField
+              size="small"
+              label="Start Date"
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => {
+                setFilterStartDate(e.target.value);
+                setFilterByDay('all');
+              }}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              size="small"
+              label="End Date"
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => {
+                setFilterEndDate(e.target.value);
+                setFilterByDay('all');
+              }}
+              InputLabelProps={{ shrink: true }}
+            />
             <Button
               variant="contained"
               color="primary"
               onClick={exportToExcel}
               startIcon={<FileDownloadIcon />}
+              // Disable the button until the XLSX library is loaded
+              disabled={!xlsxLoaded}
               sx={{
                 px: 4,
                 py: 1.5,
@@ -224,7 +357,7 @@ const CustomerRegistrationList = () => {
                   boxShadow: theme.shadows[10],
                   transform: 'translateY(-3px) scale(1.02)',
                   transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out',
-                },
+              },
               }}
             >
               Export to Excel
@@ -240,10 +373,11 @@ const CustomerRegistrationList = () => {
           </Fade>
         ) : (
           <Zoom in={!loading} timeout={600}>
-            <TableContainer component={Paper} elevation={8} sx={{ borderRadius: 3, overflowX: 'auto' }}>
+            <TableContainer component={Paper} elevation={8} sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <Table
                 stickyHeader
                 aria-label="customer registration table"
+                sx={{ minWidth: 650 }}
               >
                 <TableHead>
                   <TableRow>
@@ -254,24 +388,21 @@ const CustomerRegistrationList = () => {
                         sortDirection={orderBy === headCell.id ? order : false}
                         sx={{
                           fontSize: '0.8rem',
-                          // Prevent word wrapping for a cleaner header
-                          whiteSpace: 'nowrap',
                           fontWeight: 'bold',
-                          // Set a minimum width for important columns to prevent squishing
-                          minWidth: 
-                            headCell.id === 'delegate' ? '120px' :
-                            headCell.id === 'delegate_phone' ? '120px' :
-                            headCell.id === 'status' ? '150px' : '100px',
                         }}
                       >
-                        <TableSortLabel
-                          active={orderBy === headCell.id}
-                          direction={orderBy === headCell.id ? order : 'asc'}
-                          onClick={() => handleRequestSort(headCell.id)}
-                          sx={{ '&.Mui-active': { color: theme.palette.primary.main } }}
-                        >
-                          {headCell.label}
-                        </TableSortLabel>
+                        {headCell.id === 'serial' ? (
+                          headCell.label
+                        ) : (
+                          <TableSortLabel
+                            active={orderBy === headCell.id}
+                            direction={orderBy === headCell.id ? order : 'asc'}
+                            onClick={() => handleRequestSort(headCell.id)}
+                            sx={{ '&.Mui-active': { color: theme.palette.primary.main } }}
+                          >
+                            {headCell.label}
+                          </TableSortLabel>
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -280,9 +411,9 @@ const CustomerRegistrationList = () => {
                 <TableBody>
                   {paginatedCustomers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} sx={{ textAlign: 'center', py: 5, color: theme.palette.text.secondary }}>
+                      <TableCell colSpan={10} sx={{ textAlign: 'center', py: 5, color: theme.palette.text.secondary }}>
                         <Typography variant="h6" sx={{ mb: 1 }}>No customer registrations found.</Typography>
-                        <Typography variant="body2">Try refreshing or check your filters.</Typography>
+                        <Typography variant="body2">Try adjusting your filters.</Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -294,18 +425,19 @@ const CustomerRegistrationList = () => {
                       const isOverdue = waitingHours > 24 && !isCompleted;
 
                       let statusChipColor = 'default';
-                      let statusChipVariant = 'outlined';
+                      let statusChipLabel = 'N/A';
                       if (isCompleted) {
                         statusChipColor = 'success';
-                        statusChipVariant = 'filled';
+                        statusChipLabel = 'COMPLETED';
                       } else if (isInProgress) {
                         statusChipColor = 'warning';
-                        statusChipVariant = 'outlined';
+                        statusChipLabel = 'IN PROGRESS';
                       } else if (isOverdue) {
                         statusChipColor = 'error';
-                        statusChipVariant = 'filled';
+                        statusChipLabel = 'OVERDUE';
                       } else {
                         statusChipColor = 'info';
+                        statusChipLabel = 'PENDING';
                       }
 
                       return (
@@ -334,12 +466,9 @@ const CustomerRegistrationList = () => {
                                 fontSize: '0.8rem',
                                 whiteSpace: 'normal',
                                 wordBreak: 'break-word',
-                                minWidth: 
-                                  column.id === 'delegate' ? '120px' :
-                                  column.id === 'delegate_phone' ? '120px' :
-                                  column.id === 'status' ? '150px' : '100px',
                               }}
                             >
+                              {column.id === 'serial' && (i + 1 + page * rowsPerPage)}
                               {column.id === 'facility' && (facility?.facility_name || 'N/A')}
                               {column.id === 'woreda' && (facility?.woreda_name || 'N/A')}
                               {column.id === 'registered_date' && formatDate(cust.started_at)}
@@ -350,18 +479,14 @@ const CustomerRegistrationList = () => {
                               {column.id === 'next_service_point' && (cust.next_service_point || 'N/A')}
                               {column.id === 'status' && (
                                 <Chip
-                                  label={isInProgress ? 'IN PROGRESS' : (cust.status || 'N/A').toUpperCase()}
+                                  label={statusChipLabel}
                                   size="small"
                                   color={statusChipColor}
-                                  variant={statusChipVariant}
+                                  variant="filled"
                                   sx={{
-                                    whiteSpace: 'normal',
                                     height: 'auto',
-                                    '& .MuiChip-label': {
-                                      fontSize: '0.6rem',
-                                      whiteSpace: 'normal',
-                                      wordBreak: 'break-word',
-                                    }
+                                    whiteSpace: 'nowrap',
+                                    p: 0.5
                                   }}
                                 />
                               )}
@@ -376,7 +501,7 @@ const CustomerRegistrationList = () => {
 
               <TablePagination
                 component="div"
-                count={customers.length}
+                count={filteredCustomers.length}
                 page={page}
                 onPageChange={(e, newPage) => setPage(newPage)}
                 rowsPerPage={rowsPerPage}

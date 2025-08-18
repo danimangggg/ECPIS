@@ -7,9 +7,18 @@ import {
   Typography,
   Grid,
   Paper,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
+dayjs.extend(timezone);
 
 const api_url = process.env.REACT_APP_API_URL;
 
@@ -29,12 +38,19 @@ const RegisterCustomer = () => {
   const [selectedOfficer, setSelectedOfficer] = useState('');
   const [firstServicePoint, setFirstServicePoint] = useState('');
   const [nextServicePoint, setNextServicePoint] = useState('');
-  const [startedAt, setStartedAt] = useState('');
+
+  // Initializing with the current date and time in the user's local time zone
+  const [startedAt, setStartedAt] = useState(dayjs().tz(dayjs.tz.guess()).format('YYYY-MM-DDTHH:mm'));
 
   // NEW fields
   const [delegate, setDelegate] = useState('');
   const [delegatePhone, setDelegatePhone] = useState('');
   const [letterNumber, setLetterNumber] = useState('');
+
+  // State for Snackbar notifications
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   /* ---------------- fetch cascade data ---------------- */
   useEffect(() => {
@@ -81,7 +97,12 @@ const RegisterCustomer = () => {
     axios
       .get(`${api_url}/api/get-employee`)
       .then(res => setOfficers(res.data))
-      .catch(err => console.error('Failed to fetch officers:', err));
+      .catch(err => {
+        console.error('Failed to fetch officers:', err);
+        setSnackbarMessage('Failed to load employee data.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      });
   }, []);
 
   /* ---------------- customer‑type‑driven logic ---------------- */
@@ -104,11 +125,18 @@ const RegisterCustomer = () => {
     }
   }, [customerType, officers]);
 
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   /* ---------------- submit ---------------- */
   const handleSubmit = () => {
-    const now = new Date().toISOString();
-    setStartedAt(now);
-
+    // Take the time exactly as it appears in the date picker, and add the timezone offset
+    const formattedStartedAt = dayjs(startedAt).format('YYYY-MM-DD HH:mm:ssZ');
+    
     const payload = {
       facility_id: selectedFacility,
       customer_type: customerType,
@@ -116,21 +144,19 @@ const RegisterCustomer = () => {
       next_service_point: nextServicePoint,
       assigned_officer_id: customerType === 'Cash' ? selectedOfficer : null,
       status: 'started',
-      started_at: now,
+      started_at: formattedStartedAt,
       delegate: delegate,
       delegate_phone: delegatePhone,
       letter_number: letterNumber,
     };
 
     axios.post(`${api_url}/api/customer-queue`, payload).then(() => {
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'Customer registered and sent to service point.',
-        confirmButtonColor: '#1976d2',
-      });
+      // Show success message using Snackbar
+      setSnackbarMessage('Customer registered and sent to service point.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
 
-      // reset
+      // reset all fields
       setSelectedRegion('');
       setSelectedZone('');
       setSelectedWoreda('');
@@ -142,6 +168,13 @@ const RegisterCustomer = () => {
       setDelegate('');
       setDelegatePhone('');
       setLetterNumber('');
+      setStartedAt(dayjs().tz(dayjs.tz.guess()).format('YYYY-MM-DDTHH:mm')); // Reset to current local time
+    }).catch(err => {
+      // Show error message using Snackbar
+      console.error('Registration failed:', err);
+      setSnackbarMessage('Registration failed. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     });
   };
 
@@ -160,7 +193,6 @@ const RegisterCustomer = () => {
           Register Customer
         </Typography>
 
-        {/* All fields exactly as before – now with responsive two‑column layout */}
         <Grid container spacing={2}>
           {/* Region / Zone */}
           <Grid item xs={12} md={6}>
@@ -226,8 +258,20 @@ const RegisterCustomer = () => {
             </TextField>
           </Grid>
 
+          {/* New Date and Time Picker */}
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Registration Date"
+              type="datetime-local"
+              value={startedAt}
+              onChange={e => setStartedAt(e.target.value)}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </Grid>
           
-
           {/* Delegate / Delegate Phone */}
           <Grid item xs={12} md={6}>
             <TextField
@@ -304,6 +348,18 @@ const RegisterCustomer = () => {
           </Grid>
         </Grid>
       </Paper>
+      
+      {/* Snackbar for showing success/error messages */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
