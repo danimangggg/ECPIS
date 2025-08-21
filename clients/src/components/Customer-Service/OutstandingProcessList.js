@@ -14,7 +14,7 @@ const OutstandingCustomers = () => {
 
     const jobTitle = localStorage.getItem("JobTitle");
     const userId = localStorage.getItem("UserId");
-    const userStore = localStorage.getItem("store"); 
+    const userStore = localStorage.getItem("store");
     const normalizedUserStore = (userStore || '').toUpperCase();
 
     const api_url = process.env.REACT_APP_API_URL;
@@ -103,22 +103,8 @@ const OutstandingCustomers = () => {
             next_service_point: (nextServicePoint !== undefined) ? nextServicePoint : customer.next_service_point,
             assigned_officer_id: assignedOfficerId !== undefined ? assignedOfficerId : customer.assigned_officer_id,
             completed_at: (completedAt !== undefined) ? completedAt : customer.completed_at,
-            // Keep existing ODN and store data unless updated
-            aa1_odn: customer.aa1_odn,
-            aa2_odn: customer.aa2_odn,
-            aa3_odn: customer.aa3_odn,
-            store_id_1: customer.store_id_1,
-            store_id_2: customer.store_id_2,
-            store_id_3: customer.store_id_3,
-            store_completed_1: customer.store_completed_1,
-            store_completed_2: customer.store_completed_2,
-            store_completed_3: customer.store_completed_3,
+            ...data // Spread the additional data
         };
-
-        if (data !== undefined) {
-            // Merge new data from the `handleComplete` or `handleReturn` functions
-            Object.assign(payload, data);
-        }
 
         try {
             await axios.put(`${api_url}/api/update-service-point`, payload);
@@ -133,17 +119,41 @@ const OutstandingCustomers = () => {
     };
 
     const completeStoreTask = async (customer) => {
-        const completionData = {};
+        const completionData = {
+            id: customer.id,
+            next_service_point: customer.next_service_point,
+            assigned_officer_id: customer.assigned_officer_id,
+            status: customer.status,
+            completed_at: customer.completed_at,
+            aa1_odn: customer.aa1_odn,
+            aa2_odn: customer.aa2_odn,
+            aa3_odn: customer.aa3_odn,
+            store_id_1: customer.store_id_1,
+            store_id_2: customer.store_id_2,
+            store_id_3: customer.store_id_3,
+            store_completed_1: customer.store_completed_1,
+            store_completed_2: customer.store_completed_2,
+            store_completed_3: customer.store_completed_3,
+        };
 
-        if (normalizedUserStore === 'AA1') completionData.store_completed_1 = true;
-        if (normalizedUserStore === 'AA2') completionData.store_completed_2 = true;
-        if (normalizedUserStore === 'AA3') completionData.store_completed_3 = true;
-
-        const payload = { id: customer.id, ...completionData };
+        if (normalizedUserStore === 'AA1') {
+            completionData.store_completed_1 = 'true';
+        } else if (normalizedUserStore === 'AA2') {
+            completionData.store_completed_2 = 'true';
+        } else if (normalizedUserStore === 'AA3') {
+            completionData.store_completed_3 = 'true';
+        }
 
         try {
-            const res = await axios.put(`${api_url}/api/complete-ewm-task`, payload);
-            if (res.data.status === 'Completed') {
+            await axios.put(`${api_url}/api/update-service-point`, completionData);
+
+            const customerAfterUpdate = (await axios.get(`${api_url}/api/serviceList`)).data.find(c => c.id === customer.id);
+            const allStoresCompleted = (customerAfterUpdate.store_id_1 ? customerAfterUpdate.store_completed_1 === 'true' : true) &&
+                (customerAfterUpdate.store_id_2 ? customerAfterUpdate.store_completed_2 === 'true' : true) &&
+                (customerAfterUpdate.store_id_3 ? customerAfterUpdate.store_completed_3 === 'true' : true);
+
+            if (allStoresCompleted) {
+                await updateServiceStatus(customerAfterUpdate, 'Completed', null, null, null, new Date().toISOString());
                 Swal.fire('Completed!', 'You and all assigned stores have completed this task. Service is complete.', 'success');
             } else {
                 Swal.fire('Completed!', 'You have completed your part. Waiting for other stores to complete their tasks.', 'success');
@@ -239,21 +249,6 @@ const OutstandingCustomers = () => {
     };
 
     const handleComplete = async (customer) => {
-        const getOutstandingTaskCounts = () => {
-            const counts = {};
-            employees.forEach(emp => {
-                const o2cTasks = customers.filter(c => String(c.assigned_officer_id) === String(emp.id) && c.next_service_point?.toLowerCase() === 'o2c');
-                const storeTasks = customers.filter(c => (
-                    c.next_service_point?.toLowerCase() === 'ewm' &&
-                    (c.aa1_odn || c.aa2_odn || c.aa3_odn)
-                ));
-                counts[emp.id] = o2cTasks.length + storeTasks.length;
-            });
-            return counts;
-        };
-
-        const outstandingCounts = getOutstandingTaskCounts();
-
         if (jobTitle === 'O2C Officer') {
             const { value: selectedRole, isConfirmed } = await Swal.fire({
                 title: 'Complete Service',
@@ -294,9 +289,6 @@ const OutstandingCustomers = () => {
                         if (a1 && a1.checked) picks.push('AA1');
                         if (a2 && a2.checked) picks.push('AA2');
                         if (a3 && a3.checked) picks.push('AA3');
-                        if (picks.length === 0) {
-                            Swal.showValidationMessage('You need to select at least one store.');
-                        }
                         return picks;
                     }
                 });
@@ -305,20 +297,12 @@ const OutstandingCustomers = () => {
                     Swal.fire('Cancelled', 'Store assignment cancelled.', 'info');
                     return;
                 }
-                
-                // Reset store IDs and ODNs
-                updateData = {
-                    aa1_odn: null,
-                    aa2_odn: null,
-                    aa3_odn: null,
-                    store_id_1: null,
-                    store_id_2: null,
-                    store_id_3: null,
-                    store_completed_1: false,
-                    store_completed_2: false,
-                    store_completed_3: false,
-                };
 
+                const storeToODN = {
+                    AA1: null,
+                    AA2: null,
+                    AA3: null,
+                };
                 for (const store of selectedStores) {
                     const { value: odn, isConfirmed: odnConfirmed } = await Swal.fire({
                         title: `Enter Outbound Delivery Number for ${store}`,
@@ -332,30 +316,35 @@ const OutstandingCustomers = () => {
                         Swal.fire('Cancelled', `ODN for ${store} not saved. Action cancelled.`, 'info');
                         return;
                     }
-                    
-                    if (store === 'AA1') {
-                        updateData.aa1_odn = odn;
-                        updateData.store_id_1 = 'AA1';
-                    }
-                    if (store === 'AA2') {
-                        updateData.aa2_odn = odn;
-                        updateData.store_id_2 = 'AA2';
-                    }
-                    if (store === 'AA3') {
-                        updateData.aa3_odn = odn;
-                        updateData.store_id_3 = 'AA3';
-                    }
+                    storeToODN[store] = odn;
                 }
+
+                updateData = {
+                    aa1_odn: storeToODN['AA1'],
+                    aa2_odn: storeToODN['AA2'],
+                    aa3_odn: storeToODN['AA3'],
+                    store_id_1: selectedStores.includes('AA1') ? 'AA1' : null,
+                    store_id_2: selectedStores.includes('AA2') ? 'AA2' : null,
+                    store_id_3: selectedStores.includes('AA3') ? 'AA3' : null,
+                    store_completed_1: selectedStores.includes('AA1') ? 'false' : 'true',
+                    store_completed_2: selectedStores.includes('AA2') ? 'false' : 'true',
+                    store_completed_3: selectedStores.includes('AA3') ? 'false' : 'true',
+                };
             } else {
-                updateData = {};
+                updateData = {
+                    aa1_odn: null, aa2_odn: null, aa3_odn: null,
+                    store_id_1: null, store_id_2: null, store_id_3: null,
+                    store_completed_1: 'true', store_completed_2: 'true', store_completed_3: 'true',
+                };
             }
 
             try {
+                // Here, we no longer set an assigned_officer_id for EWM
                 await updateServiceStatus(
                     customer,
                     newStatus,
                     null,
-                    undefined,
+                    undefined, // Assigned officer is not set here
                     nextServicePoint,
                     undefined,
                     updateData
@@ -472,7 +461,7 @@ const OutstandingCustomers = () => {
 
     const handleReturn = async (customer) => {
         if (jobTitle !== 'EWM Officer') return;
-        
+
         const getOutstandingTaskCounts = () => {
             const counts = {};
             employees.forEach(emp => {
@@ -486,10 +475,10 @@ const OutstandingCustomers = () => {
         };
 
         const outstandingCounts = getOutstandingTaskCounts();
-        const getUserSelectOptions = (role) => employees.filter((emp) => emp.jobTitle === role).reduce((acc, emp) => { 
+        const getUserSelectOptions = (role) => employees.filter((emp) => emp.jobTitle === role).reduce((acc, emp) => {
             const count = outstandingCounts[emp.id] || 0;
-            acc[emp.id] = `${emp.full_name} (${count})`; 
-            return acc; 
+            acc[emp.id] = `${emp.full_name} (${count})`;
+            return acc;
         }, {});
 
         let assignedOfficerIdForReturn = customer.assigned_officer_id;
@@ -509,7 +498,6 @@ const OutstandingCustomers = () => {
         }
 
         try {
-            // Clear EWM-specific data on return
             const resetData = {
                 aa1_odn: null,
                 aa2_odn: null,
@@ -517,9 +505,9 @@ const OutstandingCustomers = () => {
                 store_id_1: null,
                 store_id_2: null,
                 store_id_3: null,
-                store_completed_1: false,
-                store_completed_2: false,
-                store_completed_3: false,
+                store_completed_1: 'true',
+                store_completed_2: 'true',
+                store_completed_3: 'true',
             };
 
             await updateServiceStatus(
@@ -529,7 +517,7 @@ const OutstandingCustomers = () => {
                 assignedOfficerIdForReturn,
                 'O2C',
                 null,
-                resetData 
+                resetData
             );
             Swal.fire('Returned!', 'Customer returned to O2C.', 'success');
             fetchData();
@@ -563,7 +551,7 @@ const OutstandingCustomers = () => {
             "Customer Service Officer": "customer service", "EWM Officer": "ewm", "Finance": "finance"
         };
         const normalizedJobTitle = jobTitleToServicePointMap[jobTitle] || jobTitle.toLowerCase();
-        
+
         if (jobTitle === "EWM Officer") {
             const storeToCheck = normalizedUserStore.toLowerCase();
             const storeMapping = {
@@ -577,7 +565,7 @@ const OutstandingCustomers = () => {
                 return customers.filter(c =>
                     c.next_service_point?.toLowerCase() === normalizedJobTitle &&
                     c[storeProps.storeIdField] === normalizedUserStore &&
-                    !c[storeProps.completed]
+                    c[storeProps.completed] !== 'true'
                 );
             }
             return [];
@@ -738,7 +726,7 @@ const OutstandingCustomers = () => {
                                                 <Button
                                                     variant="contained"
                                                     color="success"
-                                                    onClick={() => handleComplete(customer)}
+                                                    onClick={() => completeStoreTask(customer)}
                                                 >
                                                     Complete Task
                                                 </Button>
