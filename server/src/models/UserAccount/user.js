@@ -24,6 +24,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       role: {
         type: DataTypes.STRING,
+      },
+      store: {
+        type: DataTypes.STRING,
       }
     });
   

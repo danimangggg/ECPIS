@@ -50,7 +50,40 @@ module.exports = (sequelize, DataTypes) => {
      outbound_delivery_number: {
       type: DataTypes.STRING,
       allowNull: true,
+    }, 
+    store_id_1: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }, store_id_2: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }, store_id_3: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }, 
+    store_completed_1: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    }, 
+   store_completed_2: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
     },
+     store_completed_3: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+  }, 
+  aa1_odn: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }, 
+   aa2_odn: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+     aa3_odn: {
+      type: DataTypes.STRING
+  },
   }, {
     tableName: 'customer_queue',
     timestamps: false,

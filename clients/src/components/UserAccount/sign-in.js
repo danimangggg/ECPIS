@@ -42,9 +42,14 @@ export default function SignIn() {
     try {
       if (formValidation()) {
         const response = await axios.post(`${api_url}/api/login`, { user_name, password });
+        
+        // VVVV THIS IS THE NEW DEBUGGING LINE VVVV
+        console.log("API Response Data:", response.data);
+        // ^^^^ END OF NEW LINE ^^^^
+
         const { token } = response.data;
 
-        // Save the token in localStorage (or cookie)
+        // Save the token and all user-related data to localStorage
         localStorage.setItem('token', token);
         localStorage.setItem("FullName", response.data.FullName);
         localStorage.setItem("AccountType", response.data.AccountType);
@@ -52,22 +57,26 @@ export default function SignIn() {
         localStorage.setItem("Position", response.data.Position);
         localStorage.setItem("JobTitle", response.data.JobTitle);
         localStorage.setItem("UserId", response.data.UserId);
+        localStorage.setItem("store", response.data.store);
+        
+        // Save the store ID to local storage, which will be used for filtering tasks
+        // This assumes the API response includes a 'store' field for the user
         
 
-        // Redirect to a protected route
-          if(response.data.AccountType === "Self Assesment" || response.data.AccountType === "Admin"){
-        if(response.data.Position === "Admin"){
-          navigate('/all-employee');
-        }else if(response.data.Position === "Officer"){
-          navigate(`/employee-detail/${response.data.UserId}`);
-        }else if(response.data.Position === "Coordinator"){
-          navigate('/all-employee');
-        }else if(response.data.Position === "Manager"){
-          navigate('/all-employee');
+        // Redirect to a protected route based on user roles
+        if(response.data.AccountType === "Self Assesment" || response.data.AccountType === "Admin"){
+          if(response.data.Position === "Admin"){
+            navigate('/all-employee');
+          } else if(response.data.Position === "Officer"){
+            navigate(`/employee-detail/${response.data.UserId}`);
+          } else if(response.data.Position === "Coordinator"){
+            navigate('/all-employee');
+          } else if(response.data.Position === "Manager"){
+            navigate('/all-employee');
+          }
+        } else if (response.data.AccountType === "Credit Manager" || response.data.AccountType === "Admin"){
+          navigate('/viewContract');
         }
-      }else if (response.data.AccountType === "Credit Manager" || response.data.AccountType === "Admin"){
-         navigate('/viewContract');
-      }
       }
     } catch (err) {
       toast.error('Invalid email or password.');
@@ -145,25 +154,25 @@ export default function SignIn() {
                 control={<Checkbox value="remember" color="primary" />}
                 label="Remember me"
               />
-             <Box 
-               sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                style={{
-                  borderRadius: 35,
-                  backgroundColor: "red",
-                  padding: "10px 20px",
-                  fontSize: "18px"
-                }}
-              >
-                Sign In
-              </Button>
+              <Box 
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  style={{
+                    borderRadius: 35,
+                    backgroundColor: "red",
+                    padding: "10px 20px",
+                    fontSize: "18px"
+                  }}
+                >
+                  Sign In
+                </Button>
               </Box>
               <ToastContainer />
             </Box>

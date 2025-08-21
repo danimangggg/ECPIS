@@ -3,86 +3,26 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, Typography, CircularProgress, Box, Snackbar
+    Button, Typography, CircularProgress, Box, Chip
 } from '@mui/material';
-import MuiAlert from '@mui/material/Alert';
-
-// Load Tone.js dynamically for audio notifications
-const Tone = window.Tone;
-if (!Tone) {
-    const script = document.createElement('script');
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js";
-    document.head.appendChild(script);
-}
 
 const OutstandingCustomers = () => {
     const [customers, setCustomers] = useState([]);
     const [facilities, setFacilities] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [notificationOpen, setNotificationOpen] = useState(false);
-    const [isNotifying, setIsNotifying] = useState(false);
-    const [previousOutstandingCount, setPreviousOutstandingCount] = useState(0);
 
     const jobTitle = localStorage.getItem("JobTitle");
     const userId = localStorage.getItem("UserId");
+    const userStore = localStorage.getItem("store"); 
+    const normalizedUserStore = (userStore || '').toUpperCase();
 
-    // API URL with a fallback for development
-    const api_url = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-
-    // State to manage a persistent sound player for the alarm
-    const [player, setPlayer] = useState(null);
-    useEffect(() => {
-        if (Tone) {
-            const p = new Tone.Player({
-                url: "https://tonejs.github.io/audio/berlin/3.mp3",
-                loop: true,
-                fadeOut: "4n",
-            }).toDestination();
-            setPlayer(p);
-        }
-    }, []);
-
-    // Effect to control the audio player and notification snackbar
-    useEffect(() => {
-        if (isNotifying) {
-            if (player) {
-                // Ensure audio context is started
-                Tone.start();
-                player.start();
-                setNotificationOpen(true);
-            }
-        } else {
-            if (player && player.state === 'started') {
-                player.stop();
-            }
-        }
-        // Cleanup function to stop audio on component unmount
-        return () => {
-            if (player) {
-                player.stop();
-            }
-        };
-    }, [isNotifying, player]);
+    const api_url = process.env.REACT_APP_API_URL;
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const customerRes = await axios.get(`${api_url}/api/serviceList`);
-            const filteredData = customerRes.data.filter(c =>
-                (String(c.assigned_officer_id) === String(userId) && c.status !== 'o2c_completed' && c.status !== 'complete') ||
-                (jobTitle === 'Manager' && c.next_service_point?.toLowerCase() === 'manager' && c.status?.toLowerCase() !== 'rejected' && c.status?.toLowerCase() !== 'approved') ||
-                (c.next_service_point?.toLowerCase() === jobTitle.toLowerCase() && c.status?.toLowerCase() !== 'complete')
-            );
-            const currentOutstandingCount = filteredData.length;
-
-            // Fix for notification logic: trigger notification if the number of tasks increases.
-            if (currentOutstandingCount > previousOutstandingCount) {
-                setIsNotifying(true);
-            } else {
-                setIsNotifying(false);
-            }
-            setPreviousOutstandingCount(currentOutstandingCount);
             setCustomers(customerRes.data);
         } catch (error) {
             console.error("Error fetching customer data:", error.response ? error.response.data : error.message);
@@ -109,9 +49,9 @@ const OutstandingCustomers = () => {
     useEffect(() => {
         fetchStaticData();
         fetchData();
-        const interval = setInterval(fetchData, 30000); // Poll for new data every 30 seconds
+        const interval = setInterval(fetchData, 30000);
         return () => clearInterval(interval);
-    }, [jobTitle, userId, api_url]);
+    }, []);
 
     const getFacilityDetails = (facilityId) => {
         const facility = facilities.find(f => f.id === facilityId);
@@ -140,30 +80,49 @@ const OutstandingCustomers = () => {
         return matched?.full_name || 'N/A';
     };
 
-    const updateServiceStatus = async (customer, newStatus, startedAt = null, assignedOfficerId = null, nextServicePoint = null, completedAt = null, outboundDeliveryNumber = null) => {
+    const getAssignedStoreNames = (customer) => {
+        const assignedStores = [];
+        if (customer.store_id_1) assignedStores.push(customer.store_id_1);
+        if (customer.store_id_2) assignedStores.push(customer.store_id_2);
+        if (customer.store_id_3) assignedStores.push(customer.store_id_3);
+        return assignedStores.join(', ');
+    };
+
+    const getStoreODN = (customer) => {
+        if (normalizedUserStore === 'AA1') return customer.aa1_odn || 'N/A';
+        if (normalizedUserStore === 'AA2') return customer.aa2_odn || 'N/A';
+        if (normalizedUserStore === 'AA3') return customer.aa3_odn || 'N/A';
+        return 'N/A';
+    };
+
+    const updateServiceStatus = async (customer, newStatus, startedAt = null, assignedOfficerId = undefined, nextServicePoint = undefined, completedAt = undefined, data = undefined) => {
+        const payload = {
+            id: customer.id,
+            status: newStatus,
+            started_at: (startedAt !== null) ? startedAt : customer.started_at,
+            next_service_point: (nextServicePoint !== undefined) ? nextServicePoint : customer.next_service_point,
+            assigned_officer_id: assignedOfficerId !== undefined ? assignedOfficerId : customer.assigned_officer_id,
+            completed_at: (completedAt !== undefined) ? completedAt : customer.completed_at,
+            // Keep existing ODN and store data unless updated
+            aa1_odn: customer.aa1_odn,
+            aa2_odn: customer.aa2_odn,
+            aa3_odn: customer.aa3_odn,
+            store_id_1: customer.store_id_1,
+            store_id_2: customer.store_id_2,
+            store_id_3: customer.store_id_3,
+            store_completed_1: customer.store_completed_1,
+            store_completed_2: customer.store_completed_2,
+            store_completed_3: customer.store_completed_3,
+        };
+
+        if (data !== undefined) {
+            // Merge new data from the `handleComplete` or `handleReturn` functions
+            Object.assign(payload, data);
+        }
+
         try {
-            await axios.put(`${api_url}/api/update-service-point`, {
-                id: customer.id,
-                status: newStatus,
-                started_at: (startedAt !== null) ? startedAt : customer.started_at,
-                next_service_point: (nextServicePoint !== null) ? nextServicePoint : customer.next_service_point,
-                assigned_officer_id: assignedOfficerId,
-                completed_at: (completedAt !== null) ? completedAt : customer.completed_at,
-                outbound_delivery_number: (outboundDeliveryNumber !== null) ? outboundDeliveryNumber : customer.outbound_delivery_number
-            });
-            setCustomers(prevCustomers =>
-                prevCustomers.map(c =>
-                    c.id === customer.id ? {
-                        ...c,
-                        status: newStatus,
-                        started_at: (startedAt !== null) ? startedAt : c.started_at,
-                        next_service_point: (nextServicePoint !== null) ? nextServicePoint : c.next_service_point,
-                        assigned_officer_id: assignedOfficerId,
-                        completed_at: (completedAt !== null) ? completedAt : c.completed_at,
-                        outbound_delivery_number: (outboundDeliveryNumber !== null) ? outboundDeliveryNumber : c.outbound_delivery_number
-                    } : c
-                )
-            );
+            await axios.put(`${api_url}/api/update-service-point`, payload);
+            fetchData();
             Swal.fire('Success', `Customer status updated to ${newStatus}.`, 'success');
             return true;
         } catch (error) {
@@ -173,25 +132,46 @@ const OutstandingCustomers = () => {
         }
     };
 
+    const completeStoreTask = async (customer) => {
+        const completionData = {};
+
+        if (normalizedUserStore === 'AA1') completionData.store_completed_1 = true;
+        if (normalizedUserStore === 'AA2') completionData.store_completed_2 = true;
+        if (normalizedUserStore === 'AA3') completionData.store_completed_3 = true;
+
+        const payload = { id: customer.id, ...completionData };
+
+        try {
+            const res = await axios.put(`${api_url}/api/complete-ewm-task`, payload);
+            if (res.data.status === 'Completed') {
+                Swal.fire('Completed!', 'You and all assigned stores have completed this task. Service is complete.', 'success');
+            } else {
+                Swal.fire('Completed!', 'You have completed your part. Waiting for other stores to complete their tasks.', 'success');
+            }
+            fetchData();
+        } catch (error) {
+            console.error("Error completing store task:", error.response ? error.response.data : error.message);
+            Swal.fire('Error', 'Failed to complete store task', 'error');
+        }
+    };
+
     const handleO2CStatusFlow = async (customer, action) => {
         let newStatus = customer.status;
         let startedAt = customer.started_at;
-        let assignedOfficerToKeep = customer.assigned_officer_id;
 
         if (action === 'notify') {
-            newStatus = 'o2c notifying';
+            newStatus = 'notifying';
         } else if (action === 'start') {
-            newStatus = 'o2c started';
-            if (!customer.started_at || customer.status !== 'o2c started') {
+            newStatus = 'o2c_started';
+            if (!customer.started_at || customer.status !== 'o2c_started') {
                 startedAt = new Date().toISOString();
             }
         } else if (action === 'stop') {
-            // Restore 'started' status and clear the start time
             newStatus = 'started';
             startedAt = null;
         }
 
-        await updateServiceStatus(customer, newStatus, startedAt, assignedOfficerToKeep);
+        await updateServiceStatus(customer, newStatus, startedAt);
     };
 
     const handleApprove = async (customer) => {
@@ -212,10 +192,11 @@ const OutstandingCustomers = () => {
         try {
             await updateServiceStatus(
                 customer,
-                'manager completed',
+                'approved',
                 customer.started_at,
-                customer.assigned_officer_id,
-                'Customer Service'
+                undefined,
+                'Customer Service',
+                null
             );
             Swal.fire('Updated!', 'Customer approved and sent to Customer Service.', 'success');
             fetchData();
@@ -245,8 +226,9 @@ const OutstandingCustomers = () => {
                 customer,
                 'rejected',
                 customer.started_at,
-                customer.assigned_officer_id,
-                customer.next_service_point
+                undefined,
+                customer.next_service_point,
+                null
             );
             Swal.fire('Updated!', 'Customer has been rejected.', 'success');
             fetchData();
@@ -257,14 +239,20 @@ const OutstandingCustomers = () => {
     };
 
     const handleComplete = async (customer) => {
-        const getUserSelectOptions = () => {
-            return employees
-                .filter((emp) => emp.jobTitle === "O2C Officer")
-                .reduce((acc, emp) => {
-                    acc[emp.id] = emp.full_name;
-                    return acc;
-                }, {});
+        const getOutstandingTaskCounts = () => {
+            const counts = {};
+            employees.forEach(emp => {
+                const o2cTasks = customers.filter(c => String(c.assigned_officer_id) === String(emp.id) && c.next_service_point?.toLowerCase() === 'o2c');
+                const storeTasks = customers.filter(c => (
+                    c.next_service_point?.toLowerCase() === 'ewm' &&
+                    (c.aa1_odn || c.aa2_odn || c.aa3_odn)
+                ));
+                counts[emp.id] = o2cTasks.length + storeTasks.length;
+            });
+            return counts;
         };
+
+        const outstandingCounts = getOutstandingTaskCounts();
 
         if (jobTitle === 'O2C Officer') {
             const { value: selectedRole, isConfirmed } = await Swal.fire({
@@ -281,31 +269,96 @@ const OutstandingCustomers = () => {
                 return;
             }
 
-            let outboundDeliveryNumber = null;
+            let updateData = {};
+            let newStatus = 'o2c_completed';
+            let nextServicePoint = selectedRole;
+
             if (selectedRole === 'EWM') {
-                const { value: deliveryNumber, isConfirmed: numberConfirmed } = await Swal.fire({
-                    title: 'Enter Outbound Delivery Number',
-                    input: 'text',
-                    inputPlaceholder: 'e.g., 300056624',
+                const { value: selectedStores, isConfirmed: storeConfirmed } = await Swal.fire({
+                    title: 'Select Store(s)',
+                    html: `
+                        <div style="text-align:left;line-height:1.9">
+                          <label><input type="checkbox" id="storeAA1" value="AA1"> AA1</label><br/>
+                          <label><input type="checkbox" id="storeAA2" value="AA2"> AA2</label><br/>
+                          <label><input type="checkbox" id="storeAA3" value="AA3"> AA3</label>
+                        </div>
+                    `,
+                    focusConfirm: false,
                     showCancelButton: true,
-                    confirmButtonText: 'Save',
+                    confirmButtonText: 'Next',
+                    preConfirm: () => {
+                        const picks = [];
+                        const a1 = document.getElementById('storeAA1');
+                        const a2 = document.getElementById('storeAA2');
+                        const a3 = document.getElementById('storeAA3');
+                        if (a1 && a1.checked) picks.push('AA1');
+                        if (a2 && a2.checked) picks.push('AA2');
+                        if (a3 && a3.checked) picks.push('AA3');
+                        if (picks.length === 0) {
+                            Swal.showValidationMessage('You need to select at least one store.');
+                        }
+                        return picks;
+                    }
                 });
-                if (!numberConfirmed) {
-                    Swal.fire('Cancelled', 'Delivery number not saved. Action cancelled.', 'info');
+
+                if (!storeConfirmed) {
+                    Swal.fire('Cancelled', 'Store assignment cancelled.', 'info');
                     return;
                 }
-                outboundDeliveryNumber = deliveryNumber;
+                
+                // Reset store IDs and ODNs
+                updateData = {
+                    aa1_odn: null,
+                    aa2_odn: null,
+                    aa3_odn: null,
+                    store_id_1: null,
+                    store_id_2: null,
+                    store_id_3: null,
+                    store_completed_1: false,
+                    store_completed_2: false,
+                    store_completed_3: false,
+                };
+
+                for (const store of selectedStores) {
+                    const { value: odn, isConfirmed: odnConfirmed } = await Swal.fire({
+                        title: `Enter Outbound Delivery Number for ${store}`,
+                        input: 'text',
+                        inputPlaceholder: `e.g., DEL12345 for ${store}`,
+                        showCancelButton: true,
+                        confirmButtonText: 'Save',
+                        inputValidator: (value) => !value ? 'ODN is required.' : null,
+                    });
+                    if (!odnConfirmed) {
+                        Swal.fire('Cancelled', `ODN for ${store} not saved. Action cancelled.`, 'info');
+                        return;
+                    }
+                    
+                    if (store === 'AA1') {
+                        updateData.aa1_odn = odn;
+                        updateData.store_id_1 = 'AA1';
+                    }
+                    if (store === 'AA2') {
+                        updateData.aa2_odn = odn;
+                        updateData.store_id_2 = 'AA2';
+                    }
+                    if (store === 'AA3') {
+                        updateData.aa3_odn = odn;
+                        updateData.store_id_3 = 'AA3';
+                    }
+                }
+            } else {
+                updateData = {};
             }
 
             try {
                 await updateServiceStatus(
                     customer,
-                    'o2c completed',
+                    newStatus,
                     null,
-                    customer.assigned_officer_id,
-                    selectedRole,
-                    new Date().toISOString(),
-                    outboundDeliveryNumber
+                    undefined,
+                    nextServicePoint,
+                    undefined,
+                    updateData
                 );
                 Swal.fire('Success', 'Service point updated', 'success');
                 fetchData();
@@ -326,13 +379,14 @@ const OutstandingCustomers = () => {
             if (!isConfirmed) return;
 
             let assignedOfficerId = customer.assigned_officer_id;
-            let newStatus = 'finance completed';
+            let newStatus = customer.status;
 
             if (selectedRole === 'O2C') {
                 if (!customer.assigned_officer_id) {
                     const { value: selectedUserId, isConfirmed: userConfirmedAssignment } = await Swal.fire({
                         title: 'Assign O2C Officer',
-                        input: 'select', inputOptions: getUserSelectOptions(),
+                        input: 'select',
+                        inputOptions: employees.filter(emp => emp.jobTitle === 'O2C Officer').reduce((acc, emp) => { acc[emp.id] = emp.full_name; return acc; }, {}),
                         inputPlaceholder: 'Select an O2C Officer',
                         showCancelButton: true,
                     });
@@ -373,13 +427,14 @@ const OutstandingCustomers = () => {
             if (!isConfirmed) return;
 
             let assignedOfficerId = customer.assigned_officer_id;
-            let newStatus = 'registration completed';
+            let newStatus = customer.status;
 
             if (selectedRole === 'O2C') {
                 if (!customer.assigned_officer_id) {
                     const { value: selectedUserId, isConfirmed: userConfirmedAssignment } = await Swal.fire({
                         title: 'Assign O2C Officer',
-                        input: 'select', inputOptions: getUserSelectOptions(),
+                        input: 'select',
+                        inputOptions: employees.filter(emp => emp.jobTitle === 'O2C Officer').reduce((acc, emp) => { acc[emp.id] = emp.full_name; return acc; }, {}),
                         inputPlaceholder: 'Select an O2C Officer',
                         showCancelButton: true,
                     });
@@ -391,7 +446,7 @@ const OutstandingCustomers = () => {
                 } else {
                     Swal.fire('Info', 'O2C Officer is already assigned. Keeping current assignment.', 'info');
                 }
-                newStatus = 'o2c-officer assigned';
+                newStatus = 'started';
             }
 
             try {
@@ -409,35 +464,7 @@ const OutstandingCustomers = () => {
                 Swal.fire('Error', 'Failed to update service', 'error');
             }
         } else if (jobTitle === 'EWM Officer') {
-            const { isConfirmed } = await Swal.fire({
-                title: 'Confirm Completion',
-                text: 'Are you sure you want to complete this service and send to Customer?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, complete it!',
-                cancelButtonText: 'No, cancel',
-            });
-            if (!isConfirmed) {
-                Swal.fire('Cancelled', 'Service completion cancelled.', 'info');
-                return;
-            }
-
-            const now = new Date().toISOString();
-            try {
-                await updateServiceStatus(
-                    customer,
-                    'completed',
-                    null,
-                    customer.assigned_officer_id,
-                    'Customer',
-                    now
-                );
-                Swal.fire('Updated!', 'Service completed and moved to Customer.', 'success');
-                fetchData();
-            } catch (error) {
-                console.error("Error updating service point:", error.response ? error.response.data : error.message);
-                Swal.fire('Error', 'Failed to update service', 'error');
-            }
+            await completeStoreTask(customer);
         } else {
             Swal.fire("Notice", "Unhandled service point or user role. Please check the data.", "info");
         }
@@ -445,7 +472,25 @@ const OutstandingCustomers = () => {
 
     const handleReturn = async (customer) => {
         if (jobTitle !== 'EWM Officer') return;
-        const getUserSelectOptions = () => employees.filter((emp) => emp.jobTitle === "O2C Officer").reduce((acc, emp) => { acc[emp.id] = emp.full_name; return acc; }, {});
+        
+        const getOutstandingTaskCounts = () => {
+            const counts = {};
+            employees.forEach(emp => {
+                const o2cTasks = customers.filter(c => String(c.assigned_officer_id) === String(emp.id) && c.next_service_point?.toLowerCase() === 'o2c');
+                const storeTasks = customers.filter(c => (
+                    c.next_service_point?.toLowerCase() === 'ewm' && (c.aa1_odn || c.aa2_odn || c.aa3_odn)
+                ));
+                counts[emp.id] = o2cTasks.length + storeTasks.length;
+            });
+            return counts;
+        };
+
+        const outstandingCounts = getOutstandingTaskCounts();
+        const getUserSelectOptions = (role) => employees.filter((emp) => emp.jobTitle === role).reduce((acc, emp) => { 
+            const count = outstandingCounts[emp.id] || 0;
+            acc[emp.id] = `${emp.full_name} (${count})`; 
+            return acc; 
+        }, {});
 
         let assignedOfficerIdForReturn = customer.assigned_officer_id;
 
@@ -453,7 +498,7 @@ const OutstandingCustomers = () => {
             const { value: selectedUserId, isConfirmed } = await Swal.fire({
                 title: 'Assign O2C Officer for return',
                 input: 'select',
-                inputOptions: getUserSelectOptions(),
+                inputOptions: getUserSelectOptions('O2C Officer'),
                 inputPlaceholder: 'Select an O2C Officer',
                 showCancelButton: true,
             });
@@ -464,12 +509,27 @@ const OutstandingCustomers = () => {
         }
 
         try {
+            // Clear EWM-specific data on return
+            const resetData = {
+                aa1_odn: null,
+                aa2_odn: null,
+                aa3_odn: null,
+                store_id_1: null,
+                store_id_2: null,
+                store_id_3: null,
+                store_completed_1: false,
+                store_completed_2: false,
+                store_completed_3: false,
+            };
+
             await updateServiceStatus(
                 customer,
-                'o2c started',
+                'started',
                 null,
                 assignedOfficerIdForReturn,
-                'O2C'
+                'O2C',
+                null,
+                resetData 
             );
             Swal.fire('Returned!', 'Customer returned to O2C.', 'success');
             fetchData();
@@ -486,44 +546,53 @@ const OutstandingCustomers = () => {
         if (jobTitle === "O2C Officer") {
             return customers.filter(c =>
                 String(c.assigned_officer_id) === String(userId) &&
-                c.status !== 'o2c completed' &&
-                c.status !== 'completed'
+                c.next_service_point?.toLowerCase() === 'o2c' &&
+                c.status !== 'o2c_completed' &&
+                c.status !== 'Completed'
             );
         }
-        // Filter for manager, showing all customers that require their action.
         if (jobTitle === 'Manager') {
             return customers.filter(c =>
                 c.next_service_point?.toLowerCase() === 'manager' &&
                 c.status?.toLowerCase() !== 'rejected' &&
-                c.status?.toLowerCase() !== 'manager completed'
+                c.status?.toLowerCase() !== 'approved'
             );
         }
 
         const jobTitleToServicePointMap = {
-            "Customer Service Officer": "customer service", "EWM Officer": "ewm"
+            "Customer Service Officer": "customer service", "EWM Officer": "ewm", "Finance": "finance"
         };
         const normalizedJobTitle = jobTitleToServicePointMap[jobTitle] || jobTitle.toLowerCase();
+        
+        if (jobTitle === "EWM Officer") {
+            const storeToCheck = normalizedUserStore.toLowerCase();
+            const storeMapping = {
+                'aa1': { storeIdField: 'store_id_1', odn: 'aa1_odn', completed: 'store_completed_1' },
+                'aa2': { storeIdField: 'store_id_2', odn: 'aa2_odn', completed: 'store_completed_2' },
+                'aa3': { storeIdField: 'store_id_3', odn: 'aa3_odn', completed: 'store_completed_3' },
+            };
+            const storeProps = storeMapping[storeToCheck];
+
+            if (storeProps) {
+                return customers.filter(c =>
+                    c.next_service_point?.toLowerCase() === normalizedJobTitle &&
+                    c[storeProps.storeIdField] === normalizedUserStore &&
+                    !c[storeProps.completed]
+                );
+            }
+            return [];
+        }
+
         return customers.filter(c => c.next_service_point?.toLowerCase() === normalizedJobTitle);
     };
 
     const filtered = filterCustomers();
 
-    const handleNotificationClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setNotificationOpen(false);
-        setIsNotifying(false);
-    };
-
     return (
         <Box p={3}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h5" gutterBottom>
-                    Outstanding Customers
-                </Typography>
-            </Box>
-
+            <Typography variant="h5" gutterBottom>
+                Outstanding Customers
+            </Typography>
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
@@ -532,9 +601,11 @@ const OutstandingCustomers = () => {
                             <TableCell>Woreda</TableCell>
                             <TableCell>Customer Type</TableCell>
                             <TableCell>Waiting</TableCell>
-                            {/* Conditionally render O2C Officer column */}
-                            {jobTitle !== 'O2C Officer' && <TableCell>O2C Officer</TableCell>}
-                            {jobTitle === 'EWM Officer' && <TableCell>Outbound Delivery #</TableCell>}
+                            <TableCell>O2C Officer</TableCell>
+                            {jobTitle !== 'EWM Officer' && <TableCell>Current Service Point</TableCell>}
+                            {jobTitle !== 'EWM Officer' && <TableCell>Status</TableCell>}
+                            {jobTitle === 'EWM Officer' && <TableCell>Assigned Store(s)</TableCell>}
+                            {jobTitle === 'EWM Officer' && <TableCell>My ODN</TableCell>}
                             {jobTitle === 'EWM Officer' && <TableCell>Return</TableCell>}
                             <TableCell sx={{ minWidth: '220px' }}>Action</TableCell>
                         </TableRow>
@@ -542,13 +613,13 @@ const OutstandingCustomers = () => {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={jobTitle === 'EWM Officer' ? 7 : 6} align="center">
+                                <TableCell colSpan={jobTitle === 'EWM Officer' ? 8 : 8} align="center">
                                     <CircularProgress />
                                 </TableCell>
                             </TableRow>
                         ) : filtered.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={jobTitle === 'EWM Officer' ? 7 : 6} align="center">
+                                <TableCell colSpan={jobTitle === 'EWM Officer' ? 8 : 8} align="center">
                                     No outstanding customers found.
                                 </TableCell>
                             </TableRow>
@@ -557,11 +628,10 @@ const OutstandingCustomers = () => {
                                 const { name, woreda } = getFacilityDetails(customer.facility_id);
                                 const assignedUser = getAssignedUserFullName(customer.assigned_officer_id);
                                 const normalizedStatus = customer.status ? String(customer.status).trim().toLowerCase() : null;
-                                // Corrected conditional logic to use new status strings
-                                const showNotifyButton = jobTitle === 'O2C Officer' && (normalizedStatus === null || normalizedStatus === '' || normalizedStatus === 'started');
-                                const showStartButton = jobTitle === 'O2C Officer' && normalizedStatus === 'o2c notifying';
-                                const showStopButton = jobTitle === 'O2C Officer' && normalizedStatus === 'o2c started';
-                                const showCompleteButton = (jobTitle === 'O2C Officer' && normalizedStatus === 'o2c started') || (jobTitle === 'EWM Officer' && customer.next_service_point?.toLowerCase() === 'ewm') || jobTitle === 'Finance' || jobTitle === 'Customer Service Officer';
+
+                                const showNotifyButton = normalizedStatus === null || normalizedStatus === '' || normalizedStatus === 'started';
+                                const showStartAndStopButtons = normalizedStatus === 'notifying';
+                                const showCompleteButton = normalizedStatus === 'o2c_started';
 
                                 return (
                                     <TableRow key={customer.id}>
@@ -569,11 +639,25 @@ const OutstandingCustomers = () => {
                                         <TableCell>{woreda}</TableCell>
                                         <TableCell>{customer.customer_type}</TableCell>
                                         <TableCell>{getWaitingHours(customer.started_at)}</TableCell>
-                                        {/* Conditionally render O2C Officer data cell */}
-                                        {jobTitle !== 'O2C Officer' && <TableCell>{assignedUser}</TableCell>}
+                                        <TableCell>{assignedUser}</TableCell>
+                                        {jobTitle !== 'EWM Officer' && <TableCell>{customer.next_service_point || "N/A"}</TableCell>}
+                                        {jobTitle !== 'EWM Officer' && (
+                                            <TableCell>
+                                                <Chip
+                                                    label={customer.status || 'pending'}
+                                                    color={customer.status === 'rejected' ? 'error' : customer.status === 'approved' ? 'success' : 'default'}
+                                                    size="small"
+                                                />
+                                            </TableCell>
+                                        )}
                                         {jobTitle === 'EWM Officer' && (
                                             <TableCell>
-                                                {customer.outbound_delivery_number || 'N/A'}
+                                                {getAssignedStoreNames(customer) || 'N/A'}
+                                            </TableCell>
+                                        )}
+                                        {jobTitle === 'EWM Officer' && (
+                                            <TableCell>
+                                                {getStoreODN(customer)}
                                             </TableCell>
                                         )}
                                         {jobTitle === 'EWM Officer' && (
@@ -600,7 +684,7 @@ const OutstandingCustomers = () => {
                                                             Notify
                                                         </Button>
                                                     )}
-                                                    {showStartButton && (
+                                                    {showStartAndStopButtons && (
                                                         <>
                                                             <Button
                                                                 variant="contained"
@@ -631,39 +715,42 @@ const OutstandingCustomers = () => {
                                                         </Button>
                                                     )}
                                                 </Box>
-                                            ) : (
+                                            ) : jobTitle === 'Manager' ? (
                                                 <Box sx={{ display: 'flex', gap: 1 }}>
-                                                    {jobTitle === 'Manager' ? (
-                                                        <>
-                                                            <Button
-                                                                variant="contained"
-                                                                color="success"
-                                                                onClick={() => handleApprove(customer)}
-                                                                size="small"
-                                                            >
-                                                                Approve
-                                                            </Button>
-                                                            <Button
-                                                                variant="contained"
-                                                                color="error"
-                                                                onClick={() => handleReject(customer)}
-                                                                size="small"
-                                                            >
-                                                                Reject
-                                                            </Button>
-                                                        </>
-                                                    ) : (
-                                                        <Button
-                                                            variant="contained"
-                                                            color="success"
-                                                            onClick={() => handleComplete(customer)}
-                                                            size="small"
-                                                            disabled={!customer.next_service_point}
-                                                        >
-                                                            {jobTitle === 'EWM Officer' ? 'Complete' : 'Move Forward'}
-                                                        </Button>
-                                                    )}
+                                                    <Button
+                                                        variant="contained"
+                                                        color="success"
+                                                        onClick={() => handleApprove(customer)}
+                                                        size="small"
+                                                    >
+                                                        Approve
+                                                    </Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="error"
+                                                        onClick={() => handleReject(customer)}
+                                                        size="small"
+                                                    >
+                                                        Reject
+                                                    </Button>
                                                 </Box>
+                                            ) : jobTitle === 'EWM Officer' ? (
+                                                <Button
+                                                    variant="contained"
+                                                    color="success"
+                                                    onClick={() => handleComplete(customer)}
+                                                >
+                                                    Complete Task
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="contained"
+                                                    color="success"
+                                                    onClick={() => handleComplete(customer)}
+                                                    size="small"
+                                                >
+                                                    Complete
+                                                </Button>
                                             )}
                                         </TableCell>
                                     </TableRow>
@@ -673,16 +760,6 @@ const OutstandingCustomers = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Snackbar
-                open={notificationOpen}
-                autoHideDuration={60000}
-                onClose={handleNotificationClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            >
-                <MuiAlert onClose={handleNotificationClose} severity="info" sx={{ width: '100%' }}>
-                    New outstanding customers have been added.
-                </MuiAlert>
-            </Snackbar>
         </Box>
     );
 };
